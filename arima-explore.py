@@ -17,7 +17,6 @@ from statsmodels.tsa.stattools import adfuller
 from sklearn.metrics import mean_squared_error
 from sklearn import metrics
 import seaborn as sns
-
 import pmdarima as pm
 # register_matplotlib_converters()
 # plt.rcParams.update({'figure.figsize':(9,7), 'figure.dpi':120})
@@ -56,6 +55,7 @@ df = pd.read_csv(cwd + data_dir + site + str(year) + ".csv",
                   parse_dates=True,
                   infer_datetime_format=True)
 print(df.head())
+
 
 # makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
 normal_lbl = df[sensor + "_qual"].isnull()
@@ -135,114 +135,135 @@ print("q: "+str(q))
 
 # build ARIMA model
 
-### BUILD MODEL ###
-model = ARIMA(srs, order=(p, d, q))
-# print(model.arimaresults.aic) # doesn't work
-model_fit = model.fit(disp=0)
 
-# output summary
-print('\n\n')
-print(model_fit.summary())
-model_fit.plot_predict(dynamic=False)
+def arima_diagnose_detect(srs, p, d, q):
+    """Builds an ARIMA model. Determines threshold levels, identifies anomalies, uses windowing."""
+    # BUILD MODEL
+    model = ARIMA(srs, order=(p, d, q))
+    model_fit = model.fit(disp=0)
+    # output summary
+    print('\n\n')
+    print(model_fit.summary())
+    model_fit.plot_predict(dynamic=False)
+    # find residual errors
+    residuals = pd.DataFrame(model_fit.resid)
+    print('\n\nresiduals description:')
+    print(residuals.describe())
+    anom_srs = model_fit.predict()
 
-# find residual errors
-residuals = pd.DataFrame(model_fit.resid)
-print('\n\nresiduals description:')
-print(residuals.describe())
+    # DETERMINE THRESHOLD
+    # Need to determine prediction intervals
+    forecast, stderr, conf = model_fit.forecast(steps=5)
+    # could also try to maximize F2
+    threshold = 12
 
-### DETERMINE THRESHOLD ###
-# Need to determine prediction intervals
-# could also try to maximize F2
+    # DETERMINE ANOMALIES
+    anomDetn = np.abs(residuals) > threshold # gives bools
+    anomDetn[0][0] = False # correct 1st value
+    print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
 
-threshold = 12
+    return[threshold, model_fit, residuals, anom_srs, anomDetn]
 
-forecast, stderr, conf = model_fit.forecast(steps=5)
+def windowing(srs, normal_lbl, ):
+    """Widens the window before or after a detection for assigning an anomaly label."""
+    # determine labeled anomalies
+    # windowing
+    anomaly_count = 0
+    anomaly_events = []
+    anomaly_events.append(0)
+    for i in range(1, len(normal_lbl)):
+       if not(normal_lbl[i]):
+        if normal_lbl[i-1]:
+          anomaly_count += 1
+          anomaly_events[i-1] = anomaly_count
+        anomaly_events.append(anomaly_count)
+      else:
+        if not(normal_lbl[i-1]):
+          anomaly_events.append(anomaly_count)
+        else:
+          anomaly_events.append(0)
+
+    anomLbl = pd.DataFrame(data=anomaly_events, index=normal_lbl.index)
+
+    #  fix missing values
+    anomDetn = anomDetn.reindex(anomLbl.index)
+    anomDetn[anomDetn.isnull()] = True
+
+    # determine detections
+    det_count = 0
+    det_events = []
+    det_events.append(0)
+    for i in range(1, len(anomDetn)):
+      if anomDetn[0][i]: #is a detection
+        if not(anomDetn[0][i-1]): #prev is not detection
+          det_count += 1
+          det_events[i-1] = det_count
+        det_events.append(det_count) #append detection number
+      else: #is not a detection
+        if anomDetn[0][i-1]: #prev is a detection
+          det_events.append(det_count) #append det number
+        else:
+          det_events.append(0) #not a detection
+
+    anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
+
+    # generate lists of detected anomalies and valid detections
+    detected_anomalies = [0]
+    valid_detections = [0]
+    for i in range(0, len(anomDetn)):
+      if anomDetn[0][i]: # anomaly detected
+        if 0!=anomLbl[0][i]: # labeled as anomaly
+          if not(detected_anomalies[-1] == anomLbl[0][i]): #if not already in list of detected anomalies
+            detected_anomalies.append(anomLbl[0][i])
+          if not(valid_detections[-1] == anomDetns[0][i]): #if not already in list of valid detections
+            valid_detections.append(anomDetns[0][i])
+
+    detected_anomalies.pop(0)
+    valid_detections.pop(0)
+    invalid_detections = []
+    det_ind = 0
+    for i in range(1, max(anomDetns[0])):
+      if (det_ind < len(valid_detections)):
+        if i == valid_detections[det_ind]:
+          det_ind += 1
+        else:
+          invalid_detections.append(i)
+
+    return anomDetns, detected_anomalies
+
+def metrics(anomDetns, anomLbl, detected_anomalies):
+     """calculates metrics for anomaly detection"""
+     TruePositives = sum(anomLbl[0].value_counts()[detected_anomalies])
+     FalseNegatives = len(anomDetn) - anomLbl[0].value_counts()[0] - TruePositives
+     FalsePositives = sum(anomDetns[0].value_counts()[invalid_detections])
+     TrueNegatives = len(anomDetn) - TruePositives - FalseNegatives - FalsePositives
+
+     PRC = PPV = TruePositives / (TruePositives + FalsePositives)
+     NPV = TrueNegatives / (TrueNegatives + FalseNegatives)
+     ACC = (TruePositives + TrueNegatives) / len(anomDetn)
+     RCL = TruePositives / (TruePositives + FalseNegatives)
+     f1 = 2 * (PRC * RCL) / (PRC + RCL)
+     f2 = 5 * TruePositives / (5 * TruePositives + 4 * FalseNegatives + FalsePositives)
+     # ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
+
+     return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
+
+def find_threshold(min, max, inc, normal_lbl, anomDetns):
+    f_score = []
+    thresholds = np.arange(min, max, inc) #set range and increments for threshold. will need to generalize for other variables.
+    for threshold in thresholds:
 
 
-# calculate prediction interval
-z = 5
-SSE = np.sum(residuals**2)
-n = len(residuals)
-interval = z * np.sqrt(SSE/)
-np.max(interval)
-# If need upper/lower PI for plotting
-# lower, upper = model_fit.predict() - interval, model_fit.predict() + interval
+        f1 = metrics.f1_score(normal_lbl, anomDetns)
+        f_score.append(f1)
 
-
-
-### DETERMINE ANOMALIES ###
-anomDetn = np.abs(residuals) > threshold # gives bools
-anomDetn[0][0] = False # correct 1st value
-print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
-
-# determine labeled anomalies
-# windowing
-anomaly_count = 0
-anomaly_events = []
-anomaly_events.append(0)
-for i in range(1, len(normal_lbl)):
-  if not(normal_lbl[i]):
-    if normal_lbl[i-1]:
-      anomaly_count += 1
-      anomaly_events[i-1] = anomaly_count
-    anomaly_events.append(anomaly_count)
-  else:
-    if not(normal_lbl[i-1]):
-      anomaly_events.append(anomaly_count)
-    else:
-      anomaly_events.append(0)
-
-
-anomLbl = pd.DataFrame(data=anomaly_events, index=normal_lbl.index)
-
-#fix missing values
-anomDetn = anomDetn.reindex(anomLbl.index)
-anomDetn[anomDetn.isnull()] = True
-
-#determine detecteions
-det_count = 0
-det_events = []
-det_events.append(0)
-for i in range(1, len(anomDetn)):
-  if anomDetn[0][i]: #is a detection
-    if not(anomDetn[0][i-1]): #prev is not detection
-      det_count += 1
-      det_events[i-1] = det_count
-    det_events.append(det_count)#append detection number
-  else: #is not a detection
-    if anomDetn[0][i-1]: #prev is a detection
-      det_events.append(det_count)# append det number
-    else:
-      det_events.append(0) #not a detection
-
-
-anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
-
-#generate lists of detected anomalies and valid detections
-detected_anomalies = [0]
-valid_detections = [0]
-for i in range(0, len(anomDetn)):
-  if anomDetn[0][i]: # anomaly detected
-    if 0!=anomLbl[0][i]: # labeled as anomaly
-      if not(detected_anomalies[-1] == anomLbl[0][i]):#if not already in list of detected anomalies
-        detected_anomalies.append(anomLbl[0][i])
-      if not(valid_detections[-1] == anomDetns[0][i]):#if not already in list of valid detections
-        valid_detections.append(anomDetns[0][i])
-
-
-detected_anomalies.pop(0)
-valid_detections.pop(0)
-invalid_detections = []
-det_ind = 0
-for i in range(1, max(anomDetns[0])):
-  if (det_ind < len(valid_detections)):
-    if i == valid_detections[det_ind]:
-      det_ind += 1
-    else:
-      invalid_detections.append(i)
+    sns.lineplot(thresholds, f_score)
+    plt.xlabel("threshold")
+    plot.ylabel("f1 score")
+    opt_threshold =
+    return (thresholds, f_score, opt_threshold)
 
 #generate plots
-anom_srs = model_fit.predict()
 # fig = plt.figure()
 # ax1 = fig.add_subplot(1,1,1)
 # ax1.plot(srs[anomDetn[0]], 'r+', label='anomalies')
@@ -304,28 +325,9 @@ anom_srs = model_fit.predict()
 
 ### METRICS AND EVALUATION ###
 #generate confusion matrix
-TruePositives = sum(anomLbl[0].value_counts()[detected_anomalies])
-FalseNegatives= len(anomDetn) - anomLbl[0].value_counts()[0] - TruePositives
-FalsePositives= sum(anomDetns[0].value_counts()[invalid_detections])
-TrueNegatives = len(anomDetn) - TruePositives - FalseNegatives - FalsePositives
 
-PPV = TruePositives/(TruePositives+FalsePositives)
-NPV = TrueNegatives/(TrueNegatives+FalseNegatives)
-ACC = (TruePositives+TrueNegatives)/len(anomDetn)
-F2 = 5*TruePositives/(5*TruePositives+4*FalseNegatives+FalsePositives)
-# ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
 
 # Trying to estimate a threshold based on optimizing F score
-f_score = []
-thresholds = np.arange(0, 20, 0.5) #set range and increments for threshold. will need to generalize for other variables.
-for threshold in thresholds:
-    f1 = metrics.f1_score(normal_lbl, anomDetns)
-    f_score.append(f1)
-
-sns.lineplot(thresholds, f_score)
-plt.xlabel("threshold")
-plot.ylabel("f1 score")
-
 
 print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor)
