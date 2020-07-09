@@ -1,5 +1,5 @@
-datetime, temp, temp_cor, temp_qual, cond, cond_cor, cond_qual, ph, ph_cor, ph_qual, do, do_cor, do_qual, turb, turb_cor, turb_qual, stage, stage_cor, stage_qual
-﻿﻿2014-06-20 13:00:00.000,7.48,7.48,NULL,258.3,258.3,NULL,8.37,8.37,10,9.8,9.8,NULL,0,0,4,-9999,NULL,NULL
+datetime,temp,temp_cor,temp_qual,cond,cond_cor,cond_qual,ph,ph_cor,ph_qual,do,do_cor,do_qual,turb,turb_cor,turb_qual,stage,stage_cor,stage_qual
+2014-06-20 13:00:00.000,7.48,7.48,NULL,258.3,258.3,NULL,8.37,8.37,10,9.8,9.8,NULL,0,0,4,-9999,NULL,NULL
 2014-06-20 13:15:00.000,0.743,NULL,NULL,7.645,258.3,7,8.37,8.37,10,9.8,9.8,NULL,3.32,3.32,NULL,-9999,NULL,NULL
 2014-06-20 13:30:00.000,7.72,7.72,NULL,258.3,258.3,NULL,8.37,8.37,10,9.73,9.73,NULL,2.49,2.49,NULL,51.09,35.89,10
 2014-06-20 13:45:00.000,7.81,7.81,NULL,258.3,258.3,NULL,8.38,8.38,10,9.71,9.71,NULL,2.37,2.37,NULL,51.23,36.0293838862559,10

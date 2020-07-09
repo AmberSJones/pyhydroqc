@@ -1,5 +1,5 @@
-datetime, temp, temp_cor, temp_qual, cond, cond_cor, cond_qual, ph, ph_cor, ph_qual, do, do_cor, do_qual, turb, turb_cor, turb_qual, stage, stage_cor, stage_qual
-﻿2015-08-20 12:00:00.000,18.85,18.85,NULL,667.1,667.1,NULL,7.8,7.8,NULL,9.78,9.78,NULL,0.85,0.85,NULL,25.06,25.06,NULL
+datetime,temp,temp_cor,temp_qual,cond,cond_cor,cond_qual,ph,ph_cor,ph_qual,do,do_cor,do_qual,turb,turb_cor,turb_qual,stage,stage_cor,stage_qual
+2015-08-20 12:00:00.000,18.85,18.85,NULL,667.1,667.1,NULL,7.8,7.8,NULL,9.78,9.78,NULL,0.85,0.85,NULL,25.06,25.06,NULL
 2015-08-20 12:15:00.000,19.08,19.08,NULL,666.6,666.6,NULL,7.81,7.81,NULL,9.87,9.87,NULL,0.69,0.69,NULL,25.11,25.11,NULL
 2015-08-20 12:30:00.000,19.28,19.28,NULL,666.3,666.3,NULL,7.82,7.82,NULL,9.95,9.95,NULL,0.74,0.74,NULL,25.2,25.2,NULL
 2015-08-20 12:45:00.000,19.45,19.45,NULL,665.7,665.7,NULL,7.83,7.83,NULL,10.02,10.02,NULL,0.58,0.58,NULL,25.29,25.29,NULL
