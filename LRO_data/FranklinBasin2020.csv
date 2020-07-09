@@ -1,5 +1,5 @@
-datetime, temp, temp_cor, temp_qual, cond, cond_cor, cond_qual, ph, ph_cor, ph_qual, do, do_cor, do_qual, turb, turb_cor, turb_qual, stage, stage_cor, stage_qual
-﻿﻿2020-01-01 00:00:00.000,2.37,2.37,NULL,334.4,334.4,NULL,8.44,8.46749736008448,NULL,10.45,10.45,NULL,3.24,3.24,NULL,21.42,13.03,NULL
+datetime,temp,temp_cor,temp_qual,cond,cond_cor,cond_qual,ph,ph_cor,ph_qual,do,do_cor,do_qual,turb,turb_cor,turb_qual,stage,stage_cor,stage_qual
+2020-01-01 00:00:00.000,2.37,2.37,NULL,334.4,334.4,NULL,8.44,8.46749736008448,NULL,10.45,10.45,NULL,3.24,3.24,NULL,21.42,13.03,NULL
 2020-01-01 00:15:00.000,2.34,2.34,NULL,335.2,335.2,NULL,8.44,8.4675033941771,NULL,10.46,10.46,NULL,3.46,3.46,NULL,21.43,13.04,NULL
 2020-01-01 00:30:00.000,2.32,2.32,NULL,334.3,334.3,NULL,8.44,8.46750942826972,NULL,10.46,10.46,NULL,3.34,3.34,NULL,21.42,13.03,NULL
 2020-01-01 00:45:00.000,2.29,2.29,NULL,334,334,NULL,8.44,8.46751546236235,NULL,10.47,10.47,NULL,3.26,3.26,NULL,21.43,13.04,NULL
