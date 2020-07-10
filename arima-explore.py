@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from pandas.plotting import register_matplotlib_converters
 import statsmodels.api as api
-# import statsmodels.tsa as tsa
+import statsmodels.tsa as tsa
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.arima_model import ARIMA
 from statsmodels.tsa.stattools import adfuller
@@ -26,24 +26,24 @@ import pmdarima as pm
 # declarations: site, model parameters (threshold and (p, d, q))
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
-site = "MainStreet"
-# site = "Mendon"
+# site = "MainStreet"
+site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
 # sensor = "temp"
-# sensor = "cond"
+sensor = "cond"
 # sensor = "ph"
-sensor = "do"
+# sensor = "do"
 # sensor = "turb"
 # sensor = "stage"
-year = 2016
+year = 2017
 
 ### GET DATA ###
 os.chdir("../")
 cwd = os.getcwd()
 # print(cwd)
-# data_dir = "/PycharmProjects/LRO-anomaly-detection/LRO_data/"
-data_dir = "/LRO-anomaly-detection/LRO_data/"
+data_dir = "/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/"
+# data_dir = "/LRO-anomaly-detection/LRO_data/"
 # file_list = os.listdir(cwd + data_dir)
 # print(file_list)
 print('Importing data from ' + cwd + data_dir + site + str(year) + ".csv")
@@ -140,18 +140,39 @@ print("q: "+str(q))
 def arima_diagnose_detect(srs, p, d, q, summary):
     """Builds an ARIMA model. Determines threshold levels, identifies anomalies, uses windowing."""
     # BUILD MODEL
-    model = ARIMA(srs, order=(p, d, q))
+    model = api.tsa.statespace.SARIMAX(srs, order=(p, d, q))
     model_fit = model.fit(disp=0)
     # find residual errors and model predictions
     residuals = pd.DataFrame(model_fit.resid)
-    predictions = model_fit.predict()
+    predict = model_fit.get_prediction()
+    predictions = pd.DataFrame(predict.predicted_mean)
+    predict_ci = predict.conf_int()
+    predict_ci.columns=["lower", "upper"]
+    residuals[0][0] = 0
+    predictions[0][0] = srs[0]
+    predict_ci["lower"][0] = predict_ci["lower"][1]
+    predict_ci["upper"][0] = predict_ci["upper"][1]
+    # change alpha: predict_ci = predictions.conf_int(alpha=0.05)
 
     # DETERMINE THRESHOLD
     # Need to determine prediction intervals
-    forecast, stderr, conf = model_fit.forecast(steps=5)
     # could also try to maximize F2
     # threshold = 12
-    threshold = 0.5
+    thresholds = predictions[0]-predict_ci["lower"]
+
+    fig, ax = plt.subplots(figsize=(9, 4))
+
+    # Plot predictions
+    predict.predicted_mean.plot(ax=ax, style='r--', label='One-step-ahead forecast')
+    ci = predict_ci
+    ax.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color='r', alpha=0.1)
+    # Plot data points
+    srs.plot(ax=ax, style='-', label='Observed')
+    legend = ax.legend(loc='lower right')
+
+    plt.show()
+
+
 
     # DETERMINE ANOMALIES
     anomDetn = np.abs(residuals) > threshold # gives bools
