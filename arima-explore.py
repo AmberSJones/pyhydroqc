@@ -138,13 +138,17 @@ print("q: "+str(q))
 
 
 def set_threshold(predict, alpha_in):
-    """Uses SARIMAX model predict object to determine threshold based on confidence interval and specified alpha level of confidence."""
+    """Uses SARIMAX model predict object to determine threshold based on confidence interval and
+    specified alpha level of confidence."""
     predict_ci = predict.conf_int(alpha=alpha_in)
     predict_ci.columns = ["lower", "upper"]
     residuals[0][0] = 0
     predictions[0][0] = srs[0]
     predict_ci["lower"][0] = predict_ci["lower"][1]
 
+    # this gives a constant interval for all points. Considering methods to vary the threshold with data/model
+    # variability include using the PI with a SSE over just a previous window or scaling this threshold to a
+    # past window SSE.
     # could also try to maximize F2, but that requires having labeled data.
     thresholds = predictions[0] - predict_ci["lower"]
     threshold = thresholds[-1]
@@ -182,7 +186,8 @@ def arima_diagnose_detect(srs, p, d, q, alpha, summary):
 
 
 def determine_events(normal_lbl):
-    """Searches through expert labeled data and counts groups of immediately consecutively labeled data points as anomalous events."""
+    """Searches through expert labeled data and counts groups of immediately consecutively labeled
+    data points as anomalous events."""
     # TODO: uses +- 1 to widen window before and after the event. Should make this a parameter.
     event_count = 0
     events = []
@@ -202,7 +207,8 @@ def determine_events(normal_lbl):
     return events
 
 def determine_detections(anomDetn):
-    """Searches through detected events and counts groups of immediately consecutively labeled data points as anomalous events"""
+    """Searches through detected events and counts groups of immediately consecutively labeled data
+    points as anomalous events"""
     # TODO: merge this function into determine_events
     det_count = 0
     det_events = []
@@ -291,7 +297,8 @@ def metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections
 
 # def find_threshold(min, max, inc, normal_lbl, anomDetns):
 #     f_score = []
-#     thresholds = np.arange(min, max, inc) #set range and increments for threshold. will need to generalize for other variables.
+#     thresholds = np.arange(min, max, inc) #set range and increments for threshold. will need to
+#     generalize for other variables.
 #     for threshold in thresholds:
 #
 #
@@ -372,7 +379,8 @@ def metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections
 
 threshold, model_fit, residuals, predictions, anomDetn = arima_diagnose_detect(srs, p, d, q, False)
 anomLbl, anomDetn, anomDetns, detected_anomalies, invalid_detections = windowing(srs, normal_lbl, anomDetn)
-TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 = metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections)
+TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
+    = metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections)
 
 
 print('\n\n\nScript report:\n')
