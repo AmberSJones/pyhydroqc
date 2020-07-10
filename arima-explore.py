@@ -137,7 +137,22 @@ print("q: "+str(q))
 # build ARIMA model
 
 
-def arima_diagnose_detect(srs, p, d, q, summary):
+def set_threshold(predict, alpha_in):
+    """Uses SARIMAX model predict object to determine threshold based on confidence interval and specified alpha level of confidence."""
+    predict_ci = predict.conf_int(alpha=alpha_in)
+    predict_ci.columns = ["lower", "upper"]
+    residuals[0][0] = 0
+    predictions[0][0] = srs[0]
+    predict_ci["lower"][0] = predict_ci["lower"][1]
+
+    # could also try to maximize F2, but that requires having labeled data.
+    thresholds = predictions[0] - predict_ci["lower"]
+    threshold = thresholds[-1]
+
+    return threshold
+
+
+def arima_diagnose_detect(srs, p, d, q, alpha, summary):
     """Builds an ARIMA model. Determines threshold levels, identifies anomalies, uses windowing."""
     # BUILD MODEL
     model = api.tsa.statespace.SARIMAX(srs, order=(p, d, q))
@@ -146,33 +161,9 @@ def arima_diagnose_detect(srs, p, d, q, summary):
     residuals = pd.DataFrame(model_fit.resid)
     predict = model_fit.get_prediction()
     predictions = pd.DataFrame(predict.predicted_mean)
-    predict_ci = predict.conf_int()
-    predict_ci.columns=["lower", "upper"]
-    residuals[0][0] = 0
-    predictions[0][0] = srs[0]
-    predict_ci["lower"][0] = predict_ci["lower"][1]
-    predict_ci["upper"][0] = predict_ci["upper"][1]
-    # change alpha: predict_ci = predictions.conf_int(alpha=0.05)
 
-    # DETERMINE THRESHOLD
-    # Need to determine prediction intervals
-    # could also try to maximize F2
-    # threshold = 12
-    thresholds = predictions[0]-predict_ci["lower"]
-
-    fig, ax = plt.subplots(figsize=(9, 4))
-
-    # Plot predictions
-    predict.predicted_mean.plot(ax=ax, style='r--', label='One-step-ahead forecast')
-    ci = predict_ci
-    ax.fill_between(ci.index, ci.iloc[:, 0], ci.iloc[:, 1], color='r', alpha=0.1)
-    # Plot data points
-    srs.plot(ax=ax, style='-', label='Observed')
-    legend = ax.legend(loc='lower right')
-
-    plt.show()
-
-
+    # set threshold
+    threshold = set_threshold(predict, alpha)
 
     # DETERMINE ANOMALIES
     anomDetn = np.abs(residuals) > threshold # gives bools
@@ -188,6 +179,7 @@ def arima_diagnose_detect(srs, p, d, q, summary):
         print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
 
     return threshold, model_fit, residuals, predictions, anomDetn
+
 
 def determine_events(normal_lbl):
     """Searches through expert labeled data and counts groups of immediately consecutively labeled data points as anomalous events."""
