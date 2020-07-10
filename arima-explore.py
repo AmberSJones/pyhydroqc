@@ -26,23 +26,24 @@ import pmdarima as pm
 # declarations: site, model parameters (threshold and (p, d, q))
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
-# site = "MainStreet"
+site = "MainStreet"
 # site = "Mendon"
 # site = "TonyGrove"
-site = "WaterLab"
+# site = "WaterLab"
 # sensor = "temp"
-sensor = "cond"
+# sensor = "cond"
 # sensor = "ph"
-# sensor = "do"
+sensor = "do"
 # sensor = "turb"
 # sensor = "stage"
-year = 2014
+year = 2016
 
 ### GET DATA ###
 os.chdir("../")
 cwd = os.getcwd()
 # print(cwd)
-data_dir = "/TS-ARIMA/LRO_data/"
+# data_dir = "/PycharmProjects/LRO-anomaly-detection/LRO_data/"
+data_dir = "/LRO-anomaly-detection/LRO_data/"
 # file_list = os.listdir(cwd + data_dir)
 # print(file_list)
 print('Importing data from ' + cwd + data_dir + site + str(year) + ".csv")
@@ -135,6 +136,7 @@ print("q: "+str(q))
 
 # build ARIMA model
 
+
 def arima_diagnose_detect(srs, p, d, q, summary):
     """Builds an ARIMA model. Determines threshold levels, identifies anomalies, uses windowing."""
     # BUILD MODEL
@@ -148,7 +150,8 @@ def arima_diagnose_detect(srs, p, d, q, summary):
     # Need to determine prediction intervals
     forecast, stderr, conf = model_fit.forecast(steps=5)
     # could also try to maximize F2
-    threshold = 12
+    # threshold = 12
+    threshold = 0.5
 
     # DETERMINE ANOMALIES
     anomDetn = np.abs(residuals) > threshold # gives bools
@@ -163,10 +166,11 @@ def arima_diagnose_detect(srs, p, d, q, summary):
         print(residuals.describe())
         print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
 
-    return[threshold, model_fit, residuals, predictions, anomDetn]
+    return threshold, model_fit, residuals, predictions, anomDetn
 
 def determine_events(normal_lbl):
     """Searches through expert labeled data and counts groups of immediately consecutively labeled data points as anomalous events."""
+    # TODO: uses +- 1 to widen window before and after the event. Should make this a parameter.
     event_count = 0
     events = []
     events.append(0)
@@ -176,13 +180,13 @@ def determine_events(normal_lbl):
           event_count += 1
           events[i-1] = event_count
         events.append(event_count)
-      else:
+       else:
         if not(normal_lbl[i-1]):
           events.append(event_count)
         else:
           events.append(0)
 
-    return[events]
+    return events
 
 def determine_detections(anomDetn):
     """Searches through detected events and counts groups of immediately consecutively labeled data points as anomalous events"""
@@ -202,23 +206,11 @@ def determine_detections(anomDetn):
         else:
           det_events.append(0) #not a detection
 
-    return[det_events]
+    return det_events
 
-def windowing(srs, normal_lbl, ):
-    """Widens the window before or after a detection for assigning an anomaly label."""
-    # determine labeled anomalies
-    # windowing
-    # series of numbered "anomaly events"
-    anomaly_events = determine_events(normal_lbl)
-    anomLbl = pd.DataFrame(data=anomaly_events, index=normal_lbl.index)
-    #  fix missing values
-    anomDetn = anomDetn.reindex(anomLbl.index)
-    anomDetn[anomDetn.isnull()] = True
-
-    # determine detections
-    det_events = determine_detections(anomDetn)
-    anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
-
+def compare_lbl_detns(anomLbl, anomDetn, anomDetns):
+    """Compares the widened/windowed events between labels and detections."""
+    # TODO: Understand need for and difference between anomDetn and anomDetns
     # generate lists of detected anomalies and valid detections
     detected_anomalies = [0]
     valid_detections = [0]
@@ -232,18 +224,42 @@ def windowing(srs, normal_lbl, ):
 
     detected_anomalies.pop(0)
     valid_detections.pop(0)
+
+    return anomDetns, detected_anomalies, valid_detections
+
+def false_detections(anomDetns, valid_detections):
+    """Determines detected events that were not labeled events."""
     invalid_detections = []
     det_ind = 0
     for i in range(1, max(anomDetns[0])):
-      if (det_ind < len(valid_detections)):
-        if i == valid_detections[det_ind]:
-          det_ind += 1
-        else:
-          invalid_detections.append(i)
+        if (det_ind < len(valid_detections)):
+            if i == valid_detections[det_ind]:
+                det_ind += 1
+            else:
+                invalid_detections.append(i)
 
-    return anomDetns, detected_anomalies
+    return invalid_detections
 
-def metrics(anomDetns, anomLbl, detected_anomalies):
+def windowing(srs, normal_lbl, anomDetn):
+    """Widens the window before or after a detection for assigning an anomaly label."""
+    # create lists of labeled events and detected events. data frame is same length as full data series.
+    label_events = determine_events(normal_lbl)
+    anomLbl = pd.DataFrame(data=label_events, index=normal_lbl.index)
+    # add index to data frame of individually detected anomalies. fix missing values
+    anomDetn = anomDetn.reindex(anomLbl.index)
+    anomDetn[anomDetn.isnull()] = True
+    # determine detected events and reindex
+    det_events = determine_detections(anomDetn)
+    anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
+    # compare labeled and detected events
+    anomDetns, detected_anomalies, valid_detections = compare_lbl_detns(anomLbl, anomDetn, anomDetns)
+    # TODO: check for empty detected_anomalies and valid_detections
+    # determine detected but not labeled events
+    invalid_detections = false_detections(anomDetns, valid_detections)
+
+    return [anomLbl, anomDetn, anomDetns, detected_anomalies, invalid_detections]
+
+def metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections):
      """calculates metrics for anomaly detection"""
      TruePositives = sum(anomLbl[0].value_counts()[detected_anomalies])
      FalseNegatives = len(anomDetn) - anomLbl[0].value_counts()[0] - TruePositives
@@ -260,20 +276,20 @@ def metrics(anomDetns, anomLbl, detected_anomalies):
 
      return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
 
-def find_threshold(min, max, inc, normal_lbl, anomDetns):
-    f_score = []
-    thresholds = np.arange(min, max, inc) #set range and increments for threshold. will need to generalize for other variables.
-    for threshold in thresholds:
-
-
-        f1 = metrics.f1_score(normal_lbl, anomDetns)
-        f_score.append(f1)
-
-    sns.lineplot(thresholds, f_score)
-    plt.xlabel("threshold")
-    plot.ylabel("f1 score")
-    opt_threshold =
-    return (thresholds, f_score, opt_threshold)
+# def find_threshold(min, max, inc, normal_lbl, anomDetns):
+#     f_score = []
+#     thresholds = np.arange(min, max, inc) #set range and increments for threshold. will need to generalize for other variables.
+#     for threshold in thresholds:
+#
+#
+#         f1 = metrics.f1_score(normal_lbl, anomDetns)
+#         f_score.append(f1)
+#
+#     sns.lineplot(thresholds, f_score)
+#     plt.xlabel("threshold")
+#     plot.ylabel("f1 score")
+#     opt_threshold =
+#     return (thresholds, f_score, opt_threshold)
 
 #generate plots
 # fig = plt.figure()
@@ -341,6 +357,11 @@ def find_threshold(min, max, inc, normal_lbl, anomDetns):
 
 # Trying to estimate a threshold based on optimizing F score
 
+threshold, model_fit, residuals, predictions, anomDetn = arima_diagnose_detect(srs, p, d, q, False)
+anomLbl, anomDetn, anomDetns, detected_anomalies, invalid_detections = windowing(srs, normal_lbl, anomDetn)
+TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 = metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections)
+
+
 print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor)
 print('Year: ' + str(year))
@@ -352,6 +373,5 @@ print('TP  = %i' % TruePositives)
 print('TN  = %i' % TrueNegatives)
 print('FP  = %i' % FalsePositives)
 print('FN  = %i' % FalseNegatives)
-print('F2 = %i' % F2)
-
+print('F2 = %i' % f2)
 print("\nTime Series ARIMA script end.")
