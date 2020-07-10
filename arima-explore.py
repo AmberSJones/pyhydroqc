@@ -184,7 +184,6 @@ def determine_events(normal_lbl):
 
     return[events]
 
-
 def determine_detections(anomDetn):
     """Searches through detected events and counts groups of immediately consecutively labeled data points as anomalous events"""
     # TODO: merge this function into determine_events
