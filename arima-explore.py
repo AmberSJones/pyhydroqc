@@ -135,21 +135,14 @@ print("q: "+str(q))
 
 # build ARIMA model
 
-
-def arima_diagnose_detect(srs, p, d, q):
+def arima_diagnose_detect(srs, p, d, q, summary):
     """Builds an ARIMA model. Determines threshold levels, identifies anomalies, uses windowing."""
     # BUILD MODEL
     model = ARIMA(srs, order=(p, d, q))
     model_fit = model.fit(disp=0)
-    # output summary
-    print('\n\n')
-    print(model_fit.summary())
-    model_fit.plot_predict(dynamic=False)
-    # find residual errors
+    # find residual errors and model predictions
     residuals = pd.DataFrame(model_fit.resid)
-    print('\n\nresiduals description:')
-    print(residuals.describe())
-    anom_srs = model_fit.predict()
+    predictions = model_fit.predict()
 
     # DETERMINE THRESHOLD
     # Need to determine prediction intervals
@@ -159,37 +152,42 @@ def arima_diagnose_detect(srs, p, d, q):
 
     # DETERMINE ANOMALIES
     anomDetn = np.abs(residuals) > threshold # gives bools
-    anomDetn[0][0] = False # correct 1st value
-    print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
+    anomDetn[0][0] = False # set 1st value to false
 
-    return[threshold, model_fit, residuals, anom_srs, anomDetn]
+    # output summary
+    if summary:
+        print('\n\n')
+        print(model_fit.summary())
+        model_fit.plot_predict(dynamic=False)
+        print('\n\nresiduals description:')
+        print(residuals.describe())
+        print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
 
-def windowing(srs, normal_lbl, ):
-    """Widens the window before or after a detection for assigning an anomaly label."""
-    # determine labeled anomalies
-    # windowing
-    anomaly_count = 0
-    anomaly_events = []
-    anomaly_events.append(0)
+    return[threshold, model_fit, residuals, predictions, anomDetn]
+
+def determine_events(normal_lbl):
+    """Searches through expert labeled data and counts groups of immediately consecutively labeled data points as anomalous events."""
+    event_count = 0
+    events = []
+    events.append(0)
     for i in range(1, len(normal_lbl)):
        if not(normal_lbl[i]):
         if normal_lbl[i-1]:
-          anomaly_count += 1
-          anomaly_events[i-1] = anomaly_count
-        anomaly_events.append(anomaly_count)
+          event_count += 1
+          events[i-1] = event_count
+        events.append(event_count)
       else:
         if not(normal_lbl[i-1]):
-          anomaly_events.append(anomaly_count)
+          events.append(event_count)
         else:
-          anomaly_events.append(0)
+          events.append(0)
 
-    anomLbl = pd.DataFrame(data=anomaly_events, index=normal_lbl.index)
+    return[events]
 
-    #  fix missing values
-    anomDetn = anomDetn.reindex(anomLbl.index)
-    anomDetn[anomDetn.isnull()] = True
 
-    # determine detections
+def determine_detections(anomDetn):
+    """Searches through detected events and counts groups of immediately consecutively labeled data points as anomalous events"""
+    # TODO: merge this function into determine_events
     det_count = 0
     det_events = []
     det_events.append(0)
@@ -205,6 +203,21 @@ def windowing(srs, normal_lbl, ):
         else:
           det_events.append(0) #not a detection
 
+    return[det_events]
+
+def windowing(srs, normal_lbl, ):
+    """Widens the window before or after a detection for assigning an anomaly label."""
+    # determine labeled anomalies
+    # windowing
+    # series of numbered "anomaly events"
+    anomaly_events = determine_events(normal_lbl)
+    anomLbl = pd.DataFrame(data=anomaly_events, index=normal_lbl.index)
+    #  fix missing values
+    anomDetn = anomDetn.reindex(anomLbl.index)
+    anomDetn[anomDetn.isnull()] = True
+
+    # determine detections
+    det_events = determine_detections(anomDetn)
     anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
 
     # generate lists of detected anomalies and valid detections
