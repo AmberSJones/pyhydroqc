@@ -98,7 +98,7 @@ from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDist
 model = Sequential([
     LSTM(128, input_shape=(timesteps, num_features)),  # one LSTM layer
     Dropout(0.2),  # dropout regularization
-    RepeatVector(timesteps),  # replicates the feature vectors from LSTM layer output bector by the number of time steps (e.g., 200(30) times)
+    RepeatVector(timesteps),  # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 200(30) times)
     LSTM(128, return_sequences=True),  # mirror the encoder in the reverse fashion to create the decoder
     Dropout(0.2),
     TimeDistributed(Dense(num_features))  # add time distributed layer to get output in correct shape.
@@ -137,7 +137,7 @@ plt.legend();
 
 # still need to detect anomalies in our data.
 # get model predictions on training data and determine mean absolute error
-# loos at the loss for each individual point
+# look at the loss for each individual point
 
 X_train_pred = model.predict(X_train)
 
@@ -160,7 +160,7 @@ test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
 
 sns.distplot(test_mae_loss, bins=50, kde=True);
 
-## Task 8: Detect Anomalies in the S&P 500 Index Data
+## Task 8: Detect Anomalies
 
 THRESHOLD = 0.75
 
