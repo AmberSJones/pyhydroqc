@@ -38,36 +38,30 @@ sensor = "cond"
 # sensor = "stage"
 year = 2017
 
-### GET DATA ###
-os.chdir("../")
-cwd = os.getcwd()
-# print(cwd)
-data_dir = "/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/"
-# data_dir = "/LRO-anomaly-detection/LRO_data/"
-# file_list = os.listdir(cwd + data_dir)
-# print(file_list)
-print('Importing data from ' + cwd + data_dir + site + str(year) + ".csv")
-# df = pd.read_csv(cwd + data_dir + site + ".csv",
-df = pd.read_csv(cwd + data_dir + site + str(year) + ".csv",
-                  skipinitialspace=True,
-                  engine='python',
-                  header=0,
-                  index_col=0,
-                  parse_dates=True,
-                  infer_datetime_format=True)
-print(df.head())
 
+def get_data(site, sensor, year, path=""):
+    """Imports a single year of data based on files named by site, sensor/variable, and year.
+    Labels data as anomalous. Generates a series from the data frame."""
+    # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
+    if path == "":
+        path = os.getcwd()
+    df = pd.read_csv(path + site + str(year) + ".csv",
+                     skipinitialspace = True,
+                     engine = 'python',
+                     header = 0,
+                     index_col = 0,
+                     parse_dates = True,
+                     infer_datetime_format = True)
+    # makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
+    normal_lbl = df[sensor + "_qual"].isnull()
+    # generate series from dataframe - time indexed values
+    srs = pd.Series(df[sensor])
 
-# makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
-normal_lbl = df[sensor + "_qual"].isnull()
-
-#generate series from dataframe - time indexed values
-srs = pd.Series(df[sensor])
+    return df, normal_lbl, srs
 
 # plt.figure()
 # plt.plot(srs)
 # plt.show()
-
 
 ### PARAMETER SELECTION ###
 # Need to use an automated method to generalize getting p,d,q parameters
