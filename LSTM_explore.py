@@ -36,14 +36,14 @@ def get_data(site, sensor, year, path=""):
     Labels data as anomalous. Generates a series from the data frame."""
     # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
     if path == "":
-        path = os.getcwd()
+        path = os.getcwd() + "/"
     df_full = pd.read_csv(path + site + str(year) + ".csv",
-                     skipinitialspace=True,
-                     engine='python',
-                     header=0,
-                     index_col=0,
-                     parse_dates=True,
-                     infer_datetime_format=True)
+                          skipinitialspace=True,
+                          engine='python',
+                          header=0,
+                          index_col=0,
+                          parse_dates=True,
+                          infer_datetime_format=True)
     # makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
     normal_lbl = df_full[sensor + "_qual"].isnull()
     # generate data frames and series from dataframe - time indexed values of raw and corrected data
@@ -70,44 +70,29 @@ def create_training_dataset(X, training_samples="", time_steps=10):
     - Features refers to the number of columns/variables."""
     Xs, ys = [], []  # start empty list
     if training_samples == "":
-        training_samples = int(len(X)*0.10)
-        
+        training_samples = int(len(X) * 0.10)
+
     # create some sample sequences from data series
     for i in range(training_samples):  # for every sample sequence to be created
-        j = randint(0, len(X)-time_steps-2)
-        v = X.iloc[j:(j+time_steps)].values  # data from j to the end of time step
-        ys.append(X.iloc[j+time_steps])
+        j = randint(0, len(X) - time_steps - 2)
+        v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
+        ys.append(X.iloc[j + time_steps])
         Xs.append(v)
 
     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
 
 
-def train_test(df, ratio):
-    """splits data frame into training and testing. uses straight temporal split."""
-    # TODO: Add ability to do randomized train/test
-    train_size = int(len(df) * ratio)
-    test_size = len(df) - train_size
-    train, test = df.iloc[0:train_size], df.iloc[train_size:len(df)]
-
-    return train, test
-
-
-def create_dataset(X, y, time_steps=1):
+def create_sequenced_dataset(X, time_steps=10):
     """Reshapes data to temporalize it into (samples, timestamps, features).
     Time stamps defines a sequence of how far back to consider for each sample/row.
     Features refers to the number of columns/variables."""
-    Xs, ys = [], [] # start empty list
+    Xs, ys = [], []  # start empty list
     for i in range(len(X) - time_steps):  # loop within range of data frame minus the time steps
         v = X.iloc[i:(i + time_steps)].values  # data from i to end of the time step
         Xs.append(v)
-        ys.append(y.iloc[i + time_steps])
+        ys.append(X.iloc[i + time_steps].values)
 
     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
-
-df_scaled = df_cor
-df_scaled[df_scaled.columns[0]] = scaler.transform(df_scaled)
-train, test = train_test(df_scaled, 0.5)
-X, y = create_dataset(train, train, 30)
 
 
 def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
@@ -117,19 +102,21 @@ def create_model(cells, time_steps, num_features, dropout, input_loss='mae', inp
     model = Sequential([
         LSTM(cells, input_shape=(time_steps, num_features)),  # one LSTM layer
         Dropout(dropout),  # dropout regularization
-        RepeatVector(time_steps),  # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 30 times)
+        RepeatVector(time_steps),
+        # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 30 times)
         LSTM(cells, return_sequences=True),  # mirror the encoder in the reverse fashion to create the decoder
         Dropout(dropout),
         TimeDistributed(Dense(num_features))  # add time distributed layer to get output in correct shape.
         # creates a vector of length = num features output from previous layer.
-        ])
+    ])
     print(model.optimizer)
     model.compile(loss=input_loss, optimizer=input_optimizer)
 
     return model
 
 
-def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32, validation_split=0.1):
+def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
+                validation_split=0.1):
     """Fits the model to training data. Early stopping ensures that too many epochs of training are not used.
     Monitors the validation loss for improvements and stops training when improvement stops."""
     es = tf.keras.callbacks.EarlyStopping(monitor=monitor, patience=patience, mode=mode)
@@ -139,16 +126,16 @@ def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epoc
         batch_size=batch_size,  # this can be optimized later
         validation_split=validation_split,  # use 10% of data for validation, use 90% for training.
         callbacks=[es],  # early stopping similar to earlier
-        shuffle=False   # because order matters
+        shuffle=False  # because order matters
     )
 
     return history
 
 
-def evaluate_model(X_train, X_test):
+def evaluate_model(X_train, X_test, y_test):
     """Gets model predictions on training data and determines mean absolute error. Evaluates model on test data."""
     X_train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred-X_train), axis=1), columns=['Error'])
+    train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred - X_train), axis=1), columns=['Error'])
     model_eval = model.evaluate(X_test, y_test)
     X_test_pred = model.predict(X_test)
     test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
@@ -193,8 +180,10 @@ year = 2017
 # EXECUTE FUNCTIONS #
 #########################################
 df_full, df_raw, df_cor, normal_lbl, srs = get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_Data/")
-# Using corrected data to train detector. Remove -9999 values. Other rule-based algorithms could be considered here.
-df_cor = df_cor.replace(-9999, np.NaN)
+# Using corrected data to train detector. Remove -9999 values. Use subset of data without NaNs and data gaps.
+# Other rule-based algorithms could be considered here.
+df_cor = df_cor.loc['2017-01-01 00:00':'2017-07-01 00:00']
+# df_cor = df_cor.replace(-9999, np.NaN)
 
 # Scale data into new dataframe. Scale based on the entire dataset because our model training is on a very small subset
 scaler = create_scaler(df_cor)
@@ -211,50 +200,41 @@ print(y_train.shape)
 # Create and model and train to data
 timesteps = X_train.shape[1]
 num_features = X_train.shape[2]
-model = create_model(10, timesteps, num_features, 0.2)
+model = create_model(128, timesteps, num_features, 0.2)
 model.summary()
 history = train_model(X_train, y_train, patience=3)
 
-print(X.shape)
-print(y.shape)
-timesteps = X.shape[1]
-num_features = X.shape[2]
-model = create_model(128, timesteps, num_features, 0.2)
-history = train_model(X, y, patience=3)
 
-# Inspect data
-# plotting with plotly to have an interactive chart
-fig = go.Figure()
-# fig.add_trace(go.Scatter(x=df.datetime, y=df.cond, #fig.add_trace adds different types of plots to the same figure.
-fig.add_trace(go.Scatter(x=df_full.index, y=df_full.cond_cor,  # fig.add_trace adds different types of plots to the same figure.
-                    mode='lines',
-                    name='cond'))
-fig.update_layout(showlegend=True)
-fig.show()
-
-
-
-## Task 7: Plot Metrics and Evaluate the Model
-
+# Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
 plt.plot(history.history['loss'], label='Training Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# validation loss consistently lower than training loss. meaning underfit on training data- likely due to high dropout values that we used. could/should modify.
+# Create dataset on full corrected data
+X_full_data, y_full_data = create_sequenced_dataset(df_scaled, 10)
 
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_model(X_train, X_test)
+# Create dataset on full raw data. First scale according to existing scaler.
+df_raw_scaled = df_raw
+df_raw_scaled[df_raw_scaled.columns[0]] = scaler.transform(df_raw_scaled)
+X_raw, y_raw = create_sequenced_dataset(df_raw_scaled, 10)
+
+X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_model(X_train, X_full_data, y_full_data)
+X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_model(X_train, X_raw, y_raw)
+
 
 # look at the distribution of the errors using a distribution plot
+# could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
+# However, that is a set number of anomalies.
 sns.distplot(train_mae_loss, bins=50, kde=True)
 plt.show()
 # choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = 5
+threshold = 0.3
 sns.distplot(test_mae_loss, bins=50, kde=True)
 plt.show()
 
-test_score_df, anomalies = detect_anomalies(test, test_mae_loss, threshold)
+test_score_df, anomalies = detect_anomalies(df_raw_scaled, test_mae_loss, threshold)
 
 
 # OUTPUT RESULTS #
@@ -310,6 +290,16 @@ fig.add_trace(go.Scatter(x=test[time_steps:].index, y=scaler.inverse_transform(t
 fig.add_trace(go.Scatter(x=anomalies.index, y=scaler.inverse_transform(anomalies[anomalies.columns[0]]),
                     mode='markers',
                     name='Anomaly'))
+fig.update_layout(showlegend=True)
+fig.show()
+
+# Inspect data
+# plotting with plotly to have an interactive chart
+fig = go.Figure()
+# fig.add_trace(go.Scatter(x=df.datetime, y=df.cond, #fig.add_trace adds different types of plots to the same figure.
+fig.add_trace(go.Scatter(x=df_full.index, y=df_full.cond_cor,  # fig.add_trace adds different types of plots to the same figure.
+                    mode='lines',
+                    name='cond'))
 fig.update_layout(showlegend=True)
 fig.show()
 
