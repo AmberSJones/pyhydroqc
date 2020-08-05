@@ -1,7 +1,7 @@
 ################################
 # ARIMA DEVELOP AND DIAGNOSTIC #
 ################################
-# This code takes raw data and corrected data, applies an ARIMA time series model, identifies anomalies, outputs metrics
+# This code takes raw data, applies an ARIMA time series model, and identifies anomalies.
 
 print("ARIMA exploration script begin.")
 
@@ -17,15 +17,12 @@ from pandas.plotting import register_matplotlib_converters
 # plt.rcParams.update({'figure.figsize':(9,7), 'figure.dpi':120})
 
 
-
 def set_threshold(predict, alpha_in):
     """This function gets called in the arima_diagnose_detect function.
     Uses SARIMAX model predict object to determine threshold based on confidence interval and
     specified alpha level of confidence."""
     predict_ci = predict.conf_int(alpha=alpha_in)
     predict_ci.columns = ["lower", "upper"]
-    # residuals[0][0] = 0
-    predictions[0][0] = srs[0]
     predict_ci["lower"][0] = predict_ci["lower"][1]
 
     # this gives a constant interval for all points. Considering methods to vary the threshold with data/model
@@ -47,6 +44,8 @@ def arima_diagnose_detect(srs, p, d, q, summary, alpha="", threshold=""):
     residuals = pd.DataFrame(model_fit.resid)
     predict = model_fit.get_prediction()
     predictions = pd.DataFrame(predict.predicted_mean)
+    residuals[0][0] = 0
+    predictions[0][0] = srs[0]
 
     # set threshold
     if threshold == "":
@@ -121,17 +120,18 @@ print("q: "+str(q))
 
 # EXECUTE FUNCTIONS #
 #########################################
-
-
-
+# Get data
 df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
 
+# Run model
+threshold, model_fit, residuals, predictions, detected_anomaly = arima_diagnose_detect(df['raw'], p, d, q, threshold=10, summary=False)
+
+# Use events function to widen and number anomalous events
 df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
-# now run the model ...
-threshold, model_fit, residuals, predictions, detected_anomaly = arima_diagnose_detect(df['raw'], p, d, q, threshold=13, summary=False)
 df['detected_anomaly'] = detected_anomaly[0]
 df['detected_event'] = anomaly_utilities.anomaly_events(detected_anomaly[0])
 
+# Determine Metrics
 labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df)
 TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
     = anomaly_utilities.metrics(df, valid_detections, invalid_detections)
@@ -157,10 +157,10 @@ print("\nTime Series ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(srs, 'b', label='original data')
+plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(srs[~normal_lbl], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[anomDetn[0]],'r+', label='machine detected anomalies')
+plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(predictions[detected_anomaly[0]], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
