@@ -17,10 +17,30 @@ from pandas.plotting import register_matplotlib_converters
 # plt.rcParams.update({'figure.figsize':(9,7), 'figure.dpi':120})
 
 
-def set_threshold(predict, alpha_in):
-    """This function gets called in the arima_diagnose_detect function.
-    Uses SARIMAX model predict object to determine threshold based on confidence interval and
-    specified alpha level of confidence."""
+def build_arima_model(data, p, d, q, summary):
+    """Builds an ARIMA model."""
+    model = api.tsa.SARIMAX(data, order=(p, d, q))
+    model_fit = model.fit(disp=0)
+    residuals = pd.DataFrame(model_fit.resid)
+    predict = model_fit.get_prediction()
+    predictions = pd.DataFrame(predict.predicted_mean)
+    residuals[0][0] = 0
+    predictions[0][0] = data[0]
+
+    # output summary
+    if summary:
+        print('\n\n')
+        print(model_fit.summary())
+        print('\n\nresiduals description:')
+        print(residuals.describe())
+
+    return model_fit, residuals, predictions
+
+
+def set_threshold(model_fit, alpha_in):
+    """Determines threshold for anomaly detection based on confidence interval and specified alpha value using
+    SARIMAX model predict object."""
+    predict = model_fit.get_prediction()
     predict_ci = predict.conf_int(alpha=alpha_in)
     predict_ci.columns = ["lower", "upper"]
     predict_ci["lower"][0] = predict_ci["lower"][1]
@@ -35,36 +55,18 @@ def set_threshold(predict, alpha_in):
     return threshold
 
 
-def arima_diagnose_detect(srs, p, d, q, summary, alpha="", threshold=""):
-    """Builds an ARIMA model, determines threshold levels, identifies anomalies."""
-    # BUILD MODEL
-    model = api.tsa.statespace.SARIMAX(srs, order=(p, d, q))
-    model_fit = model.fit(disp=0)
-    # find residual errors and model predictions
-    residuals = pd.DataFrame(model_fit.resid)
-    predict = model_fit.get_prediction()
-    predictions = pd.DataFrame(predict.predicted_mean)
-    residuals[0][0] = 0
-    predictions[0][0] = srs[0]
-
-    # set threshold
-    if threshold == "":
-        threshold = set_threshold(predict, alpha)
-
+def detect_anomalies(residuals, threshold, summary=True):
+    """Compares residuals to threshold to identify anomalies. Can use set threshold level or threshold
+    determined by set_threshold function."""
     # DETERMINE ANOMALIES
     detected_anomaly = np.abs(residuals) > threshold  # gives bools
     detected_anomaly[0][0] = False  # set 1st value to false
-
     # output summary
     if summary:
         print('\n\n')
-        print(model_fit.summary())
-        model_fit.plot_predict(dynamic=False)
-        print('\n\nresiduals description:')
-        print(residuals.describe())
-        print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
+        print('\nratio of detections: %f' % ((sum(detected_anomaly[0])/len(detected_anomaly))*100), '%')
 
-    return threshold, model_fit, residuals, predictions, detected_anomaly
+    return detected_anomaly
 
 
 #########################################
@@ -124,7 +126,11 @@ print("q: "+str(q))
 df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
 
 # Run model
-threshold, model_fit, residuals, predictions, detected_anomaly = arima_diagnose_detect(df['raw'], p, d, q, threshold=10, summary=False)
+model_fit, residuals, predictions = build_arima_model(df['raw'], p, d, q, summary=True)
+
+# Determine threshold and detect anomalies
+threshold = set_threshold(model_fit, 0.025)
+detected_anomaly = detect_anomalies(residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
