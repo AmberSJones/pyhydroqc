@@ -171,6 +171,7 @@ df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/
 # Using corrected data to train detector. Remove -9999 values. Use subset of data without NaNs and data gaps.
 # Other rule-based algorithms could be considered here.
 # df_cor = df_cor.replace(-9999, np.NaN)
+# TODO: generalize from the specific dates
 df_sub = df.loc['2017-01-01 00:00':'2017-07-01 00:00']
 
 # Scale data into new column. Scale based on the entire dataset because our model training is on a very small subset

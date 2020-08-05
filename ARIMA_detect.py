@@ -1,7 +1,7 @@
 ################################
 # ARIMA DEVELOP AND DIAGNOSTIC #
 ################################
-# This code takes raw data, applies an ARIMA time series model, and identifies anomalies.
+# This code takes raw (and corrected if applicable) data, applies an ARIMA time series model, and identifies anomalies.
 
 print("ARIMA exploration script begin.")
 
