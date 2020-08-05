@@ -3,8 +3,9 @@
 ################################
 # This code takes raw data and corrected data, applies an ARIMA time series model, identifies anomalies, outputs metrics
 
-# print("ARIMA exploration script begin.")
-import os
+print("ARIMA exploration script begin.")
+
+import anomaly_utilities
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -16,26 +17,6 @@ from pandas.plotting import register_matplotlib_converters
 # plt.rcParams.update({'figure.figsize':(9,7), 'figure.dpi':120})
 
 
-def get_data(site, sensor, year, path=""):
-    """Imports a single year of data based on files named by site, sensor/variable, and year.
-    Labels data as anomalous. Generates a series from the data frame."""
-    # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
-    if path == "":
-        path = os.getcwd() + "/"
-    df = pd.read_csv(path + site + str(year) + ".csv",
-                     skipinitialspace=True,
-                     engine='python',
-                     header=0,
-                     index_col=0,
-                     parse_dates=True,
-                     infer_datetime_format=True)
-    # makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
-    normal_lbl = df[sensor + "_qual"].isnull()
-    # generate series from dataframe - time indexed values
-    srs = pd.Series(df[sensor])
-
-    return df, normal_lbl, srs
-
 
 def set_threshold(predict, alpha_in):
     """This function gets called in the arima_diagnose_detect function.
@@ -43,7 +24,7 @@ def set_threshold(predict, alpha_in):
     specified alpha level of confidence."""
     predict_ci = predict.conf_int(alpha=alpha_in)
     predict_ci.columns = ["lower", "upper"]
-    residuals[0][0] = 0
+    # residuals[0][0] = 0
     predictions[0][0] = srs[0]
     predict_ci["lower"][0] = predict_ci["lower"][1]
 
@@ -72,8 +53,8 @@ def arima_diagnose_detect(srs, p, d, q, summary, alpha="", threshold=""):
         threshold = set_threshold(predict, alpha)
 
     # DETERMINE ANOMALIES
-    anomDetn = np.abs(residuals) > threshold  # gives bools
-    anomDetn[0][0] = False  # set 1st value to false
+    detected_anomaly = np.abs(residuals) > threshold  # gives bools
+    detected_anomaly[0][0] = False  # set 1st value to false
 
     # output summary
     if summary:
@@ -84,124 +65,8 @@ def arima_diagnose_detect(srs, p, d, q, summary, alpha="", threshold=""):
         print(residuals.describe())
         print('\nratio of detections: %f' % ((sum(anomDetn[0])/len(srs))*100), '%')
 
-    return threshold, model_fit, residuals, predictions, anomDetn
+    return threshold, model_fit, residuals, predictions, detected_anomaly
 
-
-def determine_events(normal_lbl):
-    """Input to the windowing function. Searches through expert labeled data and counts groups of immediately
-    consecutively labeled data points as anomalous events."""
-    # TODO: uses +- 1 to widen window before and after the event. Should make this a parameter.
-    # TODO: if an event is > some percent of the data, output a warning.
-    event_count = 0
-    events = []
-    events.append(0)
-    for i in range(1, len(normal_lbl)):
-       if not(normal_lbl[i]):
-        if normal_lbl[i-1]:
-          event_count += 1
-          events[i-1] = event_count
-        events.append(event_count)
-       else:
-        if not(normal_lbl[i-1]):
-          events.append(event_count)
-        else:
-          events.append(0)
-
-    return events
-
-
-def determine_detections(anomDetn):
-    """Input to the windowing function. Searches through detected events and counts groups of immediately
-    consecutively labeled data points as anomalous events."""
-    # TODO: merge this function into determine_events
-    det_count = 0
-    det_events = []
-    det_events.append(0)
-    for i in range(1, len(anomDetn)):
-      if anomDetn[0][i]:  # is a detection
-        if not(anomDetn[0][i-1]):  # prev is not detection
-          det_count += 1
-          det_events[i-1] = det_count
-        det_events.append(det_count)  # append detection number
-      else:  # is not a detection
-        if anomDetn[0][i-1]:  # prev is a detection
-          det_events.append(det_count)  # append det number
-        else:
-          det_events.append(0)  # not a detection
-
-    return det_events
-
-
-def compare_lbl_detns(anomLbl, anomDetn, anomDetns):
-    """Input to the windowing function. Compares the widened/windowed events between labels and detections."""
-    # TODO: Understand need for and difference between anomDetn and anomDetns
-    # generate lists of detected anomalies and valid detections
-    detected_anomalies = [0]
-    valid_detections = [0]
-    for i in range(0, len(anomDetn)):
-      if anomDetn[0][i]: # anomaly detected
-        if 0!=anomLbl[0][i]: # labeled as anomaly
-          if not(detected_anomalies[-1] == anomLbl[0][i]):  # if not already in list of detected anomalies
-            detected_anomalies.append(anomLbl[0][i])
-          if not(valid_detections[-1] == anomDetns[0][i]):  # if not already in list of valid detections
-            valid_detections.append(anomDetns[0][i])
-
-    detected_anomalies.pop(0)
-    valid_detections.pop(0)
-
-    return anomDetns, detected_anomalies, valid_detections
-
-
-def false_detections(anomDetns, valid_detections):
-    """Input to the windowing function. Determines detected events that were not labeled events."""
-    invalid_detections = []
-    det_ind = 0
-    for i in range(1, max(anomDetns[0])):
-        if (det_ind < len(valid_detections)):
-            if i == valid_detections[det_ind]:
-                det_ind += 1
-            else:
-                invalid_detections.append(i)
-
-    return invalid_detections
-
-
-def windowing(srs, normal_lbl, anomDetn):
-    """Widens the window before or after a detection for assigning an anomaly label."""
-    # create lists of labeled events and detected events. data frame is same length as full data series.
-    label_events = determine_events(normal_lbl)
-    anomLbl = pd.DataFrame(data=label_events, index=normal_lbl.index)
-    # add index to data frame of individually detected anomalies. fix missing values
-    anomDetn = anomDetn.reindex(anomLbl.index)
-    anomDetn[anomDetn.isnull()] = True
-    # determine detected events and reindex
-    det_events = determine_detections(anomDetn)
-    anomDetns = pd.DataFrame(data=det_events, index=normal_lbl.index)
-    # compare labeled and detected events
-    anomDetns, detected_anomalies, valid_detections = compare_lbl_detns(anomLbl, anomDetn, anomDetns)
-    # TODO: check for empty detected_anomalies and valid_detections
-    # determine detected but not labeled events
-    invalid_detections = false_detections(anomDetns, valid_detections)
-
-    return anomLbl, anomDetn, anomDetns, detected_anomalies, invalid_detections
-
-
-def metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections):
-    """Calculates metrics for anomaly detection."""
-    TruePositives = sum(anomLbl[0].value_counts()[detected_anomalies])
-    FalseNegatives = len(anomDetn) - anomLbl[0].value_counts()[0] - TruePositives
-    FalsePositives = sum(anomDetns[0].value_counts()[invalid_detections])
-    TrueNegatives = len(anomDetn) - TruePositives - FalseNegatives - FalsePositives
-
-    PRC = PPV = TruePositives / (TruePositives + FalsePositives)
-    NPV = TrueNegatives / (TrueNegatives + FalseNegatives)
-    ACC = (TruePositives + TrueNegatives) / len(anomDetn)
-    RCL = TruePositives / (TruePositives + FalseNegatives)
-    f1 = 2.0 * (PRC * RCL) / (PRC + RCL)
-    f2 = 5.0 * TruePositives / (5.0 * TruePositives + 4.0 * FalseNegatives + FalsePositives)
-    # ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
-
-    return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
 
 #########################################
 # IMPLEMENTATION AND FUNCTION EXECUTION #
@@ -256,11 +121,20 @@ print("q: "+str(q))
 
 # EXECUTE FUNCTIONS #
 #########################################
-df, normal_lbl, srs = get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
-threshold, model_fit, residuals, predictions, anomDetn = arima_diagnose_detect(srs, p, d, q, alpha=0.5, summary=True)
-anomLbl, anomDetn, anomDetns, detected_anomalies, invalid_detections = windowing(srs, normal_lbl, anomDetn)
+
+
+
+df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+
+df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
+# now run the model ...
+threshold, model_fit, residuals, predictions, detected_anomaly = arima_diagnose_detect(df['raw'], p, d, q, threshold=13, summary=False)
+df['detected_anomaly'] = detected_anomaly[0]
+df['detected_event'] = anomaly_utilities.anomaly_events(detected_anomaly[0])
+
+labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df)
 TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
-    = metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections)
+    = anomaly_utilities.metrics(df, valid_detections, invalid_detections)
 
 # OUTPUT RESULTS #
 #########################################
@@ -290,7 +164,6 @@ plt.plot(predictions[anomDetn[0]],'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
-
 
 
 # EXPLORING SEASONAL ARIMA. Seems like seasonal would be useful given the diel fluctuation of ambient/aquatic variables.

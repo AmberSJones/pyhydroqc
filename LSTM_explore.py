@@ -31,29 +31,6 @@ np.random.seed(1)
 print('Tensorflow version:', tf.__version__)
 
 
-def get_data(site, sensor, year, path=""):
-    """Imports a single year of data based on files named by site, sensor/variable, and year.
-    Labels data as anomalous. Generates a series from the data frame."""
-    # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
-    if path == "":
-        path = os.getcwd() + "/"
-    df_full = pd.read_csv(path + site + str(year) + ".csv",
-                          skipinitialspace=True,
-                          engine='python',
-                          header=0,
-                          index_col=0,
-                          parse_dates=True,
-                          infer_datetime_format=True)
-    # makes one-dimensional data frame of booleans based on qualifier column indicating normal (TRUE) or not (FALSE)
-    normal_lbl = df_full[sensor + "_qual"].isnull()
-    # generate data frames and series from dataframe - time indexed values of raw and corrected data
-    df_raw = df_full[[sensor]]
-    df_cor = df_full[[sensor + "_cor"]]
-    srs = pd.Series(df_full[sensor])
-
-    return df_full, df_raw, df_cor, normal_lbl, srs
-
-
 def create_scaler(data):
     """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
     scaler = StandardScaler()
@@ -133,28 +110,52 @@ def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epoc
 
 
 def evaluate_model(X_train, X_test, y_test):
-    """Gets model predictions on training data and determines mean absolute error. Evaluates model on test data."""
+    """Gets model predictions on training data and test data.
+    Determines mean absolute error to evaluate model on training and test data."""
     X_train_pred = model.predict(X_train)
     train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred - X_train), axis=1), columns=['Error'])
     model_eval = model.evaluate(X_test, y_test)
+
     X_test_pred = model.predict(X_test)
+    predictions = pd.DataFrame(X_test_pred[:, 0])
     test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
 
-    return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss
+
+    return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
 
 
-def detect_anomalies(test, test_mae_loss, threshold):
+
+def detect_anomalies(test, predictions, test_mae_loss, threshold):
     """Examine distribution of model errors to select threshold for anomalies.
     Add columns for loss value, threshold, anomalous T/F.
     Creates data frame of anomalies to explore with more granularity."""
     test_score_df = pd.DataFrame(test[time_steps:])
     # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
+    test_score_df['prediction'] = np.array(predictions)
     test_score_df['loss'] = test_mae_loss
     test_score_df['threshold'] = threshold
     test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
     anomalies = test_score_df[test_score_df.anomaly == True]
 
     return test_score_df, anomalies
+
+
+def metrics(anomDetns, anomDetn, anomLbl, detected_anomalies, invalid_detections):
+    """Calculates metrics for anomaly detection."""
+    TruePositives = sum(anomLbl[0].value_counts()[detected_anomalies])
+    FalseNegatives = len(anomDetn) - anomLbl[0].value_counts()[0] - TruePositives
+    FalsePositives = sum(anomDetns[0].value_counts()[invalid_detections])
+    TrueNegatives = len(anomDetn) - TruePositives - FalseNegatives - FalsePositives
+
+    PRC = PPV = TruePositives / (TruePositives + FalsePositives)
+    NPV = TrueNegatives / (TrueNegatives + FalseNegatives)
+    ACC = (TruePositives + TrueNegatives) / len(anomDetn)
+    RCL = TruePositives / (TruePositives + FalseNegatives)
+    f1 = 2.0 * (PRC * RCL) / (PRC + RCL)
+    f2 = 5.0 * TruePositives / (5.0 * TruePositives + 4.0 * FalseNegatives + FalsePositives)
+    # ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
+
+    return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
 
 
 #########################################
@@ -212,16 +213,12 @@ plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# Create dataset on full corrected data
-X_full_data, y_full_data = create_sequenced_dataset(df_scaled, 10)
-
 # Create dataset on full raw data. First scale according to existing scaler.
 df_raw_scaled = df_raw
 df_raw_scaled[df_raw_scaled.columns[0]] = scaler.transform(df_raw_scaled)
 X_raw, y_raw = create_sequenced_dataset(df_raw_scaled, 10)
 
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_model(X_train, X_full_data, y_full_data)
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_model(X_train, X_raw, y_raw)
+X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = evaluate_model(X_train, X_raw, y_raw)
 
 
 # look at the distribution of the errors using a distribution plot
@@ -230,11 +227,13 @@ X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss = evaluate_
 sns.distplot(train_mae_loss, bins=50, kde=True)
 plt.show()
 # choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = 0.3
+threshold = 0.8
 sns.distplot(test_mae_loss, bins=50, kde=True)
 plt.show()
 
-test_score_df, anomalies = detect_anomalies(df_raw_scaled, test_mae_loss, threshold)
+test_score_df, anomalies = detect_anomalies(df_raw_scaled, predictions, test_mae_loss, threshold)
+test_score_df["pred"] = scaler.inverse_transform(predictions)
+pred = test_score_df["pred"]
 
 
 # OUTPUT RESULTS #
@@ -242,7 +241,7 @@ test_score_df, anomalies = detect_anomalies(df_raw_scaled, test_mae_loss, thresh
 print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor)
 print('Year: ' + str(year))
-print('Parameters: ARIMA(%i, %i, %i), Threshold = %f' %(p, d, q, threshold))
+print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
 print('PPV = %f' % PPV)
 print('NPV = %f' % NPV)
 print('Acc = %f' % ACC)
@@ -252,55 +251,52 @@ print('FP  = %i' % FalsePositives)
 print('FN  = %i' % FalseNegatives)
 print('F1 = %f' % f1)
 print('F2 = %f' % f2)
-print("\nTime Series ARIMA script end.")
+print("\n LSTM script end.")
 
 
 # GENERATE PLOTS #
 #########################################
 plt.figure()
 plt.plot(srs, 'b', label='original data')
-plt.plot(predictions, 'c', label='predicted values')
+plt.plot(test_score_df["pred"], 'c', label='predicted values')
 plt.plot(srs[~normal_lbl], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[anomDetn[0]],'r+', label='machine detected anomalies')
+plt.plot(pred[test_score_df["anomaly"]], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
 
 
-
-
-
-
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=test[time_steps:].index, y=test_score_df.loss,
-                    mode='lines',
-                    name='Test Loss'))
-fig.add_trace(go.Scatter(x=test[time_steps:].index, y=test_score_df.threshold, # add a line to indicate the threshold.
-                    mode='lines',
-                    name='Threshold'))
-fig.update_layout(showlegend=True)
-fig.show()
-
-
-# look at anomalies in the test data
-fig = go.Figure()
-fig.add_trace(go.Scatter(x=test[time_steps:].index, y=scaler.inverse_transform(test[time_steps:][test.columns[0]]),
-                    mode='lines',
-                    name=sensor))
-fig.add_trace(go.Scatter(x=anomalies.index, y=scaler.inverse_transform(anomalies[anomalies.columns[0]]),
-                    mode='markers',
-                    name='Anomaly'))
-fig.update_layout(showlegend=True)
-fig.show()
-
-# Inspect data
-# plotting with plotly to have an interactive chart
-fig = go.Figure()
-# fig.add_trace(go.Scatter(x=df.datetime, y=df.cond, #fig.add_trace adds different types of plots to the same figure.
-fig.add_trace(go.Scatter(x=df_full.index, y=df_full.cond_cor,  # fig.add_trace adds different types of plots to the same figure.
-                    mode='lines',
-                    name='cond'))
-fig.update_layout(showlegend=True)
-fig.show()
+# PLOTTING WITH PLOTLY - allows for interactive plots with zoom, pan, etc.
+# fig = go.Figure()
+# fig.add_trace(go.Scatter(x=test[time_steps:].index, y=test_score_df.loss,
+#                     mode='lines',
+#                     name='Test Loss'))
+# fig.add_trace(go.Scatter(x=test[time_steps:].index, y=test_score_df.threshold, # add a line to indicate the threshold.
+#                     mode='lines',
+#                     name='Threshold'))
+# fig.update_layout(showlegend=True)
+# fig.show()
+#
+#
+# # look at anomalies in the test data
+# fig = go.Figure()
+# fig.add_trace(go.Scatter(x=test[time_steps:].index, y=scaler.inverse_transform(test[time_steps:][test.columns[0]]),
+#                     mode='lines',
+#                     name=sensor))
+# fig.add_trace(go.Scatter(x=anomalies.index, y=scaler.inverse_transform(anomalies[anomalies.columns[0]]),
+#                     mode='markers',
+#                     name='Anomaly'))
+# fig.update_layout(showlegend=True)
+# fig.show()
+#
+# # Inspect data
+# # plotting with plotly to have an interactive chart
+# fig = go.Figure()
+# # fig.add_trace(go.Scatter(x=df.datetime, y=df.cond, #fig.add_trace adds different types of plots to the same figure.
+# fig.add_trace(go.Scatter(x=df_full.index, y=df_full.cond_cor,  # fig.add_trace adds different types of plots to the same figure.
+#                     mode='lines',
+#                     name='cond'))
+# fig.update_layout(showlegend=True)
+# fig.show()
 
 
