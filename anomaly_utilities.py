@@ -14,8 +14,17 @@ pd.options.mode.chained_assignment = None
 
 
 def get_data(site, sensor, year, path=""):
-    """Imports a single year of data based on files named by site, sensor/variable, and year.
-    Labels data as anomalous. Generates a series from the data frame."""
+    """
+    get_data imports a single year of data based on files named by site, sensor/variable, and year.
+        Labels data as anomalous. Generates a series from the data frame.
+    site (string): name of the data collection site
+    sensor (string): name of the sensor/variable data of interest
+    year (integer): the year of interest
+    path (string): path to .csv file containing the data of interest
+    df_full (pandas DataFrame): has 3 columns for each variable/sensor in the .csv file
+        column names are in the format: '<sensor>', '<sensor>_cor', '<sensor>_qual'
+    df (pandas DataFrame): has 3 columns for the variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'
+    """
     # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
     if path == "":
         path = os.getcwd() + "/"
@@ -32,32 +41,47 @@ def get_data(site, sensor, year, path=""):
     df['cor'] = df_full[[sensor + "_cor"]]
     df['labeled_anomaly'] = ~df_full[sensor + "_qual"].isnull()
 
-    return df_full, df #df_raw, df_cor, normal_lbl, srs
+    return df_full, df
 
 
-def anomaly_events(anomaly):
-    """anomaly is a boolean array of labeled or detected anomalies where True (1) = anomalous data point.
-    e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 1 1 1 1
-    event is an array of enumerations corresponding to each group of consecutive anomalous points.
-    e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 2 2 2 0 0 0 3 0 0 0 4 4 4 4
-    Function searches through data and counts groups of immediately consecutively labeled data points
-    as anomalous events. Input to the windowing function. """
-    # TODO: uses +- 1 to widen window before and after the event. Should make this a parameter.
-    # TODO: if an event is > some percent of the data, output a warning.
+def anomaly_events(anomaly, wf=1, sf=0.05):
+    """
+    anomaly_events function searches through data and counts groups of immediately consecutively labeled data points
+        as anomalous events. Input to the windowing function.
+    anomaly (boolean array): labeled or detected anomalies where True (1) = anomalous data point.
+        e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 1 1 1 1
+    wf (assumed to be a positive integer): a widening factor that is used to determine how much to widen each event
+        before and after the true values.
+    sf (assumed to be a ratio between 0.0-1.0): a significance factor - used to warn user when an event size is greater
+        than this ratio compared to the entire data set
+    event (integer array): enumerated event labels corresponding to each widened group of consecutive anomalous points.
+        e.g., 0 0 0 1 1 1 1 1 1 0 0 0 0 0 2 2 2 2 2 0 3 3 3 0 4 4 4 4 4
+    """
+    # initialize event variables
     event_count = 0
     event = []
-    event.append(0)
-    for i in range(1, len(anomaly)):
-        if anomaly[i]:
-            if ~anomaly[i-1]:
-                event_count += 1
-                event[i-1] = event_count
-            event.append(event_count)
-        else:
-            if anomaly[i-1]:
-                event.append(event_count)
-            else:
-                event.append(0)
+    # handle the first wf data points in the entire time series
+    for i in range(0, wf):
+        event.append(0)
+
+    # search through data assigning each point an event (positive integer) or 0 for points not belonging to an event
+    for i in range(wf, len(anomaly) - wf):
+        if (sum(anomaly[i-wf:i+wf+1]) != 0):  # if there are anomalies within the wf window
+            if (event[-1] == 0):  # if the last event value is 0, then a new event has been encountered
+                event_count += 1  # increment the event counter
+            event.append(event_count)  # append the event array with the current event number
+        else:  # no anomalies are within the wf window
+            event.append(0)  # this data point does not belong to an event, append 0
+
+    # handle the last wf data points in the entire time series
+    for i in range(0, wf):
+        event.append(0)
+
+    # determine if an event is greater than the significance factor
+    event_values = pd.Series(event).value_counts()
+    for i in range(1, len(event_values)):
+        if event_values[i] > (sf * len(event)):
+            print("WARNING: an event was found to be greater than the significance factor!")
 
     return event
 
