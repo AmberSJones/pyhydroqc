@@ -95,7 +95,7 @@ def compare_labeled_detected(df):
     detected_in_labeled
     valid_detections
     invalid_detections
-    Input to the windowing function. Compares the widened/windowed events between labels and detections."""
+    Compares the widened/windowed events between labels and detections."""
 
     # generate lists of detected anomalies and valid detections
     labeled_in_detected = [0]
@@ -145,4 +145,66 @@ def metrics(df, valid_detections, invalid_detections):
     # ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
 
     return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
+
+
+def group_bools(df):
+    """ group_bools is used for anomaly correction, indexing each grouping of anomalies/normal points
+    df is a data frame with required column:
+    'detected_anomaly': boolean array of classified data points
+    Outputs:
+    df with additional column: 'groups' of boolean groupings
+    """
+
+    # initialize the 'groups' column to zeros
+    df['groups'] = 0
+    # initialize placeholder for boolean state of previous group
+    last = df.iloc[0]['detected_anomaly']
+    # initialize the group index to zero
+    gi = 0
+
+    # loop over every row in dataframe
+    for i in range(0, len(df['groups'])):
+
+        # if the anomaly bool has changed
+        if last != df.iloc[i]['detected_anomaly']:
+            gi += 1  # increment the group index
+        # assign this row to the group index
+        df.iloc[i, df.columns.get_loc('groups')] = gi
+
+        # update last boolean state
+        last = df.iloc[i]['detected_anomaly']
+
+    return df
+
+
+def xfade(xfor, xbac):
+    """ the xfade ("cross-fade") function blends two data sets of matching length
+    xfor is the data to be more weighted at the front
+    xbac is the data to be more weighted at the back
+    Outputs:
+    x is the blended data
+    """
+    # if arrays are not matching in length
+    if (len(xfor) != len(xbac)):
+        # send error message
+        print("ERROR in xfade() call: mismatched array lengths!")
+    else:
+        # initialize a weighting function
+        fader = []
+
+        # loop over the length of data
+        for i in range(0, len(xfor)):
+            # calculate the weights at each index
+            fader.append((i + 1) / (len(xfor)+1))
+        # fader should be a ramp with positive slope between 0.0 and 1.0
+        # use this to fade the back data
+        xbac_faded = np.multiply(xbac, fader)
+
+        # now flip the ramp to negative slope and fade the front data
+        fader = np.flip(fader)
+        xfor_faded = np.multiply(xfor, fader)
+
+        # add the results
+        x = xfor_faded + xbac_faded
+    return x
 
