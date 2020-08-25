@@ -6,19 +6,13 @@
 print("LSTM exploration script begin.")
 
 import anomaly_utilities
-from random import randint
+import LSTM_utilities
 import numpy as np
 import tensorflow as tf
 import pandas as pd
 import seaborn as sns
 from matplotlib.pylab import rcParams
 import matplotlib.pyplot as plt
-import plotly.express as px
-import plotly.graph_objects as go
-from sklearn.preprocessing import StandardScaler
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDistributed
-import talos
 import plotly.io as pio
 pio.renderers.default = "browser"
 pd.options.mode.chained_assignment = None
@@ -33,115 +27,113 @@ print('Tensorflow version:', tf.__version__)
 
 # PREPROCESSING FUNCTIONS #
 ################################
-
-def create_scaler(data):
-    """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
-    scaler = StandardScaler()
-    scaler = scaler.fit(data)
-
-    return scaler
-
-
-def create_training_dataset(X, training_samples="", time_steps=10):
-    """Splits data into training and testing data based on random selection.
-    Reshapes data to temporalize it into (samples, timestamps, features).
-    - Samples is the number of rows/observations. Training_samples is the number of observations used for training.
-    - Time stamps defines a sequence of how far back to consider for each sample/row.
-    - Features refers to the number of columns/variables."""
-    Xs, ys = [], []  # start empty list
-    if training_samples == "":
-        training_samples = int(len(X) * 0.10)
-
-    # create sample sequences from a randomized subset of the data series for training
-    for i in range(training_samples):  # for every sample sequence to be created
-        j = randint(0, len(X) - time_steps - 2)
-        v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
-        ys.append(X.iloc[j + time_steps])
-        Xs.append(v)
-
-    return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
-
-
-def create_sequenced_dataset(X, time_steps=10):
-    """Reshapes data to temporalize it into (samples, timestamps, features).
-    Time stamps defines a sequence of how far back to consider for each sample/row.
-    Features refers to the number of columns/variables."""
-    Xs, ys = [], []  # start empty list
-    for i in range(len(X) - time_steps):  # loop within range of data frame minus the time steps
-        v = X.iloc[i:(i + time_steps)].values  # data from i to end of the time step
-        Xs.append(v)
-        ys.append(X.iloc[i + time_steps].values)
-
-    return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
-
-
-def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
-    """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
-    Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
-    Uses autoencoder by mirroring/reversing encoder to be a decoder."""
-    model = Sequential([
-        LSTM(cells, input_shape=(time_steps, num_features)),  # one LSTM layer
-        Dropout(dropout),  # dropout regularization
-        RepeatVector(time_steps),
-        # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 30 times)
-        LSTM(cells, return_sequences=True),  # mirror the encoder in the reverse fashion to create the decoder
-        Dropout(dropout),
-        TimeDistributed(Dense(num_features))  # add time distributed layer to get output in correct shape.
-        # creates a vector of length = num features output from previous layer.
-    ])
-    print(model.optimizer)
-    model.compile(loss=input_loss, optimizer=input_optimizer)
-
-    return model
-
-
-def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
-                validation_split=0.1):
-    """Fits the model to training data. Early stopping ensures that too many epochs of training are not used.
-    Monitors the validation loss for improvements and stops training when improvement stops."""
-    es = tf.keras.callbacks.EarlyStopping(monitor=monitor, patience=patience, mode=mode)
-    history = model.fit(
-        X_train, y_train,
-        epochs=epochs,  # just set to something high, early stopping will monitor.
-        batch_size=batch_size,  # this can be optimized later
-        validation_split=validation_split,  # use 10% of data for validation, use 90% for training.
-        callbacks=[es],  # early stopping similar to earlier
-        shuffle=False  # because order matters
-    )
-
-    return history
-
-
-def evaluate_model(X_train, X_test, y_test):
-    """Gets model predictions on training data and test data.
-    Determines mean absolute error to evaluate model on training and test data."""
-    X_train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred - X_train), axis=1), columns=['Error'])
-    model_eval = model.evaluate(X_test, y_test)
-
-    X_test_pred = model.predict(X_test)
-    predictions = pd.DataFrame(X_test_pred[:, 0])
-    test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
-
-
-    return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
-
-
-
-def detect_anomalies(test, predictions, test_mae_loss, threshold):
-    """Examine distribution of model errors to select threshold for anomalies.
-    Add columns for loss value, threshold, anomalous T/F.
-    Creates data frame of anomalies to explore with more granularity."""
-    test_score_df = pd.DataFrame(test[time_steps:])
-    # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
-    test_score_df['prediction'] = np.array(predictions)
-    test_score_df['loss'] = test_mae_loss
-    test_score_df['threshold'] = threshold
-    test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
-    anomalies = test_score_df[test_score_df.anomaly == True]
-
-    return test_score_df, anomalies
-
+#
+# def create_scaler(data):
+#     """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
+#     scaler = StandardScaler()
+#     scaler = scaler.fit(data)
+#
+#     return scaler
+#
+#
+# def create_training_dataset(X, training_samples="", time_steps=10):
+#     """Splits data into training and testing data based on random selection.
+#     Reshapes data to temporalize it into (samples, timestamps, features).
+#     - Samples is the number of rows/observations. Training_samples is the number of observations used for training.
+#     - Time stamps defines a sequence of how far back to consider for each sample/row.
+#     - Features refers to the number of columns/variables."""
+#     Xs, ys = [], []  # start empty list
+#     if training_samples == "":
+#         training_samples = int(len(X) * 0.10)
+#
+#     # create sample sequences from a randomized subset of the data series for training
+#     for i in range(training_samples):  # for every sample sequence to be created
+#         j = randint(0, len(X) - time_steps - 2)
+#         v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
+#         ys.append(X.iloc[j + time_steps])
+#         Xs.append(v)
+#
+#     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
+#
+#
+# def create_sequenced_dataset(X, time_steps=10):
+#     """Reshapes data to temporalize it into (samples, timestamps, features).
+#     Time stamps defines a sequence of how far back to consider for each sample/row.
+#     Features refers to the number of columns/variables."""
+#     Xs, ys = [], []  # start empty list
+#     for i in range(len(X) - time_steps):  # loop within range of data frame minus the time steps
+#         v = X.iloc[i:(i + time_steps)].values  # data from i to end of the time step
+#         Xs.append(v)
+#         ys.append(X.iloc[i + time_steps].values)
+#
+#     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
+#
+#
+# def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
+#     """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
+#     Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
+#     Uses autoencoder by mirroring/reversing encoder to be a decoder."""
+#     model = Sequential([
+#         LSTM(cells, input_shape=(time_steps, num_features)),  # one LSTM layer
+#         Dropout(dropout),  # dropout regularization
+#         RepeatVector(time_steps),
+#         # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 30 times)
+#         LSTM(cells, return_sequences=True),  # mirror the encoder in the reverse fashion to create the decoder
+#         Dropout(dropout),
+#         TimeDistributed(Dense(num_features))  # add time distributed layer to get output in correct shape.
+#         # creates a vector of length = num features output from previous layer.
+#     ])
+#     print(model.optimizer)
+#     model.compile(loss=input_loss, optimizer=input_optimizer)
+#
+#     return model
+#
+#
+# def train_model(X_train, y_train, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
+#                 validation_split=0.1):
+#     """Fits the model to training data. Early stopping ensures that too many epochs of training are not used.
+#     Monitors the validation loss for improvements and stops training when improvement stops."""
+#     es = tf.keras.callbacks.EarlyStopping(monitor=monitor, patience=patience, mode=mode)
+#     history = model.fit(
+#         X_train, y_train,
+#         epochs=epochs,  # just set to something high, early stopping will monitor.
+#         batch_size=batch_size,  # this can be optimized later
+#         validation_split=validation_split,  # use 10% of data for validation, use 90% for training.
+#         callbacks=[es],  # early stopping similar to earlier
+#         shuffle=False  # because order matters
+#     )
+#
+#     return history
+#
+#
+# def evaluate_model(X_train, X_test, y_test):
+#     """Gets model predictions on training data and test data.
+#     Determines mean absolute error to evaluate model on training and test data."""
+#     X_train_pred = model.predict(X_train)
+#     train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred - X_train), axis=1), columns=['Error'])
+#     model_eval = model.evaluate(X_test, y_test)
+#
+#     X_test_pred = model.predict(X_test)
+#     predictions = pd.DataFrame(X_test_pred[:, 0])
+#     test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
+#
+#     return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
+#
+#
+# def detect_anomalies(test, predictions, test_mae_loss, threshold):
+#     """Examine distribution of model errors to select threshold for anomalies.
+#     Add columns for loss value, threshold, anomalous T/F.
+#     Creates data frame of anomalies to explore with more granularity."""
+#     test_score_df = pd.DataFrame(test[time_steps:])
+#     # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
+#     test_score_df['prediction'] = np.array(predictions)
+#     test_score_df['loss'] = test_mae_loss
+#     test_score_df['threshold'] = threshold
+#     test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
+#     anomalies = test_score_df[test_score_df.anomaly == True]
+#
+#     return test_score_df, anomalies
+#
 
 #########################################
 # IMPLEMENTATION AND FUNCTION EXECUTION #
@@ -176,21 +168,21 @@ df_sub = df.loc['2017-01-01 00:00':'2017-07-01 00:00']
 
 # Scale data into new column. Scale based on the entire dataset because our model training is on a very small subset
 # Use double [] to get single column as data frame rather than series
-scaler = create_scaler(df_sub[['cor']])
+scaler = LSTM_utilities.create_scaler(df_sub[['cor']])
 df_sub['cor_scaled'] = scaler.transform(df_sub[['cor']])
 
 # Create datasets with sequences
 time_steps = 10
 samples = 5000
-X_train, y_train = create_training_dataset(df_sub[['cor_scaled']], samples, time_steps)
+X_train, y_train = LSTM_utilities.create_training_dataset(df_sub[['cor_scaled']], samples, time_steps)
 print(X_train.shape)
 print(y_train.shape)
 
 # Create and model and train to data
 num_features = X_train.shape[2]
-model = create_model(128, time_steps, num_features, 0.2)
+model = LSTM_utilities.create_model(128, time_steps, num_features, 0.2)
 model.summary()
-history = train_model(X_train, y_train, patience=3)
+history = LSTM_utilities.train_model(X_train, y_train, model, patience=3)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -201,9 +193,10 @@ plt.show()
 
 # Create dataset on full raw data. First scale according to existing scaler.
 df['raw_scaled'] = scaler.transform(df[['raw']])
-X_raw, y_raw = create_sequenced_dataset(df[['raw_scaled']], 10)
+X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df[['raw_scaled']], 10)
 
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = evaluate_model(X_train, X_raw, y_raw)
+# Evaluate the model
+X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train, X_raw, y_raw)
 
 
 # look at the distribution of the errors using a distribution plot
@@ -216,10 +209,14 @@ threshold = 0.75
 sns.distplot(test_mae_loss, bins=50, kde=True)
 plt.show()
 
-test_score_df, anomalies = detect_anomalies(df[['raw_scaled']], predictions, test_mae_loss, threshold)
+# Transform predictrions back to original units
+predictions_unscaled = scaler.inverse_transform(predictions)
 
-test_score_df["pred"] = scaler.inverse_transform(predictions)
-pred = test_score_df["pred"]
+# Detect anomalies
+test_score_array = LSTM_utilities.detect_anomalies(df[['raw_scaled']], predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
+
+
+
 
 
 # Use events function to widen and number anomalous events
