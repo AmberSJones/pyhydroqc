@@ -27,31 +27,33 @@ print('Tensorflow version:', tf.__version__)
 #########################################
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
-# site = "MainStreet"
-site = "Mendon"
+site = "MainStreet"
+# site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
-# sensor = "temp"
-sensor = "cond"
-# sensor = "ph"
-# sensor = "do"
-# sensor = "turb"
-# sensor = "stage"
-year = 2017
+sensor = ['temp', 'cond', 'ph', 'do']
+year = 2014
 
 # EXECUTE FUNCTIONS #
 #########################################
 # Get data
-df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
 
-# Create new data frame with corrected data for variables of interest
+# Create new data frame with raw and corrected data for variables of interest
 df_cor = pd.DataFrame(index=df_full.index)
 df_cor['temp_cor'] = df_full['temp_cor']
 df_cor['cond_cor'] = df_full['cond_cor']
 df_cor['ph_cor'] = df_full['ph_cor']
 df_cor['do_cor'] = df_full['do_cor']
 
+df_raw = pd.DataFrame(index=df_full.index)
+df_raw['temp'] = df_full['temp']
+df_raw['cond'] = df_full['cond']
+df_raw['ph'] = df_full['ph']
+df_raw['do'] = df_full['do']
+
 print(df_cor.shape)
+print(df_raw.shape)
 
 # Scale data. Scale all columns and put in new data frame.
 scaler = LSTM_utilities.create_scaler(df_cor)
@@ -79,11 +81,6 @@ plt.legend()
 plt.show()
 
 # Create dataset on full raw data. First scale according to existing scaler.
-df_raw = pd.DataFrame(index=df_full.index)
-df_raw['temp'] = df_full['temp']
-df_raw['cond'] = df_full['cond']
-df_raw['ph'] = df_full['ph']
-df_raw['do'] = df_full['do']
 
 df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
 print(df_raw_scaled.shape)
@@ -103,7 +100,7 @@ for i in range(0, train_mae_loss.shape[1]):
     plt.show()
 
 # Choose thresholds to use for anomalies based on the x-axes.
-threshold = [0.75, 1, 1, 1.5]
+threshold = [0.4, 0.5, 0.5, 0.3]
 # Examine errors in the test data
 for i in range(0, test_mae_loss.shape[1]):
     plt.figure()
@@ -117,35 +114,29 @@ predictions_unscaled = pd.DataFrame(scaler.inverse_transform(predictions), colum
 # Detect anomalies
 test_score_array = LSTM_utilities.detect_anomalies(df_raw_scaled, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
 
-
-plt.figure()
-plt.plot(df_raw["do"], 'b', label='raw')
-plt.plot(df_cor["do_cor"], 'm', label='corrected')
-plt.plot(test_score_array[3]["pred_unscaled"], 'c', label='predicted')
-plt.legend()
-plt.show()
-
-
-###########################################
-
-
 # Use events function to widen and number anomalous events
-
 df_array = []
 for i in range(0, len(test_score_array)):
     all_data = []
-    all_data = df.iloc[time_steps:]
+    all_data = sensor_array[sensor[i]].iloc[time_steps:]
     all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'])
     all_data['detected_anomaly'] = test_score_array[i]['anomaly']
     all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['detected_anomaly'])
     df_array.append(all_data)
 
 # Determine Metrics
-######## TODO: Create an object "metric" that has all of the below as variables within the object.
+compare_temp = anomaly_utilities.compare_labeled_detected(df_array[0])
+temp_metrics = anomaly_utilities.metrics(df_array[0], compare_temp.valid_detections, compare_temp.invalid_detections)
 
-labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df_array[0])
-TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
-    = anomaly_utilities.metrics(df_array[0], valid_detections, invalid_detections)
+compare_cond = anomaly_utilities.compare_labeled_detected(df_array[1])
+cond_metrics = anomaly_utilities.metrics(df_array[1], compare_cond.valid_detections, compare_cond.invalid_detections)
+
+compare_ph = anomaly_utilities.compare_labeled_detected(df_array[2])
+ph_metrics = anomaly_utilities.metrics(df_array[2], compare_ph.valid_detections, compare_ph.invalid_detections)
+
+compare_do = anomaly_utilities.compare_labeled_detected(df_array[3])
+do_metrics = anomaly_utilities.metrics(df_array[3], compare_temp.valid_detections, compare_temp.invalid_detections)
+
 
 # OUTPUT RESULTS #
 #########################################
@@ -153,79 +144,72 @@ print('\n\n\nScript report:\n')
 print('Sensor: temp')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % PPV)
-print('NPV = %f' % NPV)
-print('Acc = %f' % ACC)
-print('TP  = %i' % TruePositives)
-print('TN  = %i' % TrueNegatives)
-print('FP  = %i' % FalsePositives)
-print('FN  = %i' % FalseNegatives)
-print('F1 = %f' % f1)
-print('F2 = %f' % f2)
+print('PPV = %f' % temp_metrics.PPV)
+print('NPV = %f' % temp_metrics.NPV)
+print('Acc = %f' % temp_metrics.ACC)
+print('TP  = %i' % temp_metrics.TruePositives)
+print('TN  = %i' % temp_metrics.TrueNegatives)
+print('FP  = %i' % temp_metrics.FalsePositives)
+print('FN  = %i' % temp_metrics.FalseNegatives)
+print('F1 = %f' % temp_metrics.f1)
+print('F2 = %f' % temp_metrics.f2)
 
-
-labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df_array[1])
-TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
-    = anomaly_utilities.metrics(df_array[1], valid_detections, invalid_detections)
-
-# OUTPUT RESULTS #
-#########################################
 print('\n\n\nScript report:\n')
 print('Sensor: cond')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % PPV)
-print('NPV = %f' % NPV)
-print('Acc = %f' % ACC)
-print('TP  = %i' % TruePositives)
-print('TN  = %i' % TrueNegatives)
-print('FP  = %i' % FalsePositives)
-print('FN  = %i' % FalseNegatives)
-print('F1 = %f' % f1)
-print('F2 = %f' % f2)
+print('PPV = %f' % cond_metrics.PPV)
+print('NPV = %f' % cond_metrics.NPV)
+print('Acc = %f' % cond_metrics.ACC)
+print('TP  = %i' % cond_metrics.TruePositives)
+print('TN  = %i' % cond_metrics.TrueNegatives)
+print('FP  = %i' % cond_metrics.FalsePositives)
+print('FN  = %i' % cond_metrics.FalseNegatives)
+print('F1 = %f' % cond_metrics.f1)
+print('F2 = %f' % cond_metrics.f2)
 
-
-labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df_array[2])
-TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
-    = anomaly_utilities.metrics(df_array[2], valid_detections, invalid_detections)
-
-# OUTPUT RESULTS #
-#########################################
 print('\n\n\nScript report:\n')
 print('Sensor: ph')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % PPV)
-print('NPV = %f' % NPV)
-print('Acc = %f' % ACC)
-print('TP  = %i' % TruePositives)
-print('TN  = %i' % TrueNegatives)
-print('FP  = %i' % FalsePositives)
-print('FN  = %i' % FalseNegatives)
-print('F1 = %f' % f1)
-print('F2 = %f' % f2)
+print('PPV = %f' % ph_metrics.PPV)
+print('NPV = %f' % ph_metrics.NPV)
+print('Acc = %f' % ph_metrics.ACC)
+print('TP  = %i' % ph_metrics.TruePositives)
+print('TN  = %i' % ph_metrics.TrueNegatives)
+print('FP  = %i' % ph_metrics.FalsePositives)
+print('FN  = %i' % ph_metrics.FalseNegatives)
+print('F1 = %f' % ph_metrics.f1)
+print('F2 = %f' % ph_metrics.f2)
 
-
-labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections = anomaly_utilities.compare_labeled_detected(df_array[3])
-TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2 \
-    = anomaly_utilities.metrics(df_array[3], valid_detections, invalid_detections)
-
-
-# OUTPUT RESULTS #
-#########################################
 print('\n\n\nScript report:\n')
 print('Sensor: do')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % PPV)
-print('NPV = %f' % NPV)
-print('Acc = %f' % ACC)
-print('TP  = %i' % TruePositives)
-print('TN  = %i' % TrueNegatives)
-print('FP  = %i' % FalsePositives)
-print('FN  = %i' % FalseNegatives)
-print('F1 = %f' % f1)
-print('F2 = %f' % f2)
+print('PPV = %f' % do_metrics.PPV)
+print('NPV = %f' % do_metrics.NPV)
+print('Acc = %f' % do_metrics.ACC)
+print('TP  = %i' % do_metrics.TruePositives)
+print('TN  = %i' % do_metrics.TrueNegatives)
+print('FP  = %i' % do_metrics.FalsePositives)
+print('FN  = %i' % do_metrics.FalseNegatives)
+print('F1 = %f' % do_metrics.f1)
+print('F2 = %f' % do_metrics.f2)
+
+
+# GENERATE PLOTS #
+#########################################
+
+for i in range(0, len(sensor)):
+    plt.figure()
+    plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
+    plt.plot(df_cor[df_cor.columns[i]], 'm', label='corrected data' )
+    plt.plot(test_score_array[i]['pred_unscaled'], 'c', label='predicted values')
+    plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+    plt.plot(test_score_array[i]['pred_unscaled'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.legend()
+    plt.ylabel(sensor[i])
+    plt.show()
 
 
 print("\n LSTM script end.")

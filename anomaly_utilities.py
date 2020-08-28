@@ -16,7 +16,6 @@ pd.options.mode.chained_assignment = None
 def get_data(site, sensor, year, path=""):
     """Imports a single year of data based on files named by site, sensor/variable, and year.
     Labels data as anomalous. Generates a series from the data frame."""
-    # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
     if path == "":
         path = os.getcwd() + "/"
     df_full = pd.read_csv(path + site + str(year) + ".csv",
@@ -26,13 +25,18 @@ def get_data(site, sensor, year, path=""):
                           index_col=0,
                           parse_dates=True,
                           infer_datetime_format=True)
-    # create data frame with raw, corrected, and labeled data
-    df = pd.DataFrame(index = df_full.index)
-    df['raw'] = df_full[[sensor]]
-    df['cor'] = df_full[[sensor + "_cor"]]
-    df['labeled_anomaly'] = ~df_full[sensor + "_qual"].isnull()
+    # create data frames with raw, corrected, and labeled data
+    sensor_array = []
+    for i in range(0, len(sensor)):
+        df = []
+        df = pd.DataFrame(index=df_full.index)
+        df['raw'] = df_full[[sensor[i]]]
+        df['cor'] = df_full[[sensor[i] + "_cor"]]
+        df['labeled_anomaly'] = ~df_full[sensor[i] + "_qual"].isnull()
+        sensor_array.append(df)
+    sensor_array = dict(zip(sensor, sensor_array))
 
-    return df_full, df #df_raw, df_cor, normal_lbl, srs
+    return df_full, sensor_array
 
 
 def anomaly_events(anomaly):
@@ -62,6 +66,10 @@ def anomaly_events(anomaly):
     return event
 
 
+class CompareDetectionsContainer:
+    pass
+
+
 def compare_labeled_detected(df):
     """ df is a data frame with required columns:
     'labeled_event': array of numbered events based on expert labeled anomalies.
@@ -74,6 +82,7 @@ def compare_labeled_detected(df):
     Input to the windowing function. Compares the widened/windowed events between labels and detections."""
 
     # generate lists of detected anomalies and valid detections
+    compare = CompareDetectionsContainer()
     labeled_in_detected = [0]
     detected_in_labeled = [0]
     valid_detections = [0]
@@ -100,25 +109,31 @@ def compare_labeled_detected(df):
     valid_detections.pop(0)
     invalid_detections.pop(0)
 
-    return labeled_in_detected, detected_in_labeled, valid_detections, invalid_detections
+    compare.labeled_in_detected = labeled_in_detected
+    compare.valid_detections = valid_detections
+    compare.invalid_detections = invalid_detections
+    compare.detected_in_labeled = detected_in_labeled
+
+    return compare
+
+
+class MetricsContainer:
+    pass
 
 
 def metrics(df, valid_detections, invalid_detections):
-    """Calculates metrics for anomaly detection.
-    Requires a dataframe with columns for detected_events and labeled_events.
-    Requires lists of valid_detections and invalid_detections."""
-    TruePositives = sum(df['detected_event'].value_counts()[valid_detections])
-    FalseNegatives = sum(df['labeled_event'].value_counts()[1:]) - TruePositives
-    FalsePositives = sum(df['detected_event'].value_counts()[invalid_detections])
-    TrueNegatives = len(df['detected_event']) - TruePositives - FalseNegatives - FalsePositives
+    metrics = MetricsContainer()
+    metrics.TruePositives = sum(df['detected_event'].value_counts()[valid_detections])
+    metrics.FalseNegatives = sum(df['labeled_event'].value_counts()[1:]) - metrics.TruePositives
+    metrics.FalsePositives = sum(df['detected_event'].value_counts()[invalid_detections])
+    metrics.TrueNegatives = len(df['detected_event']) - metrics.TruePositives - metrics.FalseNegatives - metrics.FalsePositives
 
-    PRC = PPV = TruePositives / (TruePositives + FalsePositives)
-    NPV = TrueNegatives / (TrueNegatives + FalseNegatives)
-    ACC = (TruePositives + TrueNegatives) / len(df['detected_anomaly'])
-    RCL = TruePositives / (TruePositives + FalseNegatives)
-    f1 = 2.0 * (PRC * RCL) / (PRC + RCL)
-    f2 = 5.0 * TruePositives / (5.0 * TruePositives + 4.0 * FalseNegatives + FalsePositives)
-    # ACC = (TruePositives+TrueNegatives)/(TruePositives+TrueNegatives+FalsePositives+FalseNegatives)
+    metrics.PRC = metrics.PPV = metrics.TruePositives / (metrics.TruePositives + metrics.FalsePositives)
+    metrics.NPV = metrics.TrueNegatives / (metrics.TrueNegatives + metrics.FalseNegatives)
+    metrics.ACC = (metrics.TruePositives + metrics.TrueNegatives) / len(df['detected_anomaly'])
+    metrics.RCL = metrics.TruePositives / (metrics.TruePositives + metrics.FalseNegatives)
+    metrics.f1 = 2.0 * (metrics.PRC * metrics.RCL) / (metrics.PRC + metrics.RCL)
+    metrics.f2 = 5.0 * metrics.TruePositives / (5.0 * metrics.TruePositives + 4.0 * metrics.FalseNegatives + metrics.FalsePositives)
 
-    return TruePositives, FalseNegatives, FalsePositives, TrueNegatives, PRC, PPV, NPV, ACC, RCL, f1, f2
+    return metrics
 
