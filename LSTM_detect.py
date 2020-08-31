@@ -45,7 +45,7 @@ year = 2017
 #########################################
 # Get data
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
-df = sensor_array['cond']
+df = sensor_array[sensor[0]]
 
 # Using corrected data to train detector. Remove -9999 values. Use subset of data without NaNs and data gaps.
 # Other rule-based algorithms could be considered here.

@@ -119,7 +119,7 @@ print("q: "+str(q))
 #########################################
 # Get data
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
-df = sensor_array['cond']
+df = sensor_array[sensor[0]]
 
 # Run model
 model_fit, residuals, predictions = build_arima_model(df['raw'], p, d, q, summary=True)
