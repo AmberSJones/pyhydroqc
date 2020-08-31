@@ -81,7 +81,6 @@ plt.legend()
 plt.show()
 
 # Create dataset on full raw data. First scale according to existing scaler.
-
 df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
 print(df_raw_scaled.shape)
 

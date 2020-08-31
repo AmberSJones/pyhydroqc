@@ -44,7 +44,8 @@ year = 2017
 # EXECUTE FUNCTIONS #
 #########################################
 # Get data
-df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df = sensor_array['cond']
 
 # Using corrected data to train detector. Remove -9999 values. Use subset of data without NaNs and data gaps.
 # Other rule-based algorithms could be considered here.
@@ -105,20 +106,20 @@ test_score_array = LSTM_utilities.detect_anomalies(test_data, predictions, predi
 
 
 # Use events function to widen and number anomalous events
-df_cut = df.iloc[time_steps:]
-df_cut['labeled_event'] = anomaly_utilities.anomaly_events(df_cut['labeled_anomaly'])
-df_cut['detected_anomaly'] = test_score_array[0]['anomaly']
-df_cut['detected_event'] = anomaly_utilities.anomaly_events(df_cut['detected_anomaly'])
+df_anomalies = df.iloc[time_steps:]
+df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
+df_anomalies['detected_anomaly'] = test_score_array[0]['anomaly']
+df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
 
 # Determine Metrics
-compare = anomaly_utilities.compare_labeled_detected(df_cut)
-metrics = anomaly_utilities.metrics(df_cut, compare.valid_detections, compare.invalid_detections)
+compare = anomaly_utilities.compare_labeled_detected(df_anomalies)
+metrics = anomaly_utilities.metrics(df_anomalies, compare.valid_detections, compare.invalid_detections)
 
 
 # OUTPUT RESULTS #
 #########################################
 print('\n\n\nScript report:\n')
-print('Sensor: ' + sensor)
+print('Sensor: ' + sensor[0])
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
 print('PPV = %f' % metrics.PPV)
@@ -147,4 +148,3 @@ plt.show()
 
 
 print("\n LSTM script end.")
-
