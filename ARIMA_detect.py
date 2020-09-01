@@ -110,7 +110,7 @@ pdqParams = [
 pdqParam = pd.DataFrame(pdqParams, columns=sensors, index=sites)
 print(pdqParam)
 
-p, d, q = pdqParam[sensor][site]
+p, d, q = pdqParam[sensor[0]][site]
 print("p: "+str(p))
 print("d: "+str(d))
 print("q: "+str(q))
