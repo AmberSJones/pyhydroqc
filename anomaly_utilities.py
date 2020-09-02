@@ -152,50 +152,52 @@ def metrics(df, valid_detections, invalid_detections):
     metrics.TruePositives = sum(df['detected_event'].value_counts()[valid_detections])
     metrics.FalseNegatives = sum(df['labeled_event'].value_counts()[1:]) - metrics.TruePositives
     metrics.FalsePositives = sum(df['detected_event'].value_counts()[invalid_detections])
-    metrics.TrueNegatives = len(df['detected_event']) - metrics.TruePositives - metrics.FalseNegatives - metrics.FalsePositives
+    metrics.TrueNegatives = \
+        len(df['detected_event']) - metrics.TruePositives - metrics.FalseNegatives - metrics.FalsePositives
 
     metrics.PRC = metrics.PPV = metrics.TruePositives / (metrics.TruePositives + metrics.FalsePositives)
     metrics.NPV = metrics.TrueNegatives / (metrics.TrueNegatives + metrics.FalseNegatives)
     metrics.ACC = (metrics.TruePositives + metrics.TrueNegatives) / len(df['detected_anomaly'])
     metrics.RCL = metrics.TruePositives / (metrics.TruePositives + metrics.FalseNegatives)
     metrics.f1 = 2.0 * (metrics.PRC * metrics.RCL) / (metrics.PRC + metrics.RCL)
-    metrics.f2 = 5.0 * metrics.TruePositives / (5.0 * metrics.TruePositives + 4.0 * metrics.FalseNegatives + metrics.FalsePositives)
+    metrics.f2 = \
+        5.0 * metrics.TruePositives / (5.0 * metrics.TruePositives + 4.0 * metrics.FalseNegatives + metrics.FalsePositives)
 
     return metrics
 
 
 def group_bools(df):
-    """ group_bools is used for anomaly correction, indexing each grouping of anomalies/normal points
+    """ group_bools is used for anomaly correction, indexing each grouping of anomalies and normal points as numbered sets.
     df is a data frame with required column:
     'detected_anomaly': boolean array of classified data points
     Outputs:
-    df with additional column: 'groups' of boolean groupings
+    df with additional column: 'group' of boolean groupings
     """
 
-    # initialize the 'groups' column to zeros
-    df['groups'] = 0
+    # initialize the 'group' column to zeros
+    df['group'] = 0
     # initialize placeholder for boolean state of previous group
-    last = df.iloc[0]['detected_anomaly']
+    last = df.iloc[0]['detected_event']
     # initialize the group index to zero
     gi = 0
 
     # loop over every row in dataframe
-    for i in range(0, len(df['groups'])):
+    for i in range(0, len(df['group'])):
 
         # if the anomaly bool has changed
-        if last != df.iloc[i]['detected_anomaly']:
+        if last != df.iloc[i]['detected_event']:
             gi += 1  # increment the group index
         # assign this row to the group index
-        df.iloc[i, df.columns.get_loc('groups')] = gi
+        df.iloc[i, df.columns.get_loc('group')] = gi
 
         # update last boolean state
-        last = df.iloc[i]['detected_anomaly']
+        last = df.iloc[i]['detected_event']
 
     return df
 
 
 def xfade(xfor, xbac):
-    """ the xfade ("cross-fade") function blends two data sets of matching length
+    """ xfade ("cross-fade") blends two data sets of matching length with a ramp function (weighted average).
     xfor is the data to be more weighted at the front
     xbac is the data to be more weighted at the back
     Outputs:
