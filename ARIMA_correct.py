@@ -181,10 +181,19 @@ df = pd.DataFrame(
     ],
     columns={'raw': 0, 'cor': 1, 'detected_event': 2})
 
-p=5
-d=1
-q=2
 
-cdata = generate_corrections(df, p, d, q)
+df = generate_corrections(df, p, d, q)
 
+############ PLOTTING ##############
+
+import matplotlib.pyplot as plt
+plt.figure()
+plt.plot(df['raw'], 'b', label='original data')
+plt.plot(df['cor'], 'c', label='technician corrected')
+plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(df['raw'][df['detected_anomaly']], 'r+', mfc='none', label='machine detected anomalies')
+plt.plot(df['det_cor'], 'm', label='determined_corrected')
+plt.legend()
+plt.ylabel(sensor[0])
+plt.show()
 
