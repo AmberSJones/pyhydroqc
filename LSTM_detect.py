@@ -60,14 +60,15 @@ df_sub['cor_scaled'] = scaler.transform(df_sub[['cor']])
 
 # Create datasets with sequences
 time_steps = 10
-samples = 5000
+samples = 10000
 X_train, y_train = LSTM_utilities.create_training_dataset(df_sub[['cor_scaled']], samples, time_steps)
 print(X_train.shape)
 print(y_train.shape)
 
 # Create and model and train to data
 num_features = X_train.shape[2]
-model = LSTM_utilities.create_model(128, time_steps, num_features, 0.2)
+#model = LSTM_utilities.create_model(128, time_steps, num_features, 0.2)
+model = LSTM_utilities.create_vanilla_model(128, time_steps, num_features, 0.2)
 model.summary()
 history = LSTM_utilities.train_model(X_train, y_train, model, patience=3)
 
@@ -85,7 +86,9 @@ print(X_raw.shape)
 print(y_raw.shape)
 
 # Evaluate the model applied to the full dataset
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train, X_raw, y_raw, model)
+# X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train, X_raw, y_raw, model)
+train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_vanilla_model(X_train, y_train, X_raw, y_raw, model)
+
 
 # look at the distribution of the errors using a distribution plot
 # could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
