@@ -121,12 +121,12 @@ def evaluate_vanilla_model(X_train, y_train, X_test, y_test, model):
     """Gets model predictions on training data and test data.
     Determines mean absolute error to evaluate model on training and test data."""
     train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.mean(np.abs(train_pred - y_train), axis=1))
+    train_mae_loss = pd.DataFrame(np.abs(train_pred - y_train))
     model_eval = model.evaluate(X_test, y_test)
 
     test_pred = model.predict(X_test)
     predictions = pd.DataFrame(test_pred)
-    test_mae_loss = pd.DataFrame(np.mean(np.abs(test_pred - y_test), axis=1))
+    test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
 
     return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
 
