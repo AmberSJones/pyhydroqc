@@ -74,6 +74,18 @@ def create_model(cells, time_steps, num_features, dropout, input_loss='mae', inp
     return model
 
 
+def create_vanilla_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
+    """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
+    Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
+    Uses vanilla LSTM - not autoencoder."""
+    model = Sequential()
+    model.add(LSTM(cells, input_shape=(time_steps, num_features), dropout=dropout)),  # one LSTM layer with dropout regularization
+    model.add(Dense(num_features))
+    model.compile(loss=input_loss, optimizer=input_optimizer)
+
+    return model
+
+
 def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
                 validation_split=0.1):
     """Fits the model to training data. Early stopping ensures that too many epochs of training are not used.
@@ -105,6 +117,20 @@ def evaluate_model(X_train, X_test, y_test, model):
     return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
 
 
+def evaluate_vanilla_model(X_train, y_train, X_test, y_test, model):
+    """Gets model predictions on training data and test data.
+    Determines mean absolute error to evaluate model on training and test data."""
+    train_pred = model.predict(X_train)
+    train_mae_loss = pd.DataFrame(np.abs(train_pred - y_train))
+    model_eval = model.evaluate(X_test, y_test)
+
+    test_pred = model.predict(X_test)
+    predictions = pd.DataFrame(test_pred)
+    test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
+
+    return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
+
+
 def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
@@ -121,7 +147,7 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_m
         test_score_df = test_score_df[time_steps:]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = test_mae_loss[:,i]
+        test_score_df['loss'] = np.array(test_mae_loss[test_mae_loss.columns[i]])
         test_score_df['threshold'] = threshold[i]
         test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
         test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
