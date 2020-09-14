@@ -61,17 +61,21 @@ df_scaled = pd.DataFrame(scaler.transform(df_cor), index=df_cor.index, columns=d
 print(df_scaled.shape)
 
 # Create datasets with sequences
-time_steps = 10
-samples = 5000
+time_steps = 50
+samples = 10000
 X_train_mult, y_train_mult = LSTM_utilities.create_training_dataset(df_scaled, samples, time_steps)
 print("X_train_mult.shape: " + str(X_train_mult.shape))
 print("y_train_mult.shape: " + str(y_train_mult.shape))
 
-# Create and train model. Because model uses an autoencoder, the input is also the output i.e., y = X.
+# Create and train model.
+# If model uses an autoencoder, the input needs to be the same shape as the output.
+# For a vanilla model, it doesn't matter.
 num_features = X_train_mult.shape[2]
-model = LSTM_utilities.create_model(128, time_steps, num_features, 0.2)
+# model = LSTM_utilities.create_model(128, time_steps, num_features, 0.2)
+model = LSTM_utilities.create_vanilla_model(128, time_steps, num_features, 0.2)
 model.summary()
-history = LSTM_utilities.train_model(X_train_mult, X_train_mult, model, patience=3)
+# history = LSTM_utilities.train_model(X_train_mult, X_train_mult, model, patience=3)
+history = LSTM_utilities.train_model(X_train_mult, y_train_mult, model, patience=3)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -85,12 +89,13 @@ df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, colum
 print(df_raw_scaled.shape)
 
 # Create sequenced dataset.
-X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df_raw_scaled, 10)
+X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df_raw_scaled, time_steps)
 print("X_raw.shape: " + str(X_raw.shape))
 print("y_raw.shape: " + str(y_raw.shape))
 
 # Evaluate the model on the raw data
-X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train_mult, X_raw, X_raw, model)
+# X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train_mult, X_raw, X_raw, model)
+train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_vanilla_model(X_train_mult, y_train_mult, X_raw, y_raw, model)
 
 # Look at the distribution of the errors using distribution plots
 for i in range(0, train_mae_loss.shape[1]):
@@ -105,7 +110,6 @@ for i in range(0, test_mae_loss.shape[1]):
     plt.figure()
     sns.distplot(test_mae_loss[i], bins=50, kde=True)
     plt.show()
-# what are these plots showing?!?
 
 # Unscale predictions back to original units
 predictions_unscaled = pd.DataFrame(scaler.inverse_transform(predictions), columns=df_cor.columns)

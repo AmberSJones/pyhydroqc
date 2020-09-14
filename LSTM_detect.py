@@ -59,7 +59,7 @@ scaler = LSTM_utilities.create_scaler(df_sub[['cor']])
 df_sub['cor_scaled'] = scaler.transform(df_sub[['cor']])
 
 # Create datasets with sequences
-time_steps = 10
+time_steps = 50
 samples = 10000
 X_train, y_train = LSTM_utilities.create_training_dataset(df_sub[['cor_scaled']], samples, time_steps)
 print(X_train.shape)
@@ -81,7 +81,7 @@ plt.show()
 
 # Create dataset on full raw data. First scale according to existing scaler.
 df['raw_scaled'] = scaler.transform(df[['raw']])
-X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df[['raw_scaled']], 10)
+X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df[['raw_scaled']], time_steps)
 print(X_raw.shape)
 print(y_raw.shape)
 
