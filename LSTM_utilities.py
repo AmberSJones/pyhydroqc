@@ -124,9 +124,9 @@ def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae
     Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
     Uses bidirectional LSTM."""
     model = Sequential()
-    model.add(Bidirectional(LSTM(cells, input_shape=(time_steps*2, num_features))))
+    model.add(Bidirectional(LSTM(cells, dropout=dropout), input_shape=(time_steps*2, num_features)))
     model.add(Dense(num_features))
-    model.compile(loss=input_loss, optimizer=input_optimizer)
+    model.compile(loss='mae', optimizer='adam')
 
     return model
 

@@ -107,7 +107,7 @@ predictions_unscaled = pd.DataFrame(scaler.inverse_transform(predictions))
 
 # Detect anomalies
 test_data = df[['raw_scaled']]
-test_score_array = detect_anomalies_bidir(test_data, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
+test_score_array = LSTM_utilities.detect_anomalies_bidir(test_data, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
