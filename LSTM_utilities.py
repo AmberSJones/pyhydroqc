@@ -16,7 +16,7 @@ import tensorflow as tf
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDistributed
+from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDistributed, Bidirectional
 
 
 def create_scaler(data):
@@ -60,6 +60,39 @@ def create_sequenced_dataset(X, time_steps=10):
     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
 
 
+def create_bidir_training_dataset(X, training_samples="", time_steps=10):
+    """Splits data into training and testing data based on random selection.
+    Reshapes data to temporalize it into (samples, timestamps, features).
+    - Samples is the number of rows/observations. Training_samples is the number of observations used for training.
+    - Time stamps defines a sequence of how far back to consider for each sample/row.
+    - Features refers to the number of columns/variables."""
+    Xs, ys = [], []  # start empty list
+    if training_samples == "":
+        training_samples = int(len(X) * 0.10)
+
+    # create sample sequences from a randomized subset of the data series for training
+    for i in range(training_samples):  # for every sample sequence to be created
+        j = randint(time_steps, len(X) - time_steps)
+        v = X.iloc[(j - time_steps):(j + time_steps)].values  # data from j backward and forward the specified number of time steps
+        Xs.append(v)
+        ys.append(X.iloc[j].values)
+
+    return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
+
+
+def create_bidir_sequenced_dataset(X, time_steps=10):
+    """Reshapes data to temporalize it into (samples, timestamps, features).
+    Time stamps defines a sequence of how far back to consider for each sample/row.
+    Features refers to the number of columns/variables."""
+    Xs, ys = [], []  # start empty list
+    for i in range(time_steps, len(X) - time_steps):  # loop within range of data frame minus the time steps
+        v = X.iloc[(i - time_steps):(i + time_steps)].values  # data from i backward and forward the specified number of time steps
+        Xs.append(v)
+        ys.append(X.iloc[i].values)
+
+    return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
+
+
 def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
     """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
     Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
@@ -82,6 +115,18 @@ def create_vanilla_model(cells, time_steps, num_features, dropout, input_loss='m
     model.add(LSTM(cells, input_shape=(time_steps, num_features), dropout=dropout)),  # one LSTM layer with dropout regularization
     model.add(Dense(num_features))
     model.compile(loss=input_loss, optimizer=input_optimizer)
+
+    return model
+
+
+def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
+    """Uses sequential model class from keras. Adds Bidirectional LSTM layer. Input is samples, timesteps, features.
+    Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
+    Uses bidirectional LSTM."""
+    model = Sequential()
+    model.add(Bidirectional(LSTM(cells, dropout=dropout), input_shape=(time_steps*2, num_features)))
+    model.add(Dense(num_features))
+    model.compile(loss='mae', optimizer='adam')
 
     return model
 
@@ -155,3 +200,29 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_m
         test_score_array.append(test_score_df)
 
     return test_score_array
+
+def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):
+    """Create array of data frames for each variable.
+    Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
+    test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
+    unscaled_predictions are the model prediction inverse scaled to original units.
+    time_steps is the number of time steps used to predict.
+    test_mae_loss is the model error from the evaluate_model function.
+    threshold is a list of thresholds for detecting anomalies from the model errors. length should = number of variables."""
+    # create array to store results for all variables
+    test_score_array = []
+    for i in range(0, test.shape[1]):
+        test_score_df = []
+        test_score_df = pd.DataFrame(test[test.columns[i]])
+        test_score_df = test_score_df[time_steps:-time_steps]
+        # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
+        test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
+        test_score_df['loss'] = np.array(test_mae_loss[test_mae_loss.columns[i]])
+        test_score_df['threshold'] = threshold[i]
+        test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
+        test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
+        # anomalies = test_score_df[test_score_df.anomaly == True]
+        test_score_array.append(test_score_df)
+
+    return test_score_array
+
