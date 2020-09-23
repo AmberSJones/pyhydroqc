@@ -126,7 +126,7 @@ def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae
     model = Sequential()
     model.add(Bidirectional(LSTM(cells, dropout=dropout), input_shape=(time_steps*2, num_features)))
     model.add(Dense(num_features))
-    model.compile(loss='mae', optimizer='adam')
+    model.compile(loss=input_loss, optimizer=input_optimizer)
 
     return model
 
