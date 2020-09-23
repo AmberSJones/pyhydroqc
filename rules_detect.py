@@ -72,6 +72,12 @@ year = 2017
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
 df = sensor_array[sensor[0]]
 
+# General sensor ranges for LRO data:
+# Temp min: -5, max: 30
+# SpCond min: 100, max: 900
+# pH min: 7.5, max: 9.0
+# do min: 2, max: 16
+
 maximum = 900
 minimum = 150
 df = range_check(df, maximum, minimum)
