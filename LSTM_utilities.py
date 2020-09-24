@@ -10,7 +10,7 @@
 # A function is defined for evaluating the model.
 # Another function detects anomalies.
 
-from random import randint
+from random import randint, sample
 import numpy as np
 import tensorflow as tf
 import pandas as pd
@@ -38,11 +38,37 @@ def create_training_dataset(X, training_samples="", time_steps=10):
         training_samples = int(len(X) * 0.10)
 
     # create sample sequences from a randomized subset of the data series for training
+    j = sample(range(0, len(X) - time_steps - 2), training_samples)
     for i in range(training_samples):  # for every sample sequence to be created
-        j = randint(0, len(X) - time_steps - 2)
-        v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
-        ys.append(X.iloc[j + time_steps])
+        #j = randint(0, len(X) - time_steps - 2)
+        #v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
+        v = X.iloc[j[i]:(j[i] + time_steps)].values  # data from j to the end of time step
+        ys.append(X.iloc[j[i] + time_steps])
         Xs.append(v)
+
+    return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
+
+
+def create_clean_training_dataset(X, anomalies, training_samples="", time_steps=10):
+    """Splits data into training and testing data based on random selection.
+    Reshapes data to temporalize it into (samples, timestamps, features).
+    - Samples is the number of rows/observations. Training_samples is the number of observations used for training.
+    - Time stamps defines a sequence of how far back to consider for each sample/row.
+    - Features refers to the number of columns/variables."""
+
+    Xs, ys = [], []  # start empty list
+    if training_samples == "":
+        training_samples = int(len(X) * 0.10)
+
+    # create sample sequences from a randomized subset of the data series for training
+    j = sample(range(0, len(X) - time_steps - 2), len(X) - time_steps - 2)
+    i = 0
+    while (training_samples > len(ys)) and (i < len(j)):
+        if not np.any(anomalies.iloc[j[i]:(j[i] + time_steps + 1)]):
+            v = X.iloc[j[i]:(j[i] + time_steps)].values
+            ys.append(X.iloc[j[i] + time_steps])
+            Xs.append(v)
+        i += 1
 
     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
 
@@ -174,6 +200,21 @@ def evaluate_vanilla_model(X_train, y_train, X_test, y_test, model):
     test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
 
     return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
+
+
+def evaluate_unscaled(X_train, y_train, X_test, y_test, model, scaler):
+    """Gets model predictions on training data and test data.
+    Determines mean absolute error to evaluate model on training and test data."""
+    train_pred = model.predict(X_train)
+    train_mae_loss = pd.DataFrame(np.abs(train_pred - y_train))
+    model_eval = model.evaluate(X_test, y_test)
+
+    test_pred = model.predict(X_test)
+    predictions = pd.DataFrame(test_pred)
+    test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
+
+    return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
+
 
 
 def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):

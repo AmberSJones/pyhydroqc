@@ -39,6 +39,20 @@ def persistence(df, length):
     return df
 
 
+def group_size(df):
+    """"""
+    temp = df[['anomaly']].copy(deep=True)
+    temp['value_grp'] = anomaly_utilities.anomaly_events(temp['anomaly'], 0, 1)
+    size = 0
+    if max(temp['value_grp']) > 0:
+        size = len(temp['value_grp'][temp['value_grp'] == 1])
+        for i in range(2, max(temp['value_grp']) + 1):
+            if(len(temp['value_grp'][temp['value_grp'] == i]) > size):
+                size = len(temp['value_grp'][temp['value_grp'] == i])
+
+    return size
+
+
 def interpolate(df, limit=10000):
     """Performs linear interpolation on points identified as anomolous, typically by rules based approaches.
     df is a data frame with a column 'raw' of raw data and a boolean column 'anomaly'.
@@ -82,7 +96,9 @@ maximum = 900
 minimum = 150
 df = range_check(df, maximum, minimum)
 
-length = 5
+length = 6
 df = persistence(df, length)
+
+size = group_size(df)
 
 df = interpolate(df)
