@@ -18,6 +18,45 @@ from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout, RepeatVector, TimeDistributed, Bidirectional
 
+class LSTM_modelContainer:
+    pass
+
+
+def vanilla_LSTM_model(df, time_steps, samples, cells, dropout, patience):
+    """df needs to have column det_cor and anomaly"""
+
+    scaler = create_scaler(df[['det_cor']])
+    df['det_scaled'] = scaler.transform(df[['det_cor']])
+
+    #X_train, y_train = create_training_dataset(df[['det_scaled']], samples, time_steps)
+    X_train, y_train = create_clean_training_dataset(df[['det_scaled']], df[['anomaly']], samples, time_steps)
+    num_features = X_train.shape[2]
+
+    print(X_train.shape)
+    print(y_train.shape)
+    print(num_features)
+
+    model = create_vanilla_model(cells, time_steps, num_features, dropout)
+    model.summary()
+    history = train_model(X_train, y_train, model, patience)
+
+    df['raw_scaled'] = scaler.transform(df[['raw']])
+    X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], time_steps)
+
+    train_pred = model.predict(X_train)
+    test_pred = model.predict(X_test)
+    model_eval = model.evaluate(X_test, y_test)
+
+    train_predictions = pd.DataFrame(scaler.inverse_transform(train_pred))
+    predictions = pd.DataFrame(scaler.inverse_transform(test_pred))
+    y_train_unscaled = pd.DataFrame(scaler.inverse_transform(y_train))
+    y_test_unscaled = pd.DataFrame(scaler.inverse_transform(y_test))
+
+    train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
+    test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
+
+    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+
 
 def create_scaler(data):
     """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
@@ -186,35 +225,6 @@ def evaluate_model(X_train, X_test, y_test, model):
     test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
 
     return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
-
-
-def evaluate_vanilla_model(X_train, y_train, X_test, y_test, model):
-    """Gets model predictions on training data and test data.
-    Determines mean absolute error to evaluate model on training and test data."""
-    train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.abs(train_pred - y_train))
-    model_eval = model.evaluate(X_test, y_test)
-
-    test_pred = model.predict(X_test)
-    predictions = pd.DataFrame(test_pred)
-    test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
-
-    return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
-
-
-def evaluate_unscaled(X_train, y_train, X_test, y_test, model, scaler):
-    """Gets model predictions on training data and test data.
-    Determines mean absolute error to evaluate model on training and test data."""
-    train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.abs(train_pred - y_train))
-    model_eval = model.evaluate(X_test, y_test)
-
-    test_pred = model.predict(X_test)
-    predictions = pd.DataFrame(test_pred)
-    test_mae_loss = pd.DataFrame(np.abs(test_pred - y_test))
-
-    return train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions
-
 
 
 def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):
