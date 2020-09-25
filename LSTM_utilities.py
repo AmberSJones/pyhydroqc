@@ -58,6 +58,42 @@ def vanilla_LSTM_model(df, time_steps, samples, cells, dropout, patience):
     return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
 
 
+def multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+    """df needs to have column det_cor and anomaly"""
+
+    scaler = create_scaler(df_det_cor)
+    df_scaled = pd.DataFrame(scaler.transform(df_det_cor), index=df_det_cor.index, columns=df_det_cor.columns)
+
+    X_train, y_train = create_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
+    num_features = X_train.shape[2]
+
+    print(X_train.shape)
+    print(y_train.shape)
+    print(num_features)
+
+    model = create_vanilla_model(cells, time_steps, num_features, dropout)
+    model.summary()
+    history = train_model(X_train, y_train, model, patience)
+
+    df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
+    X_test, y_test = create_sequenced_dataset(df_raw_scaled, time_steps)
+
+    train_pred = model.predict(X_train)
+    test_pred = model.predict(X_test)
+    model_eval = model.evaluate(X_test, y_test)
+
+    train_predictions = pd.DataFrame(scaler.inverse_transform(train_pred))
+    predictions = pd.DataFrame(scaler.inverse_transform(test_pred))
+    y_train_unscaled = pd.DataFrame(scaler.inverse_transform(y_train))
+    y_test_unscaled = pd.DataFrame(scaler.inverse_transform(y_test))
+
+    train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
+    test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
+
+    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+
+
+
 def create_scaler(data):
     """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
     scaler = StandardScaler()
@@ -213,21 +249,7 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     return history
 
 
-def evaluate_model(X_train, X_test, y_test, model):
-    """Gets model predictions on training data and test data.
-    Determines mean absolute error to evaluate model on training and test data."""
-    X_train_pred = model.predict(X_train)
-    train_mae_loss = pd.DataFrame(np.mean(np.abs(X_train_pred - X_train), axis=1))
-    model_eval = model.evaluate(X_test, y_test)
-
-    X_test_pred = model.predict(X_test)
-    predictions = pd.DataFrame(X_test_pred[:, 0])
-    test_mae_loss = np.mean(np.abs(X_test_pred - X_test), axis=1)
-
-    return X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions
-
-
-def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):
+def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -243,7 +265,7 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_m
         test_score_df = test_score_df[time_steps:]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_mae_loss[test_mae_loss.columns[i]])
+        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
         test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
         test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
@@ -252,7 +274,7 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_m
 
     return test_score_array
 
-def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, test_mae_loss, threshold):
+def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -268,7 +290,7 @@ def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, 
         test_score_df = test_score_df[time_steps:-time_steps]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_mae_loss[test_mae_loss.columns[i]])
+        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
         test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
         test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])

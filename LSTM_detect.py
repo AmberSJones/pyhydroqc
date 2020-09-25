@@ -5,6 +5,7 @@
 
 print("LSTM exploration script begin.")
 
+import rules_detect
 import anomaly_utilities
 import LSTM_utilities
 import numpy as np
@@ -56,80 +57,47 @@ df = sensor_array[sensor[0]]
 #   df_cor = df_cor.replace(-9999, np.NaN)
 df_sub = df.loc['2017-01-01 00:00':'2017-07-01 00:00']
 
-# Scale data into new column. Scale based on the entire dataset because our model training is on a very small subset
-# Use double [] to get single column as data frame rather than series
-scaler = LSTM_utilities.create_scaler(df_sub[['cor']])
-df_sub['cor_scaled'] = scaler.transform(df_sub[['cor']])
+
+# Rules based Detection
+# General sensor ranges for LRO data:
+# Temp min: -5, max: 30
+# SpCond min: 100, max: 900
+# pH min: 7.5, max: 9.0
+# do min: 2, max: 16
+
+maximum = 900
+minimum = 150
+df = rules_detect.range_check(df, maximum, minimum)
+length = 6
+df = rules_detect.persistence(df, length)
+size = rules_detect.group_size(df)
+df = rules_detect.interpolate(df)
 
 
-# using wrapper
-X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = vanilla_LSTM_model(df, 10, 5000, 128, 0.2, 3)
+# Model creation
+# scales data, reshapes data, builds and trains model, evaluates model results
+time_steps = 10
+samples = 5000
+cells = 128
+dropout = 0.2
+patience = 6
+
+X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = LSTM_utilities.vanilla_LSTM_model(df, time_steps, samples, cells, dropout, patience)
 
 plt.plot(history.history['loss'], label='Training Loss')
 plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
-
-sns.distplot(train_residuals, bins=50, kde=True)
-plt.show()
-# choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = [18]
-sns.distplot(test_residuals, bins=50, kde=True)
-plt.show()
-
-
-
-
-
-
-
-# Create datasets with sequences
-time_steps = 50
-samples = 10000
-X_train, y_train = LSTM_utilities.create_training_dataset(df_sub[['cor_scaled']], samples, time_steps)
-X_train, y_train = LSTM_utilities.create_clean_training_dataset(df[['det_cor']], df[['anomaly']], samples, time_steps)
-
-
-print(X_train.shape)
-print(y_train.shape)
-
-# Create model and train to data
-num_features = X_train.shape[2]
-model = LSTM_utilities.create_vanilla_model(128, time_steps, num_features, 0.2)
-model.summary()
-history = LSTM_utilities.train_model(X_train, y_train, model, patience=3)
-
-# Plot Metrics and Evaluate the Model
-# plot training loss and validation loss with matplotlib and pyplot
-plt.plot(history.history['loss'], label='Training Loss')
-plt.plot(history.history['val_loss'], label='Validation Loss')
-plt.legend()
-plt.show()
-
-# Create dataset on full raw data. First scale according to existing scaler.
-df['raw_scaled'] = scaler.transform(df[['raw']])
-X_raw, y_raw = LSTM_utilities.create_sequenced_dataset(df[['raw_scaled']], time_steps)
-print(X_raw.shape)
-print(y_raw.shape)
-
-# Evaluate the model applied to the full dataset
-train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_vanilla_model(X_train, y_train, X_raw, y_raw, model)
-
-
 
 # look at the distribution of the errors using a distribution plot
 # could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
 # However, that is a set number of anomalies.
-sns.distplot(train_mae_loss, bins=50, kde=True)
+sns.distplot(train_residuals, bins=50, kde=True)
 plt.show()
-# choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = [0.75]
-sns.distplot(test_mae_loss, bins=50, kde=True)
+# choose a threshold to use for anomalies based on x-axis.
+threshold = [18]
+sns.distplot(test_residuals, bins=50, kde=True)
 plt.show()
-
-
-# Transform predictions back to original units
-predictions_unscaled = pd.DataFrame(scaler.inverse_transform(predictions))
 
 
 # Detect anomalies
