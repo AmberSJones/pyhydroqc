@@ -59,7 +59,6 @@ for i in range(0, len(sensor_array)):
     size.append(s)
     sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
 
-
 # Create new data frame with raw and corrected data for variables of interest
 df_det_cor = pd.DataFrame(index=df_full.index)
 df_det_cor['temp_cor'] = sensor_array['temp']['det_cor']
@@ -90,7 +89,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = LSTM_utilities.multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -205,7 +204,7 @@ print('F2 = %f' % do_metrics.f2)
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-    plt.plot(df_cor[df_cor.columns[i]], 'm', label='corrected data' )
+    plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
     plt.plot(test_score_array[i]['pred_unscaled'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(test_score_array[i]['pred_unscaled'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
