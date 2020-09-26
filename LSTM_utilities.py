@@ -287,7 +287,7 @@ def create_bidir_sequenced_dataset(X, time_steps=10):
     return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
 
 
-def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
+def create_autoen_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
     """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
     Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
     Uses autoencoder by mirroring/reversing encoder to be a decoder."""
@@ -342,7 +342,7 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     return history
 
 
-def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
+def detect_anomalies(test, predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -358,16 +358,15 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_r
         test_score_df = test_score_df[time_steps:]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
+        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
-        test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
+        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
         # anomalies = test_score_df[test_score_df.anomaly == True]
         test_score_array.append(test_score_df)
 
     return test_score_array
 
-def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
+def detect_anomalies_bidir(test, predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -383,10 +382,9 @@ def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, 
         test_score_df = test_score_df[time_steps:-time_steps]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
+        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
-        test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
+        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
         # anomalies = test_score_df[test_score_df.anomaly == True]
         test_score_array.append(test_score_df)
 

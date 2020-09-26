@@ -107,7 +107,7 @@ for i in range(0, train_residuals.shape[1]):
     plt.show()
 
 # Choose thresholds to use for anomalies based on the x-axes.
-threshold = [0.5, 50, 0.3, 2.0]
+threshold = [0.5, 50, 0.1, 2.0]
 # Examine errors in the test data
 for i in range(0, test_residuals.shape[1]):
     plt.figure()
@@ -115,7 +115,7 @@ for i in range(0, test_residuals.shape[1]):
     plt.show()
 
 # Detect anomalies
-test_score_array = LSTM_utilities.detect_anomalies_bidir(df_raw_scaled, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
+test_score_array = LSTM_utilities.detect_anomalies_bidir(df_det_cor, predictions, time_steps, test_residuals, threshold)
 
 
 # Use events function to widen and number anomalous events
@@ -207,9 +207,9 @@ for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
     plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
-    plt.plot(test_score_array[i]['pred_unscaled'], 'c', label='predicted values')
+    plt.plot(test_score_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(test_score_array[i]['pred_unscaled'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(test_score_array[i]['prediction'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
