@@ -82,8 +82,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience)
-
+X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = LSTM_utilities.bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -95,17 +94,16 @@ plt.show()
 # look at the distribution of the errors using a distribution plot
 # could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
 # However, that is a set number of anomalies.
-sns.distplot(train_mae_loss, bins=50, kde=True)
+sns.distplot(train_residuals, bins=50, kde=True)
 plt.show()
 # choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = [0.75]
-sns.distplot(test_mae_loss, bins=50, kde=True)
+threshold = [18]
+sns.distplot(test_residuals, bins=50, kde=True)
 plt.show()
 
-
 # Detect anomalies
-test_data = df[['raw_scaled']]
-test_score_array = LSTM_utilities.detect_anomalies_bidir(test_data, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
+test_data = df[['det_cor']]
+test_score_array = LSTM_utilities.detect_anomalies_bidir(test_data, predictions, time_steps, test_residuals, threshold)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
@@ -140,9 +138,9 @@ print("\n LSTM script end.")
 
 plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
-plt.plot(test_score_array[0]['pred_unscaled'], 'c', label='predicted values')
+plt.plot(test_score_array[0]['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(test_score_array[0]['pred_unscaled'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(test_score_array[0]['prediction'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
