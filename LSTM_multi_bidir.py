@@ -5,6 +5,7 @@
 
 print("LSTM multivariate script begin.")
 
+import rules_detect
 import anomaly_utilities
 import LSTM_utilities
 import numpy as np
@@ -39,12 +40,31 @@ year = 2014
 # Get data
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
 
+# Rules based detection
+# General sensor ranges for LRO data:
+# Temp min: -5, max: 30
+# SpCond min: 100, max: 900
+# pH min: 7.5, max: 9.0
+# do min: 2, max: 16
+
+maximum = [30, 900, 9.0, 16]
+minimum = [-5, 100, 7.5, 2]
+length = 6
+
+size = []
+for i in range(0, len(sensor_array)):
+    sensor_array[sensor[i]] = rules_detect.range_check(sensor_array[sensor[i]], maximum[i], minimum[i])
+    sensor_array[sensor[i]] = rules_detect.persistence(sensor_array[sensor[i]], length)
+    s = rules_detect.group_size(sensor_array[sensor[i]])
+    size.append(s)
+    sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
+
 # Create new data frame with raw and corrected data for variables of interest
-df_cor = pd.DataFrame(index=df_full.index)
-df_cor['temp_cor'] = df_full['temp_cor']
-df_cor['cond_cor'] = df_full['cond_cor']
-df_cor['ph_cor'] = df_full['ph_cor']
-df_cor['do_cor'] = df_full['do_cor']
+df_det_cor = pd.DataFrame(index=df_full.index)
+df_det_cor['temp_cor'] = sensor_array['temp']['det_cor']
+df_det_cor['cond_cor'] = sensor_array['cond']['det_cor']
+df_det_cor['ph_cor'] = sensor_array['ph']['det_cor']
+df_det_cor['do_cor'] = sensor_array['do']['det_cor']
 
 df_raw = pd.DataFrame(index=df_full.index)
 df_raw['temp'] = df_full['temp']
@@ -52,29 +72,25 @@ df_raw['cond'] = df_full['cond']
 df_raw['ph'] = df_full['ph']
 df_raw['do'] = df_full['do']
 
-print(df_cor.shape)
+df_anomaly = pd.DataFrame(index=df_full.index)
+df_anomaly['temp_anom'] = sensor_array['temp']['anomaly']
+df_anomaly['cond_anom'] = sensor_array['cond']['anomaly']
+df_anomaly['ph_anom'] = sensor_array['ph']['anomaly']
+df_anomaly['do_anom'] = sensor_array['do']['anomaly']
+
+print(df_det_cor.shape)
 print(df_raw.shape)
 
-# Scale data. Scale all columns and put in new data frame.
-scaler = LSTM_utilities.create_scaler(df_cor)
-df_scaled = pd.DataFrame(scaler.transform(df_cor), index=df_cor.index, columns=df_cor.columns)
-print(df_scaled.shape)
-
-# Create datasets with sequences
+# Model creation
+# scales data, reshapes data, builds and trains model, evaluates model results
 time_steps = 10
 samples = 5000
-X_train_mult, y_train_mult = LSTM_utilities.create_bidir_training_dataset(df_scaled, samples, time_steps)
-print("X_train_mult.shape: " + str(X_train_mult.shape))
-print("y_train_mult.shape: " + str(y_train_mult.shape))
+cells = 128
+dropout = 0.2
+patience = 6
 
-# Create and train model.
-# If model uses an autoencoder, the input needs to be the same shape as the output.
-# For a vanilla model, it doesn't matter.
-num_features = X_train_mult.shape[2]
-model = LSTM_utilities.create_bidir_model(128, time_steps, num_features, 0.2)
-model.summary()
-# history = LSTM_utilities.train_model(X_train_mult, X_train_mult, model, patience=3)
-history = LSTM_utilities.train_model(X_train_mult, y_train_mult, model, patience=3)
+X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = LSTM_utilities.multi_bidir_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -83,38 +99,23 @@ plt.plot(history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# Create dataset on full raw data. First scale according to existing scaler.
-df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
-print(df_raw_scaled.shape)
-
-# Create sequenced dataset.
-X_raw, y_raw = LSTM_utilities.create_bidir_sequenced_dataset(df_raw_scaled, time_steps)
-print("X_raw.shape: " + str(X_raw.shape))
-print("y_raw.shape: " + str(y_raw.shape))
-
-# Evaluate the model on the raw data
-# X_train_pred, train_mae_loss, model_eval, X_test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_model(X_train_mult, X_raw, X_raw, model)
-train_pred, train_mae_loss, model_eval, test_pred, test_mae_loss, predictions = LSTM_utilities.evaluate_vanilla_model(X_train_mult, y_train_mult, X_raw, y_raw, model)
 
 # Look at the distribution of the errors using distribution plots
-for i in range(0, train_mae_loss.shape[1]):
+for i in range(0, train_residuals.shape[1]):
     plt.figure()
-    sns.distplot(train_mae_loss[i], bins=50, kde=True)
+    sns.distplot(train_residuals[i], bins=50, kde=True)
     plt.show()
 
 # Choose thresholds to use for anomalies based on the x-axes.
-threshold = [0.4, 0.5, 0.5, 0.3]
+threshold = [0.5, 50, 0.1, 2.0]
 # Examine errors in the test data
-for i in range(0, test_mae_loss.shape[1]):
+for i in range(0, test_residuals.shape[1]):
     plt.figure()
-    sns.distplot(test_mae_loss[i], bins=50, kde=True)
+    sns.distplot(test_residuals[i], bins=50, kde=True)
     plt.show()
 
-# Unscale predictions back to original units
-predictions_unscaled = pd.DataFrame(scaler.inverse_transform(predictions), columns=df_cor.columns)
-
 # Detect anomalies
-test_score_array = LSTM_utilities.detect_anomalies_bidir(df_raw_scaled, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
+test_score_array = LSTM_utilities.detect_anomalies_bidir(df_det_cor, predictions, time_steps, test_residuals, threshold)
 
 
 # Use events function to widen and number anomalous events
@@ -205,10 +206,10 @@ print('F2 = %f' % do_metrics.f2)
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-    plt.plot(df_cor[df_cor.columns[i]], 'm', label='corrected data' )
-    plt.plot(test_score_array[i]['pred_unscaled'], 'c', label='predicted values')
+    plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
+    plt.plot(test_score_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(test_score_array[i]['pred_unscaled'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(test_score_array[i]['prediction'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()

@@ -99,11 +99,9 @@ threshold = [18]
 sns.distplot(test_residuals, bins=50, kde=True)
 plt.show()
 
-
 # Detect anomalies
-test_data = df[['raw_scaled']]
-test_score_array = LSTM_utilities.detect_anomalies(test_data, predictions, predictions_unscaled, time_steps, test_mae_loss, threshold)
-
+test_data = df[['det_cor']]
+test_score_array = LSTM_utilities.detect_anomalies(test_data, predictions, time_steps, test_residuals, threshold)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
@@ -139,9 +137,9 @@ print("\n LSTM script end.")
 
 plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
-plt.plot(test_score_array[0]['pred_unscaled'], 'c', label='predicted values')
+plt.plot(test_score_array[0]['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(test_score_array[0]['pred_unscaled'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(test_score_array[0]['prediction'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
