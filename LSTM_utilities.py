@@ -93,6 +93,76 @@ def multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples
     return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
 
 
+def bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience):
+    """df needs to have column det_cor and anomaly"""
+
+    scaler = create_scaler(df[['det_cor']])
+    df['det_scaled'] = scaler.transform(df[['det_cor']])
+
+    X_train, y_train = create_bidir_clean_training_dataset(df[['det_scaled']], df[['anomaly']], samples, time_steps)
+
+    num_features = X_train.shape[2]
+
+    print(X_train.shape)
+    print(y_train.shape)
+    print(num_features)
+
+    model = create_bidir_model(cells, time_steps, num_features, dropout)
+    model.summary()
+    history = train_model(X_train, y_train, model, patience)
+
+    df['raw_scaled'] = scaler.transform(df[['raw']])
+    X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], time_steps)
+
+    train_pred = model.predict(X_train)
+    test_pred = model.predict(X_test)
+    model_eval = model.evaluate(X_test, y_test)
+
+    train_predictions = pd.DataFrame(scaler.inverse_transform(train_pred))
+    predictions = pd.DataFrame(scaler.inverse_transform(test_pred))
+    y_train_unscaled = pd.DataFrame(scaler.inverse_transform(y_train))
+    y_test_unscaled = pd.DataFrame(scaler.inverse_transform(y_test))
+
+    train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
+    test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
+
+    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+
+
+def multi_bidir_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+    """df needs to have column det_cor and anomaly"""
+
+    scaler = create_scaler(df_det_cor)
+    df_scaled = pd.DataFrame(scaler.transform(df_det_cor), index=df_det_cor.index, columns=df_det_cor.columns)
+
+    X_train, y_train = create_bidir_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
+    num_features = X_train.shape[2]
+
+    print(X_train.shape)
+    print(y_train.shape)
+    print(num_features)
+
+    model = create_bidir_model(cells, time_steps, num_features, dropout)
+    model.summary()
+    history = train_model(X_train, y_train, model, patience)
+
+    df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
+    X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, time_steps)
+
+    train_pred = model.predict(X_train)
+    test_pred = model.predict(X_test)
+    model_eval = model.evaluate(X_test, y_test)
+
+    train_predictions = pd.DataFrame(scaler.inverse_transform(train_pred))
+    predictions = pd.DataFrame(scaler.inverse_transform(test_pred))
+    y_train_unscaled = pd.DataFrame(scaler.inverse_transform(y_train))
+    y_test_unscaled = pd.DataFrame(scaler.inverse_transform(y_test))
+
+    train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
+    test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
+
+    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+
 
 def create_scaler(data):
     """Creates a scaler object based on input data that removes mean and scales to unit vectors."""
@@ -181,20 +251,43 @@ def create_bidir_training_dataset(X, training_samples="", time_steps=10):
     return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
 
 
+def create_bidir_clean_training_dataset(X, anomalies, training_samples="", time_steps=10):
+    """Splits data into training and testing data based on random selection.
+    Reshapes data to temporalize it into (samples, timestamps, features).
+    - Samples is the number of rows/observations. Training_samples is the number of observations used for training.
+    - Time stamps defines a sequence of how far back to consider for each sample/row.
+    - Features refers to the number of columns/variables."""
+    Xs, ys = [], []  # start empty list
+    if training_samples == "":
+        training_samples = int(len(X) * 0.10)
+
+    # create sample sequences from a randomized subset of the data series for training
+    j = sample(range(time_steps, len(X) - time_steps), len(X) - 2 * time_steps)
+    i = 0
+    while (training_samples > len(ys)) and (i < len(j)):
+        if not np.any(anomalies.iloc[(j[i] - time_steps):(j[i] + time_steps + 1)]):
+            v = pd.concat([X.iloc[(j[i] - time_steps):j[i]], X.iloc[(j[i] + 1):(j[i] + time_steps + 1)]]).values
+            ys.append(X.iloc[j[i]])
+            Xs.append(v)
+        i += 1
+
+    return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
+
+
 def create_bidir_sequenced_dataset(X, time_steps=10):
     """Reshapes data to temporalize it into (samples, timestamps, features).
     Time stamps defines a sequence of how far back to consider for each sample/row.
     Features refers to the number of columns/variables."""
     Xs, ys = [], []  # start empty list
     for i in range(time_steps, len(X) - time_steps):  # loop within range of data frame minus the time steps
-        v = X.iloc[(i - time_steps):(i + time_steps)].values  # data from i backward and forward the specified number of time steps
+        v = pd.concat([X.iloc[(i - time_steps):i], X.iloc[(i + 1):(i + time_steps + 1)]]).values  # data from i backward and forward the specified number of time steps
         Xs.append(v)
         ys.append(X.iloc[i].values)
 
     return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
 
 
-def create_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
+def create_autoen_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
     """Uses sequential model class from keras. Adds LSTM layer. Input samples, timesteps, features.
     Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
     Uses autoencoder by mirroring/reversing encoder to be a decoder."""
@@ -249,7 +342,7 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     return history
 
 
-def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
+def detect_anomalies(test, predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -265,16 +358,15 @@ def detect_anomalies(test, predictions, unscaled_predictions, time_steps, test_r
         test_score_df = test_score_df[time_steps:]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
+        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
-        test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
+        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
         # anomalies = test_score_df[test_score_df.anomaly == True]
         test_score_array.append(test_score_df)
 
     return test_score_array
 
-def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, test_residuals, threshold):
+def detect_anomalies_bidir(test, predictions, time_steps, test_residuals, threshold):
     """Create array of data frames for each variable.
     Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
     test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
@@ -290,10 +382,9 @@ def detect_anomalies_bidir(test, predictions, unscaled_predictions, time_steps, 
         test_score_df = test_score_df[time_steps:-time_steps]
         # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
         test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['loss'] = np.array(test_residuals[test_residuals.columns[i]])
+        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
         test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.loss > test_score_df.threshold
-        test_score_df['pred_unscaled'] = np.array(unscaled_predictions[unscaled_predictions.columns[i]])
+        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
         # anomalies = test_score_df[test_score_df.anomaly == True]
         test_score_array.append(test_score_df)
 
