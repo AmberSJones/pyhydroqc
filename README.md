@@ -51,7 +51,7 @@ Contains utilities for detecting anomalies using LSTM models:
 ### LSTM_detect, LSTM_bidirectional, LSTM_multi, LSTM_multi_bidir
 Each model type includes an example of application to the Logan River data. Fetches data, creates and trains the model, applies the model and identifies anomalies, widens anomalous events and determines metrics, all based on functions from the anomaly_utilities and LSTM_utilities files.
 
-### prophet_detct
+### prophet_detect
 
 ### ARIMA_correct
 Contains functionality to perform corrections using ARIMA models:
@@ -59,8 +59,8 @@ Contains functionality to perform corrections using ARIMA models:
 - ARIMA_forecast: Creates predictions of data where anomalies occur
 - generate_corrections: The primary function called to determine corrections. Passes through data with anomalies and determines corrections using picewise ARIMA models. Corrections are determined by averaging both a forecast and a backcast.
 
-### LSTM_correct and LSTM_correct_bidir
-Each model type contains a function for correcting both univariate and multivariate data:
+### LSTM_correct, LSTM_multi_correct
+Separate functions correct univariate and multivariate data. The functions step through each data point and determine a correction based on the previous time_steps.
 - LSTM_correct
 - LSTM_multi_correct
 
