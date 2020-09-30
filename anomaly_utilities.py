@@ -10,6 +10,7 @@
 import os
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 pd.options.mode.chained_assignment = None
 
 
@@ -225,4 +226,40 @@ def xfade(xfor, xbac):
         # add the results
         x = xfor_faded + xbac_faded
     return x
+
+
+def set_dynamic_threshold(data, alpha, window_sz):
+    """Determines a threshold based on the local confidence interval, 
+    considering the data looking forward and backward window_sz steps.
+    data is a series like object
+    alpha is a scalar between 0 and 1 representing the acceptable uncertainty
+    window_sz is an integer representing how many data points to use in both directions
+    the return value is an array of pairs
+    """
+    threshold = []  # initialize empty list to hold thresholds
+    
+    # if the window size parameter is too big for this data set
+    if (window_sz > len(data)):
+        print("WARNING: in set_dynamic_threshold(), window_sz > len(data)! Reducing window_sz.")
+        window_sz = len(data)  # reduce the window to the max allowable
+
+    # loop through data and add each threshold pair
+    for i in range(0,len(data)):
+        if(window_sz > i):  # index is closer than window size to left edge of data
+            lo = 0
+        else:  # look back as far as the window size
+            lo = i - window_sz
+        if (i + window_sz > len(data)):  # index is close to right edge of data
+            hi = len(data)
+        else:  # look forward as far as the window size
+            hi = i + window_sz
+
+        # calculate the range of probable values using given alpha
+        mean = data[lo:hi].mean()
+        sigma = data[lo:hi].std()
+        z = norm.ppf(1-alpha/2)
+        n = len(data[lo:hi])
+        # append pair of upper and lower thresholds
+        threshold.append([mean - z*sigma/np.sqrt(n), mean + z*sigma/np.sqrt(n)])
+    return threshold
 
