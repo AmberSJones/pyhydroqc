@@ -49,13 +49,14 @@ Contains utilities for detecting anomalies using LSTM models:
 - detect_anomalies, detect_anomalies_bidir: Uses model results and user input threshold to detect anomalies in observations.
 
 ### LSTM_detect.py
+Each model type includes an example of application to the Logan River data. Fetches data, creates and trains the model, applies the model and identifies anomalies, widens anomalous events and determines metrics, all based on functions from the anomaly_utilities and LSTM_utilities files.
 - LSTM_detect
 - LSTM_bidirectional
 - LSTM_multi
 - LSTM_multi_bidir
-Each model type includes an example of application to the Logan River data. Fetches data, creates and trains the model, applies the model and identifies anomalies, widens anomalous events and determines metrics, all based on functions from the anomaly_utilities and LSTM_utilities files.
 
-### FBP_detect
+
+### FBP_detect.py
 Contains functionality to build a Prophet model and apply it to make predictions.
 
 ### ARIMA_correct.py
