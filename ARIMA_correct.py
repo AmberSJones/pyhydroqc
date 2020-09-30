@@ -5,11 +5,11 @@
 
 import numpy as np
 import pandas as pd
-import statsmodels.api as api
 import anomaly_utilities
+import pmdarima as pm
 
 
-def ARIMA_group(df, p, d, q):
+def ARIMA_group(df, min_group_len=20):
     """Examines detected events and performs conditional widening to ensure
     that widened event is sufficient for forecasting/backcasting.
     df is a data frame with the required column 'group'."""
@@ -22,7 +22,7 @@ def ARIMA_group(df, p, d, q):
         group_len = len(df.loc[df['group'] == i]['group'])
         # if this group is not an anomaly event and is too small to support an ARIMA model
         if ((df.loc[df['group'] == i]['detected_event'][0] == 0) and
-            ((group_len < p) or (group_len < d) or (group_len < q))):
+            (group_len < min_group_len)):
             # this group needs to be added to previous group
             if (new_gi > 0):
                 new_gi -= 1
@@ -38,13 +38,13 @@ def ARIMA_group(df, p, d, q):
                 merging = False
                 new_gi += 1
 
-    if (new_gi < max((df['group']))/2):
+    if (new_gi < (max(df['group'])/2)):
         print("WARNING: more than half of the anomaly events have been merged!")
     df['ARIMA_group']=ARIMA_group
     return df
 
 
-def ARIMA_forecast(x, l, p, d, q):
+def ARIMA_forecast(x, l):
     """ ARIMA_forecast is used to create predictions of data where anomalies occur.
     Creates ARIMA model and outputs forecasts of specified length.
     x is an array of values from which to predict corrections. corresponds to non-anomalous data.
@@ -52,15 +52,12 @@ def ARIMA_forecast(x, l, p, d, q):
     Outputs:
     y is an array of length l of the corrected values as predicted by the model
     """
-    model = api.tsa.SARIMAX(x, order=(p, d, q))
-    model_fit = model.fit(disp=0)
-    results = model_fit.get_forecast(l)
-    y = results.prediction_results.results.forecasts[0]
-
+    model = pm.auto_arima(x)
+    y = model.predict(l)
     return y
 
 
-def generate_corrections(df, p, d, q):
+def generate_corrections(df):
     """generate_corrections uses passes through data with identified anomalies and determines corrections
     using an ARIMA model. Corrections are determined by combining both a forecast and a backcast in a weighted
     average to be informed by non-anamolous data before and after anomalies.
@@ -76,7 +73,7 @@ def generate_corrections(df, p, d, q):
 
     # assign group index numbers to each set of consecutiveTrue/False data points
     df = anomaly_utilities.group_bools(df)
-    df = ARIMA_group(df, p, d, q)
+    df = ARIMA_group(df)
 
     # for each group index
     for i in range(0, (max(df['ARIMA_group']) + 1)):
@@ -92,16 +89,14 @@ def generate_corrections(df, p, d, q):
                 # create an array of corrected data for current anomalous group
                 # i-1 is the index of the previous group being used to forecast
                 yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)]['raw']),
-                                           len(df.loc[df['ARIMA_group'] == i]),
-                                           p, d, q)
+                                           len(df.loc[df['ARIMA_group'] == i]))
                 forecasted = True
             # perform backcasting to generate corrected data points
             if (i != max(df['ARIMA_group'])): # if not at the end
                 # forecast in reverse direction
                 # data associated with group i+1 gets flipped for making a forecast
                 yrev = ARIMA_forecast(np.flip(np.array(df.loc[df['ARIMA_group'] == (i + 1)]['raw'])),
-                                           len(df.loc[df['ARIMA_group'] == i]),
-                                           p, d, q)
+                                           len(df.loc[df['ARIMA_group'] == i]))
                 # output is reversed, making what was forecast into a backcast
                 ybac = np.flip(yrev)
                 backcasted = True
@@ -126,7 +121,7 @@ def generate_corrections(df, p, d, q):
     return df
 
 
-df = generate_corrections(df, p, d, q)
+df = generate_corrections(df)
 
 
 ############ PLOTTING ##############
