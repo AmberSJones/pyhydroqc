@@ -23,22 +23,22 @@ Scripts are organized by method for anomaly detection and data correction. Sever
 
 ## Script Descriptions
 
-### rules_detect
+### rules_detect.py
 Contains functions for rules-based anomaly detection and preprocessing. Functions include a range check with user defined limits, a check for data persistence, and a function to identify the maximum length of identified anomalous groups. A function is also included to correct data with linear interpolation, a typical approach for short anomalous events.
 
-### anomaly_utilities
-Contains functions for performing anomaly detection:
+### anomaly_utilities.py
+Contains functions for performing anomaly detection and correction:
 - get_data: Retrieves and formats data
-- anomaly_events: Widens the window of anomaly detection
-- compare_labeled_detected: Compares events detected by an algorithm to events labeled by a technician
+- anomaly_events: Widens anomaly detections
+- compare_labeled_detected: Compares anomaly events detected by an algorithm to events labeled by a technician
 - metrics: Determines performance metrics of the detections relative to labeled data.
-- group_bools: Indexes groups of anomalous and normal data to facilitate correction.
-- xfade: Uses a cross-fade to blend forecasted and backcasted data to correct periods of anomalous data.
+- group_bools: Indexes contiguous groups of anomalous and normal data to facilitate correction.
+- xfade: Uses a cross-fade to blend forecasted and backcasted data over anomaly events for generating data correction.
 
-### ARIMA_detect
+### ARIMA_detect.py
 Contains functionality to build an ARIMA model, apply it to make predictions, set a threshold, and detect anomalies. Includes an example of application to Logan River data with ARIMA hyperparameters (p, d, q) determined by an external automatic procedure. Example uses widening events, comparing, and metrics functions from the anomaly_utilities.
 
-### LSTM_utilities
+### LSTM_utilities.py
 Contains utilities for detecting anomalies using LSTM models:
 - vanilla_LSTM_model, multi_vanilla_LSTM_wrapper, bidir_LSTM_model, multi_bidir_LSTM_model: wrappers that call other functions to scale and reshape data, create and train a model, and output model predictions and residuals.
 - create_scaler: Creates a scaler object based on input data.
@@ -48,19 +48,24 @@ Contains utilities for detecting anomalies using LSTM models:
 - train_model: Fits the model to training data. Uses a validation subset to monitor for improvemens to ensure that training is not too long.
 - detect_anomalies, detect_anomalies_bidir: Uses model results and user input threshold to detect anomalies in observations.
 
-### LSTM_detect, LSTM_bidirectional, LSTM_multi, LSTM_multi_bidir
+### LSTM_detect.py
+- LSTM_detect
+- LSTM_bidirectional
+- LSTM_multi
+- LSTM_multi_bidir
 Each model type includes an example of application to the Logan River data. Fetches data, creates and trains the model, applies the model and identifies anomalies, widens anomalous events and determines metrics, all based on functions from the anomaly_utilities and LSTM_utilities files.
 
-### prophet_detect
+### FBP_detect
+Contains functionality to build a Prophet model and apply it to make predictions.
 
-### ARIMA_correct
-Contains functionality to perform corrections using ARIMA models:
+### ARIMA_correct.py
+Contains functionality to perform corrections and plot results using ARIMA models:
 - ARIMA_group:
 - ARIMA_forecast: Creates predictions of data where anomalies occur
 - generate_corrections: The primary function called to determine corrections. Passes through data with anomalies and determines corrections using picewise ARIMA models. Corrections are determined by averaging both a forecast and a backcast.
 
-### LSTM_correct, LSTM_multi_correct
-Separate functions correct univariate and multivariate data. The functions step through each data point and determine a correction based on the previous time_steps.
+### LSTM_correct.py
+Separate functions correct univariate and multivariate data and plot results. The functions step through each data point and determine a correction based on the previous time_steps.
 - LSTM_correct
 - LSTM_multi_correct
 
