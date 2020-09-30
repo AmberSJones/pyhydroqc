@@ -27,7 +27,6 @@ def get_data(site, sensor, year, path=""):
     sensor_array (array of pandas DataFrames): each data frame has 3 columns for the 
         variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'.
     """
-    # TODO: make sensors input argument a list and output df with multiple normal_lbl columns.
     if path == "":
         path = os.getcwd() + "/"
     df_full = pd.read_csv(path + site + str(year) + ".csv",

@@ -22,7 +22,7 @@ class LSTM_modelContainer:
     pass
 
 
-def vanilla_LSTM_model(df, time_steps, samples, cells, dropout, patience):
+def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     """df needs to have column det_cor and anomaly"""
 
     scaler = create_scaler(df[['det_cor']])
@@ -55,10 +55,25 @@ def vanilla_LSTM_model(df, time_steps, samples, cells, dropout, patience):
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
-    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+    LSTM_univar.X_train = X_train
+    LSTM_univar.y_train = y_train
+    LSTM_univar.model = model
+    LSTM_univar.history = history
+    LSTM_univar.X_test = X_test
+    LSTM_univar.y_test = y_test
+    LSTM_univar.model_eval = model_eval
+    LSTM_univar.predictions = predictions
+    LSTM_univar.train_residuals = train_residuals
+    LSTM_univar.test_residuals = test_residuals
+
+    return LSTM_univar
 
 
-def multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+class LSTM_modelContainer:
+    pass
+
+
+def LSTM_multivar(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
     """df needs to have column det_cor and anomaly"""
 
     scaler = create_scaler(df_det_cor)
@@ -90,10 +105,25 @@ def multi_vanilla_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
-    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+    LSTM_multivar.X_train = X_train
+    LSTM_multivar.y_train = y_train
+    LSTM_multivar.model = model
+    LSTM_multivar.history = history
+    LSTM_multivar.X_test = X_test
+    LSTM_multivar.y_test = y_test
+    LSTM_multivar.model_eval = model_eval
+    LSTM_multivar.predictions = predictions
+    LSTM_multivar.train_residuals = train_residuals
+    LSTM_multivar.test_residuals = test_residuals
+
+    return LSTM_multivar
 
 
-def bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience):
+class LSTM_modelContainer:
+    pass
+
+
+def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
     """df needs to have column det_cor and anomaly"""
 
     scaler = create_scaler(df[['det_cor']])
@@ -126,10 +156,25 @@ def bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience):
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
-    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+    LSTM_univar_bidir.X_train = X_train
+    LSTM_univar_bidir.y_train = y_train
+    LSTM_univar_bidir.model = model
+    LSTM_univar_bidir.history = history
+    LSTM_univar_bidir.X_test = X_test
+    LSTM_univar_bidir.y_test = y_test
+    LSTM_univar_bidir.model_eval = model_eval
+    LSTM_univar_bidir.predictions = predictions
+    LSTM_univar_bidir.train_residuals = train_residuals
+    LSTM_univar_bidir.test_residuals = test_residuals
+
+    return LSTM_univar_bidir
 
 
-def multi_bidir_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+class LSTM_modelContainer:
+    pass
+
+
+def LSTM_multivar_bidir(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
     """df needs to have column det_cor and anomaly"""
 
     scaler = create_scaler(df_det_cor)
@@ -161,7 +206,18 @@ def multi_bidir_LSTM_model(df_det_cor, df_anomaly, df_raw, time_steps, samples, 
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
-    return X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals
+    LSTM_multivar_bidir.X_train = X_train
+    LSTM_multivar_bidir.y_train = y_train
+    LSTM_multivar_bidir.model = model
+    LSTM_multivar_bidir.history = history
+    LSTM_multivar_bidir.X_test = X_test
+    LSTM_multivar_bidir.y_test = y_test
+    LSTM_multivar_bidir.model_eval = model_eval
+    LSTM_multivar_bidir.predictions = predictions
+    LSTM_multivar_bidir.train_residuals = train_residuals
+    LSTM_multivar_bidir.test_residuals = test_residuals
+
+    return LSTM_multivar_bidir
 
 
 def create_scaler(data):
