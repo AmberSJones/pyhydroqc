@@ -284,18 +284,26 @@ def set_cons_threshold(model_fit, alpha_in):
     return threshold
 
 
-def detect_anomalies(residuals, threshold, summary=True):
-    """Compares residuals to threshold to identify anomalies. Can use set threshold level or threshold
-    determined by set_threshold function."""
-    # DETERMINE ANOMALIES
-    detected_anomaly = np.abs(residuals) > 11  # gives bools
-    detected_anomaly[0][0] = False  # set 1st value to false
+def detect_anomalies(observed, predictions, residuals, threshold, summary):
+    """Create array of data frames for each variable.
+    Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
+    test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
+    unscaled_predictions are the model prediction inverse scaled to original units.
+    time_steps is the number of time steps used to predict.
+    test_mae_loss is the model error from the evaluate_model function.
+    threshold is a list of thresholds for detecting anomalies from the model errors. length should = number of variables."""
+    detections = pd.DataFrame(observed)
+    detections['prediction'] = np.array(predictions)
+    detections['residual'] = np.array(residuals)
+    detections['anomaly'] = (detections['residual'] < threshold['low']) | (threshold['high'] < detections['residual'])
+    # anomalies = test_score_df[test_score_df.anomaly == True]
+
     # output summary
     if summary:
         print('\n\n')
-        print('\nratio of detections: %f' % ((sum(detected_anomaly[0])/len(detected_anomaly))*100), '%')
+    print('\nratio of detections: %f' % ((sum(detections.anomaly) / len(detections.anomaly)) * 100), '%')
 
-    return detected_anomaly
+    return detections
 
 
 def detect_dyn_anomalies(residuals, threshold, summary=True):
