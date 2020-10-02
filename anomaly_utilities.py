@@ -230,7 +230,7 @@ def xfade(xfor, xbac):
     return x
 
 
-def set_dynamic_threshold(residuals, alpha, window_sz):
+def set_dynamic_threshold(residuals, window_sz = 96, alpha=0.01, min_range=0.0):
     """Determines a threshold based on the local confidence interval, 
     considering the model residuals looking forward and backward window_sz steps.
     residuals is a series like object or a data frame
@@ -260,8 +260,11 @@ def set_dynamic_threshold(residuals, alpha, window_sz):
         # calculate the range of probable values using given alpha
         mean = residuals[lo:hi][0].mean()
         sigma = residuals[lo:hi][0].std()
+        range = z*sigma
+        if (range < min_range):
+            range = min_range
         # append pair of upper and lower thresholds
-        threshold.append([mean - z*sigma, mean + z*sigma])
+        threshold.append([mean - range, mean + range])
 
     threshold = pd.DataFrame(threshold, columns=['low', 'high'])
 
