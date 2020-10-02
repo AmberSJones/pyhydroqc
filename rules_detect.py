@@ -29,7 +29,7 @@ def persistence(df, length):
     Output is the dataframe with column 'anomaly' modified."""
     # temp = df.copy(deep=True)
     temp = df[['raw', 'anomaly']].copy(deep=True)
-    temp['value_grp'] = (temp.raw.diff(1)== 0)
+    temp['value_grp'] = (temp.raw.diff(1) == 0)
     temp['value_grp'] = anomaly_utilities.anomaly_events(temp['value_grp'], 0, 1)
     for i in range(1, max(temp['value_grp']) + 1):
         if(len(temp['value_grp'][temp['value_grp'] == i]) >= length):
