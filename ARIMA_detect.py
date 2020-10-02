@@ -125,7 +125,29 @@ df = sensor_array[sensor[0]]
 model_fit, residuals, predictions = build_arima_model(df['raw'], p, d, q, summary=True)
 
 # Determine threshold and detect anomalies
-threshold = set_threshold(model_fit, 0.025)
+
+dyn_threshold = set_dynamic_threshold(residuals, 0.01, 50)
+dyn_threshold.index = residuals.index
+
+
+
+
+plt.figure()
+# plt.plot(df['raw'], 'b', label='original data')
+plt.plot(residuals, 'b', label='residuals')
+plt.plot(dyn_threshold['low'], 'c', label='thesh_low')
+plt.plot(dyn_threshold['high'], 'm', mfc='none', label='thresh_high')
+plt.legend()
+plt.ylabel(sensor)
+plt.show()
+
+
+detected_anomaly = np.abs(residuals) > threshold  # gives bools
+detected_anomaly[0][0] = False  # set 1st value to false
+
+
+cons_threshold = set_threshold(model_fit, 0.055)
+
 detected_anomaly = detect_anomalies(residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
