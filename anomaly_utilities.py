@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 import statsmodels.api as api
+import warnings
 pd.options.mode.chained_assignment = None
 
 
@@ -260,11 +261,11 @@ def set_dynamic_threshold(residuals, window_sz = 96, alpha=0.01, min_range=0.0):
         # calculate the range of probable values using given alpha
         mean = residuals[lo:hi][0].mean()
         sigma = residuals[lo:hi][0].std()
-        range = z*sigma
-        if (range < min_range):
-            range = min_range
+        th_range = z*sigma
+        if (th_range < min_range):
+            th_range = min_range
         # append pair of upper and lower thresholds
-        threshold.append([mean - range, mean + range])
+        threshold.append([mean - th_range, mean + th_range])
 
     threshold = pd.DataFrame(threshold, columns=['low', 'high'])
 
@@ -316,8 +317,12 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
 
 def build_arima_model(data, p, d, q, summary):
     """Builds an ARIMA model."""
+    warnings.filterwarnings("ignore", message="A date index has been provided, but it has no associated frequency information and so will be ignored when e.g. forecasting")
     model = api.tsa.SARIMAX(data, order=(p, d, q))
+    warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
+    warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
     model_fit = model.fit(disp=0)
+    warnings.filterwarnings("default")
     residuals = pd.DataFrame(model_fit.resid)
     predict = model_fit.get_prediction()
     predictions = pd.DataFrame(predict.predicted_mean)
