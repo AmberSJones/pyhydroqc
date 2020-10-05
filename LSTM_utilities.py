@@ -55,6 +55,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    LSTM_univar = LSTM_modelContainer()
     LSTM_univar.X_train = X_train
     LSTM_univar.y_train = y_train
     LSTM_univar.model = model
@@ -105,6 +106,7 @@ def LSTM_multivar(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dr
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    LSTM_multivar = LSTM_modelContainer()
     LSTM_multivar.X_train = X_train
     LSTM_multivar.y_train = y_train
     LSTM_multivar.model = model
@@ -156,6 +158,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    LSTM_univar_bidir = LSTM_modelContainer()
     LSTM_univar_bidir.X_train = X_train
     LSTM_univar_bidir.y_train = y_train
     LSTM_univar_bidir.model = model
@@ -206,6 +209,7 @@ def LSTM_multivar_bidir(df_det_cor, df_anomaly, df_raw, time_steps, samples, cel
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    LSTM_multivar_bidir = LSTM_modelContainer()
     LSTM_multivar_bidir.X_train = X_train
     LSTM_multivar_bidir.y_train = y_train
     LSTM_multivar_bidir.model = model
@@ -396,53 +400,3 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     )
 
     return history
-
-
-def detect_anomalies(test, predictions, time_steps, test_residuals, threshold):
-    """Create array of data frames for each variable.
-    Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
-    test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
-    unscaled_predictions are the model prediction inverse scaled to original units.
-    time_steps is the number of time steps used to predict.
-    test_mae_loss is the model error from the evaluate_model function.
-    threshold is a list of thresholds for detecting anomalies from the model errors. length should = number of variables."""
-    # create array to store results for all variables
-    test_score_array = []
-    for i in range(0, test.shape[1]):
-        test_score_df = []
-        test_score_df = pd.DataFrame(test[test.columns[i]])
-        test_score_df = test_score_df[time_steps:]
-        # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
-        test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
-        test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
-        # anomalies = test_score_df[test_score_df.anomaly == True]
-        test_score_array.append(test_score_df)
-
-    return test_score_array
-
-def detect_anomalies_bidir(test, predictions, time_steps, test_residuals, threshold):
-    """Create array of data frames for each variable.
-    Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
-    test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
-    unscaled_predictions are the model prediction inverse scaled to original units.
-    time_steps is the number of time steps used to predict.
-    test_mae_loss is the model error from the evaluate_model function.
-    threshold is a list of thresholds for detecting anomalies from the model errors. length should = number of variables."""
-    # create array to store results for all variables
-    test_score_array = []
-    for i in range(0, test.shape[1]):
-        test_score_df = []
-        test_score_df = pd.DataFrame(test[test.columns[i]])
-        test_score_df = test_score_df[time_steps:-time_steps]
-        # add additional columns for loss value, threshold, whether entry is anomaly or not. could set a variable threshold.
-        test_score_df['prediction'] = np.array(predictions[predictions.columns[i]])
-        test_score_df['residual'] = np.array(test_residuals[test_residuals.columns[i]])
-        test_score_df['threshold'] = threshold[i]
-        test_score_df['anomaly'] = test_score_df.residual > test_score_df.threshold
-        # anomalies = test_score_df[test_score_df.anomaly == True]
-        test_score_array.append(test_score_df)
-
-    return test_score_array
-

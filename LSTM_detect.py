@@ -3,8 +3,6 @@
 ################################
 # This code takes raw data and corrected data, applies an LSTM model, and identifies anomalies.
 
-print("LSTM exploration script begin.")
-
 import rules_detect
 import anomaly_utilities
 import LSTM_utilities
@@ -22,6 +20,8 @@ rcParams['figure.figsize'] = 14, 8
 np.random.seed(1)
 # tf.random.set_seed(1)
 print('Tensorflow version:', tf.__version__)
+
+print("LSTM exploration script begin.")
 
 ################################################
 # LSTM Univariate Retrieve and Preprocess Data #
@@ -92,25 +92,30 @@ plt.plot(LSTM_univar.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# look at the distribution of the errors using a distribution plot
-# could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
-# However, that is a set number of anomalies.
-sns.distplot(LSTM_univar.train_residuals, bins=50, kde=True)
-plt.show()
-# choose a threshold to use for anomalies based on x-axis.
-threshold = [18]
-sns.distplot(LSTM_univar.test_residuals, bins=50, kde=True)
+# DETERMINE THRESHOLD AND DETECT ANOMALIES #
+#########################################
+threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar.test_residuals, 0.01, 75)
+threshold.index = df[time_steps:].index
+
+residuals = pd.DataFrame(LSTM_univar.test_residuals)
+residuals.index = threshold.index
+
+plt.figure()
+# plt.plot(df['raw'], 'b', label='original data')
+plt.plot(residuals, 'b', label='residuals')
+plt.plot(threshold['low'], 'c', label='thresh_low')
+plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
+plt.legend()
+plt.ylabel(sensor)
 plt.show()
 
-# DETECT ANOMALIES #
-#########################################
-test_data = df[['det_cor']]
-test_score_array = LSTM_utilities.detect_anomalies(test_data, LSTM_univar.predictions, time_steps, LSTM_univar.test_residuals, threshold)
+observed = df[['det_cor']][time_steps:]
+detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar.predictions, LSTM_univar.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
 df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
-df_anomalies['detected_anomaly'] = test_score_array[0]['anomaly']
+df_anomalies['detected_anomaly'] = detections['anomaly']
 df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
 
 # DETERMINE METRICS #
@@ -139,9 +144,9 @@ print("\n LSTM script end.")
 #########################################
 plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
-plt.plot(test_score_array[0]['prediction'], 'c', label='predicted values')
+plt.plot(detections['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(test_score_array[0]['prediction'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(detections['prediction'][detections['anomaly']], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
@@ -168,25 +173,30 @@ plt.plot(LSTM_univar_bidir.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# look at the distribution of the errors using a distribution plot
-# could find a way to do a 95% percentile or some other actual value to automatically select the threshold.
-# However, that is a set number of anomalies.
-sns.distplot(LSTM_univar_bidir.train_residuals, bins=50, kde=True)
-plt.show()
-# choose a threshold to use for anomalies based on x-axis. try where error is greater than 0.75, it's anomalous.
-threshold = [18]
-sns.distplot(LSTM_univar_bidir.test_residuals, bins=50, kde=True)
+# DETERMINE THRESHOLD AND DETECT ANOMALIES #
+#########################################
+threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar_bidir.test_residuals, 0.01, 75)
+threshold.index = df[time_steps:-time_steps].index
+
+residuals = pd.DataFrame(LSTM_univar_bidir.test_residuals)
+residuals.index = threshold.index
+
+plt.figure()
+# plt.plot(df['raw'], 'b', label='original data')
+plt.plot(residuals, 'b', label='residuals')
+plt.plot(threshold['low'], 'c', label='thresh_low')
+plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
+plt.legend()
+plt.ylabel(sensor)
 plt.show()
 
-# DETECT ANOMALIES #
-#########################################
-test_data = df[['det_cor']]
-test_score_array = LSTM_utilities.detect_anomalies_bidir(test_data, LSTM_univar_bidir.predictions, time_steps, LSTM_univar_bidir.test_residuals, threshold)
+observed = df[['det_cor']][time_steps:-time_steps]
+detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar_bidir.predictions, LSTM_univar_bidir.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
 df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
-df_anomalies['detected_anomaly'] = test_score_array[0]['anomaly']
+df_anomalies['detected_anomaly'] = detections['anomaly']
 df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
 
 # DETERMINE METRICS #
@@ -215,9 +225,9 @@ print("\n LSTM script end.")
 #########################################
 plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
-plt.plot(test_score_array[0]['prediction'], 'c', label='predicted values')
+plt.plot(detections['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(test_score_array[0]['prediction'][test_score_array[0]['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(detections['prediction'][detections['anomaly']], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
@@ -305,31 +315,40 @@ plt.plot(LSTM_multivar.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
-# Look at the distribution of the errors using distribution plots
-for i in range(0, LSTM_multivar.train_residuals.shape[1]):
-    plt.figure()
-    sns.distplot(LSTM_multivar.train_residuals[i], bins=50, kde=True)
-    plt.show()
-
-# Choose thresholds to use for anomalies based on the x-axes.
-threshold = [0.5, 50, 0.1, 2.0]
-# Examine errors in the test data
-for i in range(0, LSTM_multivar.test_residuals.shape[1]):
-    plt.figure()
-    sns.distplot(LSTM_multivar.test_residuals[i], bins=50, kde=True)
-    plt.show()
-
-# DETECT ANOMALIES #
+# DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-test_score_array = LSTM_utilities.detect_anomalies(df_det_cor, LSTM_multivar.predictions, time_steps, LSTM_multivar.test_residuals, threshold)
+residuals = pd.DataFrame(LSTM_multivar.test_residuals)
+residuals.index = df_det_cor[time_steps:].index
+
+threshold = []
+for i in range(0, LSTM_multivar.test_residuals.shape[1]):
+     threshold_df = []
+     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
+     threshold_df.index = df_det_cor[time_steps:].index
+     threshold.append(threshold_df)
+
+     plt.figure()
+     # plt.plot(df['raw'], 'b', label='original data')
+     plt.plot(residuals.iloc[:, i], 'b', label='residuals')
+     plt.plot(threshold[i]['low'], 'c', label='thresh_low')
+     plt.plot(threshold[i]['high'], 'm', mfc='none', label='thresh_high')
+     plt.legend()
+     plt.ylabel(sensor[i])
+     plt.show()
+
+observed = df_det_cor[time_steps:]
+detections_array = []
+for i in range(0, observed.shape[1]):
+    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar.predictions.iloc[:, i], LSTM_multivar.test_residuals.iloc[:, i], threshold[i], summary=True)
+    detections_array.append(detections_df)
 
 # Use events function to widen and number anomalous events
 df_array = []
-for i in range(0, len(test_score_array)):
+for i in range(0, len(detections_array)):
     all_data = []
     all_data = sensor_array[sensor[i]].iloc[time_steps:]
     all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'])
-    all_data['detected_anomaly'] = test_score_array[i]['anomaly']
+    all_data['detected_anomaly'] = detections_array[i]['anomaly']
     all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['detected_anomaly'])
     df_array.append(all_data)
 
@@ -411,9 +430,9 @@ for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
     plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
-    plt.plot(test_score_array[i]['prediction'], 'c', label='predicted values')
+    plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(test_score_array[i]['prediction'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
@@ -440,31 +459,40 @@ plt.plot(LSTM_multivar_bidir.history.history['val_loss'], label='Validation Loss
 plt.legend()
 plt.show()
 
-# Look at the distribution of the errors using distribution plots
-for i in range(0, LSTM_multivar_bidir.train_residuals.shape[1]):
-    plt.figure()
-    sns.distplot(LSTM_multivar_bidir.train_residuals[i], bins=50, kde=True)
-    plt.show()
-
-# Choose thresholds to use for anomalies based on the x-axes.
-threshold = [0.5, 50, 0.1, 2.0]
-# Examine errors in the test data
-for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
-    plt.figure()
-    sns.distplot(LSTM_multivar_bidir.test_residuals[i], bins=50, kde=True)
-    plt.show()
-
-# DETECT ANOMALIES #
+# DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-test_score_array = LSTM_utilities.detect_anomalies_bidir(df_det_cor, LSTM_multivar_bidir.predictions, time_steps, LSTM_multivar_bidir.test_residuals, threshold)
+residuals = pd.DataFrame(LSTM_multivar_bidir.test_residuals)
+residuals.index = df_det_cor[time_steps:-time_steps].index
+
+threshold = []
+for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
+     threshold_df = []
+     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
+     threshold_df.index = df_det_cor[time_steps:-time_steps].index
+     threshold.append(threshold_df)
+
+     plt.figure()
+     # plt.plot(df['raw'], 'b', label='original data')
+     plt.plot(residuals.iloc[:, i], 'b', label='residuals')
+     plt.plot(threshold[i]['low'], 'c', label='thresh_low')
+     plt.plot(threshold[i]['high'], 'm', mfc='none', label='thresh_high')
+     plt.legend()
+     plt.ylabel(sensor[i])
+     plt.show()
+
+observed = df_det_cor[time_steps:-time_steps]
+detections_array = []
+for i in range(0, observed.shape[1]):
+    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar_bidir.predictions.iloc[:, i], LSTM_multivar_bidir.test_residuals.iloc[:, i], threshold[i], summary=True)
+    detections_array.append(detections_df)
 
 # Use events function to widen and number anomalous events
 df_array = []
-for i in range(0, len(test_score_array)):
+for i in range(0, len(detections_array)):
     all_data = []
     all_data = sensor_array[sensor[i]].iloc[time_steps:]
     all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'])
-    all_data['detected_anomaly'] = test_score_array[i]['anomaly']
+    all_data['detected_anomaly'] = detections_array[i]['anomaly']
     all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['detected_anomaly'])
     df_array.append(all_data)
 
@@ -540,19 +568,17 @@ print('FN  = %i' % do_metrics.FalseNegatives)
 print('F1 = %f' % do_metrics.f1)
 print('F2 = %f' % do_metrics.f2)
 
-
 # GENERATE PLOTS #
 #########################################
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
     plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
-    plt.plot(test_score_array[i]['prediction'], 'c', label='predicted values')
+    plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(test_score_array[i]['prediction'][test_score_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
-
 
 print("\n LSTM script end.")
