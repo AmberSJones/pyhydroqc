@@ -93,8 +93,8 @@ plt.legend()
 plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
-#########################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar.test_residuals, 0.01, 75)
+############################################
+threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar.test_residuals, 75, 0.01, 4)
 threshold.index = df[time_steps:].index
 
 residuals = pd.DataFrame(LSTM_univar.test_residuals)
@@ -175,7 +175,7 @@ plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar_bidir.test_residuals, 0.01, 75)
+threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar_bidir.test_residuals, 75, 0.01, 4)
 threshold.index = df[time_steps:-time_steps].index
 
 residuals = pd.DataFrame(LSTM_univar_bidir.test_residuals)
