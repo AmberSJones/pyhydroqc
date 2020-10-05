@@ -83,8 +83,8 @@ model_fit, residuals, predictions = anomaly_utilities.build_arima_model(df['det_
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-dyn_threshold = anomaly_utilities.set_dynamic_threshold(residuals, 0.01, 75)
-dyn_threshold.index = residuals.index
+threshold = anomaly_utilities.set_dynamic_threshold(residuals, 0.01, 75)
+threshold.index = residuals.index
 
 plt.figure()
 # plt.plot(df['raw'], 'b', label='original data')
@@ -95,11 +95,7 @@ plt.legend()
 plt.ylabel(sensor)
 plt.show()
 
-detected_anomaly = anomaly_utilities.detect_dyn_anomalies(residuals, dyn_threshold, summary=True)
-
-# Determine constant threshold and detect anomalies
-cons_threshold = anomaly_utilities.set_cons_threshold(model_fit, 0.055)
-cons_detected_anomaly = anomaly_utilities.detect_anomalies(residuals, cons_threshold, summary=True)
+detected_anomaly = anomaly_utilities.detect_dyn_anomalies(residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
