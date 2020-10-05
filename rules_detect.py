@@ -11,10 +11,12 @@ import anomaly_utilities
 
 
 def range_check(df, maximum, minimum):
-    """Adds column to data frame with label if data are out of range.
+    """
+    range_check adds column to data frame with label if data are out of range.
     df is a data frame with a column 'raw' of raw data.
     maximum and minimum define the range outside of which a value is anomalous.
-    Output is the dataframe with an added column 'anomoly' with boolean where 1 = anomalous."""
+    Output is the dataframe with an added column 'anomoly' with boolean where 1 = True for anomalous.
+    """
     # could do some sort of look up table with the values for each sensor
     # could also add seasonal checks
     df = df.eval('anomaly = raw > @maximum or raw < @minimum')
@@ -23,10 +25,12 @@ def range_check(df, maximum, minimum):
 
 
 def persistence(df, length):
-    """Adds flag in data frame if data repeat for specified length.
+    """
+    persistence adds flag in data frame if data repeat for specified length.
     df is a data frame with a column 'raw' of raw data and a boolean column 'anomaly'.
-    length is the duration of persistant/repeated values to be flagged.
-    Output is the dataframe with column 'anomaly' modified."""
+    length is the duration of persistent/repeated values to be flagged.
+    Output is the dataframe with column 'anomaly' modified.
+    """
     # temp = df.copy(deep=True)
     temp = df[['raw', 'anomaly']].copy(deep=True)
     temp['value_grp'] = (temp.raw.diff(1) == 0)
@@ -40,7 +44,11 @@ def persistence(df, length):
 
 
 def group_size(df):
-    """"""
+    """
+    group_size determines the size of the largest consecutive group of anomalous points.
+    df is a data frame with column 'anomaly'.
+    Output: size is the length of the largest consecutive group of anomalous points.
+    """
     temp = df[['anomaly']].copy(deep=True)
     temp['value_grp'] = anomaly_utilities.anomaly_events(temp['anomaly'], 0, 1)
     size = 0
@@ -54,11 +62,13 @@ def group_size(df):
 
 
 def interpolate(df, limit=10000):
-    """Performs linear interpolation on points identified as anomolous, typically by rules based approaches.
+    """
+    interpolate performs linear interpolation on points identified as anomolous, typically by rules based approaches.
     df is a data frame with a column 'raw' of raw data and a boolean column 'anomaly'.
     limit is the maximum length/number of points of acceptable interpolation.
-    Output is the dataframe with column 'cor_det' for determined corrections."""
-    df['det_cor'] = (np.where(df['anomaly'], np.nan, df['raw']))
-    df['det_cor'].interpolate(method='linear', inplace=True, limit=limit)
+    Output is the dataframe with column 'observed' for determined corrections.
+    """
+    df['observed'] = (np.where(df['anomaly'], np.nan, df['raw']))
+    df['observed'].interpolate(method='linear', inplace=True, limit=limit)
 
     return df
