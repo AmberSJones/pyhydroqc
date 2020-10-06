@@ -12,6 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
+import warnings
 pd.options.mode.chained_assignment = None
 
 
@@ -288,11 +289,11 @@ def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
         # calculate the range of probable values using given alpha
         mean = residuals[lo:hi][0].mean()
         sigma = residuals[lo:hi][0].std()
-        range = z*sigma
-        if (range < min_range):
-            range = min_range
+        th_range = z*sigma
+        if (th_range < min_range):
+            th_range = min_range
         # append pair of upper and lower thresholds
-        threshold.append([mean - range, mean + range])
+        threshold.append([mean - th_range, mean + th_range])
 
     threshold = pd.DataFrame(threshold, columns=['low', 'high'])
 
@@ -339,8 +340,7 @@ def detect_anomalies(observed, predictions, residuals, threshold, summary):
 
     # output summary
     if summary:
-        print('\n\n')
-    print('\nratio of detections: %f' % ((sum(detections.anomaly) / len(detections.anomaly)) * 100), '%')
+        print('\n\n\nratio of detections: %f' % ((sum(detections.anomaly) / len(detections.anomaly)) * 100), '%')
 
     return detections
 
@@ -352,7 +352,7 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
     detected_anomaly = (residuals[0] < threshold['low']) | (threshold['high'] < residuals[0])  # gives bools
     # output summary
     if summary:
-        print('\n\n')
-        print('\nratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
+        print('\n\n\nratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
 
     return detected_anomaly
+  
