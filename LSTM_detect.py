@@ -5,7 +5,7 @@
 
 import rules_detect
 import anomaly_utilities
-import LSTM_utilities
+import modeling_utilities
 import numpy as np
 import tensorflow as tf
 import pandas as pd
@@ -85,7 +85,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_univar = LSTM_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
+LSTM_univar = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
 
 plt.plot(LSTM_univar.history.history['loss'], label='Training Loss')
 plt.plot(LSTM_univar.history.history['val_loss'], label='Validation Loss')
@@ -164,7 +164,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_univar_bidir = LSTM_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
+LSTM_univar_bidir = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -306,7 +306,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar = LSTM_utilities.LSTM_multivar(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+LSTM_multivar = modeling_utilities.LSTM_multivar(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -322,7 +322,6 @@ residuals.index = df_det_cor[time_steps:].index
 
 threshold = []
 for i in range(0, LSTM_multivar.test_residuals.shape[1]):
-     threshold_df = []
      threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
      threshold_df.index = df_det_cor[time_steps:].index
      threshold.append(threshold_df)
@@ -450,7 +449,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar_bidir = LSTM_utilities.LSTM_multivar_bidir(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+LSTM_multivar_bidir = modeling_utilities.LSTM_multivar_bidir(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -466,7 +465,6 @@ residuals.index = df_det_cor[time_steps:-time_steps].index
 
 threshold = []
 for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
-     threshold_df = []
      threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
      threshold_df.index = df_det_cor[time_steps:-time_steps].index
      threshold.append(threshold_df)

@@ -1,17 +1,17 @@
 ################################
-# ANOMALY EVENT UTILITIES #
+# ANOMALY UTILITIES #
 ################################
 # This code includes utilities for performing anomaly detection.
 # A function is defined for accessing data.
 # Functions are defined for determining events and comparing them to events in labeled data.
 # A windowing function widens the window of anomaly detection.
-# A metrics function compares detection compared to labeled data and outputs perfomance metrics.
+# A metrics function compares detection compared to labeled data and outputs performance metrics.
+# Threshold functions dvelop either a constant threshold or a dynamic threshold based on model residuals.
 
 import os
 import numpy as np
 import pandas as pd
 from scipy.stats import norm
-import statsmodels.api as api
 import warnings
 pd.options.mode.chained_assignment = None
 
@@ -24,6 +24,7 @@ def get_data(site, sensor, year, path=""):
     sensor (list): name(s) of the sensor/variable data of interest
     year (integer): the year of interest
     path (string): path to .csv file containing the data of interest
+    Outputs:
     df_full (pandas DataFrame): has 3 columns for each variable/sensor in the .csv file
         column names are in the format: '<sensor>', '<sensor>_cor', '<sensor>_qual'
     sensor_array (array of pandas DataFrames): each data frame has 3 columns for the 
@@ -54,14 +55,15 @@ def get_data(site, sensor, year, path=""):
 
 def anomaly_events(anomaly, wf=1, sf=0.05):
     """
-    anomaly_events function searches through data and counts groups of immediately consecutively labeled data points
+    anomaly_events searches through data and counts groups of immediately consecutively labeled data points
         as anomalous events. Input to the windowing function.
     anomaly (boolean array): labeled or detected anomalies where True (1) = anomalous data point.
         e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 1 1 1 1
     wf (assumed to be a positive integer): a widening factor that is used to determine how much to widen each event
-        before and after the true values.
+        before and after the true values. Default =1 adds a single point to be anomalous before/after the labeled point.
     sf (assumed to be a ratio between 0.0-1.0): a significance factor - used to warn user when an event size is greater
-        than this ratio compared to the entire data set
+        than this ratio compared to the entire data set. Default = 0.05 = 5%.
+    Outputs:
     event (integer array): enumerated event labels corresponding to each widened group of consecutive anomalous points.
         e.g., 0 0 0 1 1 1 1 1 1 0 0 0 0 0 2 2 2 2 2 0 3 3 3 0 4 4 4 4 4
     """
@@ -99,16 +101,18 @@ class CompareDetectionsContainer:
 
 
 def compare_labeled_detected(df):
-    """ df is a data frame with required columns:
+    """
+    compare_labeled_detected compares anomalous events that are technician labeled and machine detected.
+    Labeled and detected data may be widened to increase the window of overlap.
+    df is a data frame with required columns:
     'labeled_event': array of numbered events based on expert labeled anomalies.
     'detected_event': array of numbered events based on machine detected anomalies.
     Outputs:
-    labeled_in_detected
-    detected_in_labeled
-    valid_detections
-    invalid_detections
-    Compares the widened/windowed events between labels and detections."""
-
+    labeled_in_detected: boolean indicating the labeled points that appear in the detections.
+    detected_in_labeled: boolean indicating the detected point that appear in the labeled.
+    valid_detections: boolean indicating whether the detections were also present in the labeled.
+    invalid_detections: boolean indicating detections that were not present in the labeled.
+    """
     # generate lists of detected anomalies and valid detections
     compare = CompareDetectionsContainer()
     labeled_in_detected = [0]
@@ -150,32 +154,52 @@ class MetricsContainer:
 
 
 def metrics(df, valid_detections, invalid_detections):
+    """
+    metrics evaluates detector performance by comparing machine detected anomalies to technician labeled anomalies.
+    df is a data frame with required columns:
+    'detected_event': boolean corresponding to machine detected anomalies where True (1) = anomalous data point.
+    'labeled_event': boolean corresponding to technician labeled anomalies where True (1) = anomalous data point.
+    valid_detections: output from compare function.
+    invalid_detections: output from compare function.
+    Outputs:
+    true_positives is the count of valid detections.
+    false_negatives is the count of missed events.
+    false_positives is the count of incorrect detections.
+    true_negatives is the count of valid undetected data.
+    prc is the precision of detections.
+    npv is negative predicted value.
+    acc is accuracy of detections.
+    rcl is recall of detections.
+    f1 is a statistic that balances true positives and false negatives.
+    f2 is a statistic that gives more weight to true positives.
+    """
     metrics = MetricsContainer()
-    metrics.TruePositives = sum(df['detected_event'].value_counts()[valid_detections])
-    metrics.FalseNegatives = sum(df['labeled_event'].value_counts()[1:]) - metrics.TruePositives
-    metrics.FalsePositives = sum(df['detected_event'].value_counts()[invalid_detections])
-    metrics.TrueNegatives = \
-        len(df['detected_event']) - metrics.TruePositives - metrics.FalseNegatives - metrics.FalsePositives
+    metrics.true_positives = sum(df['detected_event'].value_counts()[valid_detections])
+    metrics.false_negatives = sum(df['labeled_event'].value_counts()[1:]) - metrics.true_positives
+    metrics.false_positives = sum(df['detected_event'].value_counts()[invalid_detections])
+    metrics.true_negatives = \
+        len(df['detected_event']) - metrics.true_positives - metrics.false_negatives - metrics.false_positives
 
-    metrics.PRC = metrics.PPV = metrics.TruePositives / (metrics.TruePositives + metrics.FalsePositives)
-    metrics.NPV = metrics.TrueNegatives / (metrics.TrueNegatives + metrics.FalseNegatives)
-    metrics.ACC = (metrics.TruePositives + metrics.TrueNegatives) / len(df['detected_anomaly'])
-    metrics.RCL = metrics.TruePositives / (metrics.TruePositives + metrics.FalseNegatives)
-    metrics.f1 = 2.0 * (metrics.PRC * metrics.RCL) / (metrics.PRC + metrics.RCL)
+    metrics.prc = metrics.PPV = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
+    metrics.NPV = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
+    metrics.ACC = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])
+    metrics.RCL = metrics.true_positives / (metrics.true_positives + metrics.false_negatives)
+    metrics.f1 = 2.0 * (metrics.prc * metrics.RCL) / (metrics.prc + metrics.RCL)
     metrics.f2 = \
-        5.0 * metrics.TruePositives / (5.0 * metrics.TruePositives + 4.0 * metrics.FalseNegatives + metrics.FalsePositives)
+        5.0 * metrics.true_positives / (5.0 * metrics.true_positives + 4.0 * metrics.false_negatives + metrics.false_positives)
 
     return metrics
 
 
 def group_bools(df):
-    """ group_bools is used for anomaly correction, indexing each grouping of anomalies and normal points as numbered sets.
+    """
+    group_bools indexes each grouping of anomalies (1) and normal points (0) as numbered sets.
+    Used for anomaly correction.
     df is a data frame with required column:
     'detected_anomaly': boolean array of classified data points
     Outputs:
     df with additional column: 'group' of boolean groupings
     """
-
     # initialize the 'group' column to zeros
     df['group'] = 0
     # initialize placeholder for boolean state of previous group
@@ -199,7 +223,8 @@ def group_bools(df):
 
 
 def xfade(xfor, xbac):
-    """ xfade ("cross-fade") blends two data sets of matching length with a ramp function (weighted average).
+    """
+    xfade ("cross-fade") blends two data sets of matching length with a ramp function (weighted average).
     xfor is the data to be more weighted at the front
     xbac is the data to be more weighted at the back
     Outputs:
@@ -231,13 +256,16 @@ def xfade(xfor, xbac):
     return x
 
 
-def set_dynamic_threshold(residuals, window_sz = 96, alpha=0.01, min_range=0.0):
-    """Determines a threshold based on the local confidence interval, 
+def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
+    """
+    set_dynamic_threshold determines a threshold for each point based on the local confidence interval
     considering the model residuals looking forward and backward window_sz steps.
-    residuals is a series like object or a data frame
-    alpha is a scalar between 0 and 1 representing the acceptable uncertainty
-    window_sz is an integer representing how many data points to use in both directions
-    the return value is a data frame of pairs
+    residuals is a series like object or a data frame.
+    alpha is a scalar between 0 and 1 representing the acceptable uncertainty.
+    window_sz is an integer representing how many data points to use in both directions.
+        default = 96 for one day for 15-minute data.
+    Outputs:
+    threshold is data frame of pairs of low and high values.
     """
     threshold = []  # initialize empty list to hold thresholds
     z = norm.ppf(1 - alpha / 2)
@@ -273,8 +301,13 @@ def set_dynamic_threshold(residuals, window_sz = 96, alpha=0.01, min_range=0.0):
 
 
 def set_cons_threshold(model_fit, alpha_in):
-    """Determines threshold for anomaly detection based on confidence interval and specified alpha value using
-    SARIMAX model predict object."""
+    """
+    set_cons_threshold determines a threshold based on confidence interval and specified alpha for an ARIMA model.
+    model_fit is a SARIMAX model object.
+    alpha_in is a scalar between 0 and 1 representing the acceptable uncertainty.
+    Outputs:
+    threshold is a single value.
+    """
     predict = model_fit.get_prediction()
     predict_ci = predict.conf_int(alpha=alpha_in)
     predict_ci.columns = ["lower", "upper"]
@@ -289,13 +322,16 @@ def set_cons_threshold(model_fit, alpha_in):
 
 
 def detect_anomalies(observed, predictions, residuals, threshold, summary):
-    """Create array of data frames for each variable.
-    Add columns for raw data, model prediction, threshold, anomalous T/F, and unscaled prediction.
-    test is a data frame of raw scaled data. predictions is the model predictions from the evaluate_model function.
-    unscaled_predictions are the model prediction inverse scaled to original units.
-    time_steps is the number of time steps used to predict.
-    test_mae_loss is the model error from the evaluate_model function.
-    threshold is a list of thresholds for detecting anomalies from the model errors. length should = number of variables."""
+    """
+    detect_anomalies compares model residuals to thresholds to determine which points are anomalous.
+    observed is a data frame or series of the observed data.
+    predictions are a series of model predictions.
+    residuals are a series of model residuals.
+    threshold is a data frame with the columns 'lower' and 'upper' corresponding to the acceptable range of the residual.
+    Outputs:
+    detections is a data frame with observations, predictions, residuals, anomalies,
+        a boolean where True (1) = anomalous data point
+    """
     detections = pd.DataFrame(observed)
     detections['prediction'] = np.array(predictions)
     detections['residual'] = np.array(residuals)
@@ -319,28 +355,4 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
         print('\n\n\nratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
 
     return detected_anomaly
-
-
-def build_arima_model(data, p, d, q, summary):
-    """Builds an ARIMA model."""
-    warnings.filterwarnings("ignore", message="A date index has been provided, but it has no associated frequency information and so will be ignored when e.g. forecasting")
-    model = api.tsa.SARIMAX(data, order=(p, d, q))
-    warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters")
-    warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found.")
-    model_fit = model.fit(disp=0)
-    warnings.filterwarnings("default")
-    residuals = pd.DataFrame(model_fit.resid)
-    predict = model_fit.get_prediction()
-    predictions = pd.DataFrame(predict.predicted_mean)
-    residuals[0][0] = 0
-    predictions[0][0] = data[0]
-
-    # output summary
-    if summary:
-        print('\n\n')
-        print(model_fit.summary())
-        print('\n\nresiduals description:')
-        print(residuals.describe())
-
-    return model_fit, residuals, predictions
-
+  
