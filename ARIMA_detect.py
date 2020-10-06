@@ -84,7 +84,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['obs
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals, 0.01, 75)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals, 75, 0.01, 3)
 threshold.index = residuals.index
 
 plt.figure()
@@ -100,8 +100,8 @@ detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, res
 
 # Use events function to widen and number anomalous events
 df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
-df['detected_anomaly'] = detections[0]
-df['detected_event'] = anomaly_utilities.anomaly_events(df['observed'])
+df['detected_anomaly'] = detections['anomaly']
+df['detected_event'] = anomaly_utilities.anomaly_events(df['detected_anomaly'])
 
 # DETERMINE METRICS #
 #########################################
@@ -114,7 +114,7 @@ print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor[0])
 print('Year: ' + str(year))
 print('Parameters: ARIMA(%i, %i, %i)' % (p, d, q))
-print('PPV = %f' % metrics.ppv)
+print('PPV = %f' % metrics.prc)
 print('NPV = %f' % metrics.npv)
 print('Acc = %f' % metrics.acc)
 print('TP  = %i' % metrics.true_positives)
