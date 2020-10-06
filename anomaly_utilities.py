@@ -287,8 +287,8 @@ def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
             hi = i + window_sz
 
         # calculate the range of probable values using given alpha
-        mean = residuals[lo:hi][0].mean()
-        sigma = residuals[lo:hi][0].std()
+        mean = residuals[lo:(hi+1)].mean()
+        sigma = residuals[lo:(hi+1)].std()
         th_range = z*sigma
         if (th_range < min_range):
             th_range = min_range
