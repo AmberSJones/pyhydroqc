@@ -5,6 +5,7 @@
 
 import rules_detect
 import anomaly_utilities
+import modeling_utilities
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -79,7 +80,7 @@ df = rules_detect.interpolate(df)
 
 # MODEL CREATION #
 #########################################
-model_fit, residuals, predictions = anomaly_utilities.build_arima_model(df['det_cor'], p, d, q, summary=True)
+model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary=True)
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
@@ -89,18 +90,18 @@ threshold.index = residuals.index
 plt.figure()
 # plt.plot(df['raw'], 'b', label='original data')
 plt.plot(residuals, 'b', label='residuals')
-plt.plot(dyn_threshold['low'], 'c', label='thresh_low')
-plt.plot(dyn_threshold['high'], 'm', mfc='none', label='thresh_high')
+plt.plot(threshold['low'], 'c', label='thresh_low')
+plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
 
-detected_anomaly = anomaly_utilities.detect_dyn_anomalies(residuals, threshold, summary=True)
+detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
-df['detected_anomaly'] = detected_anomaly[0]
-df['detected_event'] = anomaly_utilities.anomaly_events(detected_anomaly)
+df['detected_anomaly'] = detections[0]
+df['detected_event'] = anomaly_utilities.anomaly_events(df['observed'])
 
 # DETERMINE METRICS #
 #########################################
@@ -113,13 +114,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor[0])
 print('Year: ' + str(year))
 print('Parameters: ARIMA(%i, %i, %i)' % (p, d, q))
-print('PPV = %f' % metrics.PPV)
-print('NPV = %f' % metrics.NPV)
-print('Acc = %f' % metrics.ACC)
-print('TP  = %i' % metrics.TruePositives)
-print('TN  = %i' % metrics.TrueNegatives)
-print('FP  = %i' % metrics.FalsePositives)
-print('FN  = %i' % metrics.FalseNegatives)
+print('PPV = %f' % metrics.ppv)
+print('NPV = %f' % metrics.npv)
+print('Acc = %f' % metrics.acc)
+print('TP  = %i' % metrics.true_positives)
+print('TN  = %i' % metrics.true_negatives)
+print('FP  = %i' % metrics.false_positives)
+print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
 print("\nTime Series ARIMA script end.")
@@ -130,7 +131,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detected_anomaly], 'r+', label='machine detected anomalies')
+plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
