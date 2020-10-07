@@ -18,7 +18,6 @@ pd.options.mode.chained_assignment = None
 sns.set(style='whitegrid', palette='muted')
 rcParams['figure.figsize'] = 14, 8
 np.random.seed(1)
-# tf.random.set_seed(1)
 print('Tensorflow version:', tf.__version__)
 
 print("LSTM exploration script begin.")
@@ -109,7 +108,7 @@ plt.legend()
 plt.ylabel(sensor)
 plt.show()
 
-observed = df[['det_cor']][time_steps:]
+observed = df[['observed']][time_steps:]
 detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar.predictions, LSTM_univar.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
@@ -129,13 +128,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor[0])
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % metrics.PPV)
-print('NPV = %f' % metrics.NPV)
-print('Acc = %f' % metrics.ACC)
-print('TP  = %i' % metrics.TruePositives)
-print('TN  = %i' % metrics.TrueNegatives)
-print('FP  = %i' % metrics.FalsePositives)
-print('FN  = %i' % metrics.FalseNegatives)
+print('PPV = %f' % metrics.prc)
+print('NPV = %f' % metrics.npv)
+print('Acc = %f' % metrics.acc)
+print('TP  = %i' % metrics.true_positives)
+print('TN  = %i' % metrics.true_negatives)
+print('FP  = %i' % metrics.false_positives)
+print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
 print("\n LSTM script end.")
@@ -190,7 +189,7 @@ plt.legend()
 plt.ylabel(sensor)
 plt.show()
 
-observed = df[['det_cor']][time_steps:-time_steps]
+observed = df[['observed']][time_steps:-time_steps]
 detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar_bidir.predictions, LSTM_univar_bidir.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
@@ -210,13 +209,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: ' + sensor[0])
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % metrics.PPV)
-print('NPV = %f' % metrics.NPV)
-print('Acc = %f' % metrics.ACC)
-print('TP  = %i' % metrics.TruePositives)
-print('TN  = %i' % metrics.TrueNegatives)
-print('FP  = %i' % metrics.FalsePositives)
-print('FN  = %i' % metrics.FalseNegatives)
+print('PPV = %f' % metrics.prc)
+print('NPV = %f' % metrics.npv)
+print('Acc = %f' % metrics.acc)
+print('TP  = %i' % metrics.true_positives)
+print('TN  = %i' % metrics.true_negatives)
+print('FP  = %i' % metrics.false_positives)
+print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
 print("\n LSTM script end.")
@@ -272,11 +271,11 @@ for i in range(0, len(sensor_array)):
     sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
 
 # Create new data frame with raw and corrected data for variables of interest
-df_det_cor = pd.DataFrame(index=df_full.index)
-df_det_cor['temp_cor'] = sensor_array['temp']['det_cor']
-df_det_cor['cond_cor'] = sensor_array['cond']['det_cor']
-df_det_cor['ph_cor'] = sensor_array['ph']['det_cor']
-df_det_cor['do_cor'] = sensor_array['do']['det_cor']
+df_observed = pd.DataFrame(index=df_full.index)
+df_observed['temp_obs'] = sensor_array['temp']['observed']
+df_observed['cond_obs'] = sensor_array['cond']['observed']
+df_observed['ph_obs'] = sensor_array['ph']['observed']
+df_observed['do_obs'] = sensor_array['do']['observed']
 
 df_raw = pd.DataFrame(index=df_full.index)
 df_raw['temp'] = df_full['temp']
@@ -290,8 +289,9 @@ df_anomaly['cond_anom'] = sensor_array['cond']['anomaly']
 df_anomaly['ph_anom'] = sensor_array['ph']['anomaly']
 df_anomaly['do_anom'] = sensor_array['do']['anomaly']
 
-print(df_det_cor.shape)
+print(df_observed.shape)
 print(df_raw.shape)
+print(df_anomaly.shape)
 
 #########################################
 # LSTM Multivariate Vanilla Model #
@@ -306,7 +306,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar = modeling_utilities.LSTM_multivar(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+LSTM_multivar = modeling_utilities.LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -318,12 +318,18 @@ plt.show()
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
 residuals = pd.DataFrame(LSTM_multivar.test_residuals)
-residuals.index = df_det_cor[time_steps:].index
+predictions = pd.DataFrame(LSTM_multivar.predictions)
+residuals.index = df_observed[time_steps:].index
+predictions.index = df_observed[time_steps:].index
+
+window_sz = [40, 40, 40, 40]
+alpha = [0.01, 0.01, 0.01, 0.01]
+min_range = [0.2, 4, 0.02, 0.04]
 
 threshold = []
 for i in range(0, LSTM_multivar.test_residuals.shape[1]):
-     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
-     threshold_df.index = df_det_cor[time_steps:].index
+     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], window_sz[i], alpha[i], min_range[i])
+     threshold_df.index = residuals.index
      threshold.append(threshold_df)
 
      plt.figure()
@@ -335,7 +341,7 @@ for i in range(0, LSTM_multivar.test_residuals.shape[1]):
      plt.ylabel(sensor[i])
      plt.show()
 
-observed = df_det_cor[time_steps:]
+observed = df_observed[time_steps:]
 detections_array = []
 for i in range(0, observed.shape[1]):
     detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar.predictions.iloc[:, i], LSTM_multivar.test_residuals.iloc[:, i], threshold[i], summary=True)
@@ -371,13 +377,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: temp')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % temp_metrics.PPV)
-print('NPV = %f' % temp_metrics.NPV)
-print('Acc = %f' % temp_metrics.ACC)
-print('TP  = %i' % temp_metrics.TruePositives)
-print('TN  = %i' % temp_metrics.TrueNegatives)
-print('FP  = %i' % temp_metrics.FalsePositives)
-print('FN  = %i' % temp_metrics.FalseNegatives)
+print('PPV = %f' % temp_metrics.prc)
+print('NPV = %f' % temp_metrics.npv)
+print('Acc = %f' % temp_metrics.acc)
+print('TP  = %i' % temp_metrics.true_positives)
+print('TN  = %i' % temp_metrics.true_negatives)
+print('FP  = %i' % temp_metrics.false_positives)
+print('FN  = %i' % temp_metrics.false_negatives)
 print('F1 = %f' % temp_metrics.f1)
 print('F2 = %f' % temp_metrics.f2)
 
@@ -385,13 +391,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: cond')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % cond_metrics.PPV)
-print('NPV = %f' % cond_metrics.NPV)
-print('Acc = %f' % cond_metrics.ACC)
-print('TP  = %i' % cond_metrics.TruePositives)
-print('TN  = %i' % cond_metrics.TrueNegatives)
-print('FP  = %i' % cond_metrics.FalsePositives)
-print('FN  = %i' % cond_metrics.FalseNegatives)
+print('PPV = %f' % cond_metrics.prc)
+print('NPV = %f' % cond_metrics.npv)
+print('Acc = %f' % cond_metrics.acc)
+print('TP  = %i' % cond_metrics.true_positives)
+print('TN  = %i' % cond_metrics.true_negatives)
+print('FP  = %i' % cond_metrics.false_positives)
+print('FN  = %i' % cond_metrics.false_negatives)
 print('F1 = %f' % cond_metrics.f1)
 print('F2 = %f' % cond_metrics.f2)
 
@@ -399,13 +405,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: ph')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % ph_metrics.PPV)
-print('NPV = %f' % ph_metrics.NPV)
-print('Acc = %f' % ph_metrics.ACC)
-print('TP  = %i' % ph_metrics.TruePositives)
-print('TN  = %i' % ph_metrics.TrueNegatives)
-print('FP  = %i' % ph_metrics.FalsePositives)
-print('FN  = %i' % ph_metrics.FalseNegatives)
+print('PPV = %f' % ph_metrics.prc)
+print('NPV = %f' % ph_metrics.npv)
+print('Acc = %f' % ph_metrics.acc)
+print('TP  = %i' % ph_metrics.true_positives)
+print('TN  = %i' % ph_metrics.true_negatives)
+print('FP  = %i' % ph_metrics.false_positives)
+print('FN  = %i' % ph_metrics.false_negatives)
 print('F1 = %f' % ph_metrics.f1)
 print('F2 = %f' % ph_metrics.f2)
 
@@ -413,13 +419,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: do')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % do_metrics.PPV)
-print('NPV = %f' % do_metrics.NPV)
-print('Acc = %f' % do_metrics.ACC)
-print('TP  = %i' % do_metrics.TruePositives)
-print('TN  = %i' % do_metrics.TrueNegatives)
-print('FP  = %i' % do_metrics.FalsePositives)
-print('FN  = %i' % do_metrics.FalseNegatives)
+print('PPV = %f' % do_metrics.prc)
+print('NPV = %f' % do_metrics.npv)
+print('Acc = %f' % do_metrics.acc)
+print('TP  = %i' % do_metrics.true_positives)
+print('TN  = %i' % do_metrics.true_negatives)
+print('FP  = %i' % do_metrics.false_positives)
+print('FN  = %i' % do_metrics.false_negatives)
 print('F1 = %f' % do_metrics.f1)
 print('F2 = %f' % do_metrics.f2)
 
@@ -428,7 +434,7 @@ print('F2 = %f' % do_metrics.f2)
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-    plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
+    plt.plot(df_observed[df_observed.columns[i]], 'm', label='corrected data' )
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
@@ -449,7 +455,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar_bidir = modeling_utilities.LSTM_multivar_bidir(df_det_cor, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+LSTM_multivar_bidir = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -461,12 +467,16 @@ plt.show()
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
 residuals = pd.DataFrame(LSTM_multivar_bidir.test_residuals)
-residuals.index = df_det_cor[time_steps:-time_steps].index
+residuals.index = df_observed[time_steps:-time_steps].index
+
+window_sz = [40, 40, 40, 40]
+alpha = [0.01, 0.01, 0.01, 0.01]
+min_range = [0.2, 4, 0.02, 0.04]
 
 threshold = []
 for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
-     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], 0.01, 75)
-     threshold_df.index = df_det_cor[time_steps:-time_steps].index
+     threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], window_sz[i], alpha[i], min_range[i])
+     threshold_df.index = residuals.index
      threshold.append(threshold_df)
 
      plt.figure()
@@ -478,7 +488,7 @@ for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
      plt.ylabel(sensor[i])
      plt.show()
 
-observed = df_det_cor[time_steps:-time_steps]
+observed = df_observed[time_steps:-time_steps]
 detections_array = []
 for i in range(0, observed.shape[1]):
     detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar_bidir.predictions.iloc[:, i], LSTM_multivar_bidir.test_residuals.iloc[:, i], threshold[i], summary=True)
@@ -514,13 +524,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: temp')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % temp_metrics.PPV)
-print('NPV = %f' % temp_metrics.NPV)
-print('Acc = %f' % temp_metrics.ACC)
-print('TP  = %i' % temp_metrics.TruePositives)
-print('TN  = %i' % temp_metrics.TrueNegatives)
-print('FP  = %i' % temp_metrics.FalsePositives)
-print('FN  = %i' % temp_metrics.FalseNegatives)
+print('PPV = %f' % temp_metrics.prc)
+print('NPV = %f' % temp_metrics.npv)
+print('Acc = %f' % temp_metrics.acc)
+print('TP  = %i' % temp_metrics.true_positives)
+print('TN  = %i' % temp_metrics.true_negatives)
+print('FP  = %i' % temp_metrics.false_positives)
+print('FN  = %i' % temp_metrics.false_negatives)
 print('F1 = %f' % temp_metrics.f1)
 print('F2 = %f' % temp_metrics.f2)
 
@@ -528,13 +538,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: cond')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % cond_metrics.PPV)
-print('NPV = %f' % cond_metrics.NPV)
-print('Acc = %f' % cond_metrics.ACC)
-print('TP  = %i' % cond_metrics.TruePositives)
-print('TN  = %i' % cond_metrics.TrueNegatives)
-print('FP  = %i' % cond_metrics.FalsePositives)
-print('FN  = %i' % cond_metrics.FalseNegatives)
+print('PPV = %f' % cond_metrics.prc)
+print('NPV = %f' % cond_metrics.npv)
+print('Acc = %f' % cond_metrics.acc)
+print('TP  = %i' % cond_metrics.true_positives)
+print('TN  = %i' % cond_metrics.true_negatives)
+print('FP  = %i' % cond_metrics.false_positives)
+print('FN  = %i' % cond_metrics.false_negatives)
 print('F1 = %f' % cond_metrics.f1)
 print('F2 = %f' % cond_metrics.f2)
 
@@ -542,13 +552,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: ph')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % ph_metrics.PPV)
-print('NPV = %f' % ph_metrics.NPV)
-print('Acc = %f' % ph_metrics.ACC)
-print('TP  = %i' % ph_metrics.TruePositives)
-print('TN  = %i' % ph_metrics.TrueNegatives)
-print('FP  = %i' % ph_metrics.FalsePositives)
-print('FN  = %i' % ph_metrics.FalseNegatives)
+print('PPV = %f' % ph_metrics.prc)
+print('NPV = %f' % ph_metrics.npv)
+print('Acc = %f' % ph_metrics.acc)
+print('TP  = %i' % ph_metrics.true_positives)
+print('TN  = %i' % ph_metrics.true_negatives)
+print('FP  = %i' % ph_metrics.false_positives)
+print('FN  = %i' % ph_metrics.false_negatives)
 print('F1 = %f' % ph_metrics.f1)
 print('F2 = %f' % ph_metrics.f2)
 
@@ -556,13 +566,13 @@ print('\n\n\nScript report:\n')
 print('Sensor: do')
 print('Year: ' + str(year))
 # print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % do_metrics.PPV)
-print('NPV = %f' % do_metrics.NPV)
-print('Acc = %f' % do_metrics.ACC)
-print('TP  = %i' % do_metrics.TruePositives)
-print('TN  = %i' % do_metrics.TrueNegatives)
-print('FP  = %i' % do_metrics.FalsePositives)
-print('FN  = %i' % do_metrics.FalseNegatives)
+print('PPV = %f' % do_metrics.prc)
+print('NPV = %f' % do_metrics.npv)
+print('Acc = %f' % do_metrics.acc)
+print('TP  = %i' % do_metrics.true_positives)
+print('TN  = %i' % do_metrics.true_negatives)
+print('FP  = %i' % do_metrics.false_positives)
+print('FN  = %i' % do_metrics.false_negatives)
 print('F1 = %f' % do_metrics.f1)
 print('F2 = %f' % do_metrics.f2)
 
@@ -571,7 +581,7 @@ print('F2 = %f' % do_metrics.f2)
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-    plt.plot(df_det_cor[df_det_cor.columns[i]], 'm', label='corrected data' )
+    plt.plot(df_observed[df_observed.columns[i]], 'm', label='corrected data' )
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')

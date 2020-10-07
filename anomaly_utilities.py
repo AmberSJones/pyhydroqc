@@ -181,12 +181,12 @@ def metrics(df, valid_detections, invalid_detections):
         len(df['detected_event']) - metrics.true_positives - metrics.false_negatives - metrics.false_positives
 
     metrics.prc = metrics.PPV = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
-    metrics.NPV = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
-    metrics.ACC = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])
-    metrics.RCL = metrics.true_positives / (metrics.true_positives + metrics.false_negatives)
-    metrics.f1 = 2.0 * (metrics.prc * metrics.RCL) / (metrics.prc + metrics.RCL)
-    metrics.f2 = \
-        5.0 * metrics.true_positives / (5.0 * metrics.true_positives + 4.0 * metrics.false_negatives + metrics.false_positives)
+    metrics.npv = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
+    metrics.acc = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])
+    metrics.rcl = metrics.true_positives / (metrics.true_positives + metrics.false_negatives)
+    metrics.f1 = 2.0 * (metrics.prc * metrics.rcl) / (metrics.prc + metrics.rcl)
+    metrics.f2 = 5.0 * metrics.true_positives / \
+                 (5.0 * metrics.true_positives + 4.0 * metrics.false_negatives + metrics.false_positives)
 
     return metrics
 
@@ -287,8 +287,8 @@ def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
             hi = i + window_sz
 
         # calculate the range of probable values using given alpha
-        mean = residuals[lo:hi][0].mean()
-        sigma = residuals[lo:hi][0].std()
+        mean = residuals[lo:(hi+1)].mean()
+        sigma = residuals[lo:(hi+1)].std()
         th_range = z*sigma
         if (th_range < min_range):
             th_range = min_range
