@@ -22,7 +22,7 @@ def get_data(site, sensor, year, path=""):
         Includes labeling of data as anomalous.
     site (string): name of the data collection site
     sensor (list): name(s) of the sensor/variable data of interest
-    year (integer): the year of interest
+    year (list): the year(s) of interest
     path (string): path to .csv file containing the data of interest
     Outputs:
     df_full (pandas DataFrame): has 3 columns for each variable/sensor in the .csv file
@@ -32,13 +32,16 @@ def get_data(site, sensor, year, path=""):
     """
     if path == "":
         path = os.getcwd() + "/"
-    df_full = pd.read_csv(path + site + str(year) + ".csv",
-                          skipinitialspace=True,
-                          engine='python',
-                          header=0,
-                          index_col=0,
-                          parse_dates=True,
-                          infer_datetime_format=True)
+    df_full = pd.DataFrame()
+    for i in range(0, len(year)):
+        df_year = pd.read_csv(path + site + str(year[i]) + ".csv",
+                         skipinitialspace=True,
+                         engine='python',
+                         header=0,
+                         index_col=0,
+                         parse_dates=True,
+                         infer_datetime_format=True)
+        df_full = pd.concat([df_full, df_year], axis=0)
     # create data frames with raw, corrected, and labeled data
     sensor_array = []
     for i in range(0, len(sensor)):
