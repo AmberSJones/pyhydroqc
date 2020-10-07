@@ -19,12 +19,12 @@ print("ARIMA exploration script begin.")
 site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
-# sensor = "temp"
+# sensor = ['temp']
 sensor = ['cond']
-# sensor = "ph"
-# sensor = "do"
-# sensor = "turb"
-# sensor = "stage"
+# sensor = ['ph']
+# sensor = ['do']
+# sensor = ['turb']
+# sensor = ['stage']
 year = 2017
 
 # PARAMETER SELECTION #
@@ -84,7 +84,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['obs
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals, 75, 0.01, 3)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 75, 0.01, 4)
 threshold.index = residuals.index
 
 plt.figure()
@@ -99,9 +99,9 @@ plt.show()
 detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
-df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'])
+df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], 2)
 df['detected_anomaly'] = detections['anomaly']
-df['detected_event'] = anomaly_utilities.anomaly_events(df['detected_anomaly'])
+df['detected_event'] = anomaly_utilities.anomaly_events(df['detected_anomaly'], 2)
 
 # DETERMINE METRICS #
 #########################################
