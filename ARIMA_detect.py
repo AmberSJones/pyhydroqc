@@ -99,9 +99,10 @@ plt.show()
 detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
-df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], 2)
+df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], 1)
 df['detected_anomaly'] = detections['anomaly']
-df['detected_event'] = anomaly_utilities.anomaly_events(df['detected_anomaly'], 2)
+df['all_anomalies'] = df.eval('detected_anomaly or anomaly')
+df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], 1)
 
 # DETERMINE METRICS #
 #########################################
@@ -131,7 +132,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(predictions[df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
