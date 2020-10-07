@@ -15,8 +15,8 @@ print("ARIMA exploration script begin.")
 #########################################
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
-# site = "MainStreet"
-site = "Mendon"
+site = "MainStreet"
+# site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
 # sensor = ['temp']
