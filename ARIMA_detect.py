@@ -25,7 +25,7 @@ sensor = ['cond']
 # sensor = ['do']
 # sensor = ['turb']
 # sensor = ['stage']
-year = 2017
+year = [2017]
 
 # PARAMETER SELECTION #
 #########################################
@@ -60,7 +60,7 @@ print("q: " + str(q))
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 df = sensor_array[sensor[0]]
 
 # RULES BASED DETECTION #

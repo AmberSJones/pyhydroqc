@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
