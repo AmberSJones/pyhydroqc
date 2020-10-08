@@ -44,7 +44,7 @@ year = 2017
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 df = sensor_array[sensor[0]]
 
 # Valid data must be used to train the detector. Options include:
@@ -115,7 +115,8 @@ detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar.prediction
 df_anomalies = df.iloc[time_steps:]
 df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
 df_anomalies['detected_anomaly'] = detections['anomaly']
-df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
+df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
+df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'])
 
 # DETERMINE METRICS #
 #########################################
@@ -145,7 +146,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(detections['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(detections['prediction'][detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(detections['prediction'][df_anomalies[df_anomalies['detected_event'] > 0]], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
@@ -196,7 +197,8 @@ detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar_bidir.pred
 df_anomalies = df.iloc[time_steps:]
 df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
 df_anomalies['detected_anomaly'] = detections['anomaly']
-df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
+df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
+df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'])
 
 # DETERMINE METRICS #
 #########################################
@@ -226,7 +228,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(detections['prediction'], 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(detections['prediction'][detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(detections['prediction'][df_anomalies[df_anomalies['detected_event'] > 0]], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor)
 plt.show()
@@ -248,7 +250,7 @@ year = 2014
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 
 # RULES BASED DETECTION #
 #########################################
@@ -354,7 +356,8 @@ for i in range(0, len(detections_array)):
     all_data = sensor_array[sensor[i]].iloc[time_steps:]
     all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'])
     all_data['detected_anomaly'] = detections_array[i]['anomaly']
-    all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['detected_anomaly'])
+    all_data['all_anomalies'] = all_data.eval('detected_anomaly or anomaly')
+    all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'])
     df_array.append(all_data)
 
 # DETERMINE METRICS #
@@ -438,6 +441,7 @@ for i in range(0, len(sensor)):
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(detections_array[i]['prediction'][df_array[i][df_array[i]['detected_event'] > 0]], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
@@ -584,7 +588,7 @@ for i in range(0, len(sensor)):
     plt.plot(df_observed[df_observed.columns[i]], 'm', label='corrected data' )
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
+    plt.plot(detections_array[i]['prediction'][df_array[i][df_array[i]['detected_event'] > 0]], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
