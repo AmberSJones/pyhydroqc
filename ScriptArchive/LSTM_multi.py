@@ -38,7 +38,7 @@ year = 2014
 # EXECUTE FUNCTIONS #
 #########################################
 # Get data
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 
 # Rules based detection
 # General sensor ranges for LRO data:

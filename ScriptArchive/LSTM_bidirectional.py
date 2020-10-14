@@ -47,7 +47,7 @@ year = 2017
 # EXECUTE FUNCTIONS #
 #########################################
 # Get data
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 df = sensor_array[sensor[0]]
 
 # Valid data must be used to train the detector. Options include:
