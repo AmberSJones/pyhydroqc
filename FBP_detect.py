@@ -27,7 +27,7 @@ sensor = "cond"
 year = 2017
 
 # Get data
-df_full, df = anomaly_utilities.get_data(site, sensor, year, path="/home/tjones/Documents/School/ECE6930/LRO-anomaly-detection/LRO_data/")
+df_full, df = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 
 matplotlib.pyplot.figure()
 matplotlib.pyplot.plot(df['raw'], 'b', label='original data')

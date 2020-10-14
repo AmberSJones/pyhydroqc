@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -97,7 +97,8 @@ detections = anomaly_utilities.detect_anomalies(temp_df['observed'], predictions
 # Use events function to widen and number anomalous events
 temp_df['labeled_event'] = anomaly_utilities.anomaly_events(temp_df['labeled_anomaly'], wf=2)
 temp_df['detected_anomaly'] = detections['anomaly']
-temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['detected_anomaly'], wf=2)
+temp_df['all_anomalies'] = temp_df.eval('detected_anomaly or anomaly')
+temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['all_anomalies'], wf=2)
 
 # DETERMINE METRICS #
 #########################################
@@ -118,7 +119,7 @@ print('FP  = %i' % metrics.false_positives)
 print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
-print("\nTime Series ARIMA script end.")
+print("\nTemperature ARIMA script end.")
 
 # GENERATE PLOTS #
 #########################################
@@ -126,7 +127,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(predictions[temp_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[0])
 plt.show()
@@ -172,7 +173,8 @@ detections = anomaly_utilities.detect_anomalies(cond_df['observed'], predictions
 # Use events function to widen and number anomalous events
 cond_df['labeled_event'] = anomaly_utilities.anomaly_events(cond_df['labeled_anomaly'], wf=2)
 cond_df['detected_anomaly'] = detections['anomaly']
-cond_df['detected_event'] = anomaly_utilities.anomaly_events(cond_df['detected_anomaly'], wf=2)
+cond_df['all_anomalies'] = cond_df.eval('detected_anomaly or anomaly')
+cond_df['detected_event'] = anomaly_utilities.anomaly_events(cond_df['all_anomalies'], wf=2)
 
 # DETERMINE METRICS #
 #########################################
@@ -193,7 +195,7 @@ print('FP  = %i' % metrics.false_positives)
 print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
-print("\nTime Series ARIMA script end.")
+print("\nSpecific Conductance ARIMA script end.")
 
 # GENERATE PLOTS #
 #########################################
@@ -201,7 +203,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(predictions[cond_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[1])
 plt.show()
@@ -247,7 +249,8 @@ detections = anomaly_utilities.detect_anomalies(ph_df['observed'], predictions, 
 # Use events function to widen and number anomalous events
 ph_df['labeled_event'] = anomaly_utilities.anomaly_events(ph_df['labeled_anomaly'], wf=2)
 ph_df['detected_anomaly'] = detections['anomaly']
-ph_df['detected_event'] = anomaly_utilities.anomaly_events(ph_df['detected_anomaly'], wf=2)
+ph_df['all_anomalies'] = ph_df.eval('detected_anomaly or anomaly')
+ph_df['detected_event'] = anomaly_utilities.anomaly_events(ph_df['all_anomalies'], wf=2)
 
 # DETERMINE METRICS #
 #########################################
@@ -268,7 +271,7 @@ print('FP  = %i' % metrics.false_positives)
 print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
-print("\nTime Series ARIMA script end.")
+print("\npH ARIMA script end.")
 
 # GENERATE PLOTS #
 #########################################
@@ -276,7 +279,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(predictions[ph_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[2])
 plt.show()
@@ -322,7 +325,8 @@ detections = anomaly_utilities.detect_anomalies(do_df['observed'], predictions, 
 # Use events function to widen and number anomalous events
 do_df['labeled_event'] = anomaly_utilities.anomaly_events(do_df['labeled_anomaly'], wf=2)
 do_df['detected_anomaly'] = detections['anomaly']
-do_df['detected_event'] = anomaly_utilities.anomaly_events(do_df['detected_anomaly'], wf=2)
+do_df['all_anomalies'] = do_df.eval('detected_anomaly or anomaly')
+do_df['detected_event'] = anomaly_utilities.anomaly_events(do_df['all_anomalies'], wf=2)
 
 # DETERMINE METRICS #
 #########################################
@@ -343,7 +347,7 @@ print('FP  = %i' % metrics.false_positives)
 print('FN  = %i' % metrics.false_negatives)
 print('F1 = %f' % metrics.f1)
 print('F2 = %f' % metrics.f2)
-print("\nTime Series ARIMA script end.")
+print("\nDissolved Oxygen ARIMA script end.")
 
 # GENERATE PLOTS #
 #########################################
@@ -351,7 +355,7 @@ plt.figure()
 plt.plot(df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
 plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(predictions[detections['anomaly']], 'r+', label='machine detected anomalies')
+plt.plot(predictions[do_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[3])
 plt.show()
