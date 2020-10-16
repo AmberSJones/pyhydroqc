@@ -30,8 +30,12 @@ def build_arima_model(data, p, d, q, summary):
     predictions are the in sample, one step ahead model forecasted values.
     """
 
+    warnings.filterwarnings('ignore', message='A date index has been provided, but it has no associated frequency information and so will be ignored when e.g. forecasting')
     model = api.tsa.SARIMAX(data, order=(p, d, q))
+    warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
+    warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
     model_fit = model.fit(disp=0)
+    warnings.filterwarnings('default')
     residuals = pd.DataFrame(model_fit.resid)
     predict = model_fit.get_prediction()
     predictions = pd.DataFrame(predict.predicted_mean)
