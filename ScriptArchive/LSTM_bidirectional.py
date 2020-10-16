@@ -7,7 +7,7 @@ print("LSTM exploration script begin.")
 
 import rules_detect
 import anomaly_utilities
-import LSTM_utilities
+import modeling_utilities
 import numpy as np
 import tensorflow as tf
 import pandas as pd
@@ -82,7 +82,7 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = LSTM_utilities.bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience)
+X_train, y_train, model, history, X_test, y_test, model_eval, predictions, train_residuals, test_residuals = modeling_utilities.bidir_LSTM_model(df, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
@@ -103,7 +103,7 @@ plt.show()
 
 # Detect anomalies
 test_data = df[['det_cor']]
-test_score_array = LSTM_utilities.detect_anomalies_bidir(test_data, predictions, time_steps, test_residuals, threshold)
+test_score_array = modeling_utilities.detect_anomalies_bidir(test_data, predictions, time_steps, test_residuals, threshold)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]

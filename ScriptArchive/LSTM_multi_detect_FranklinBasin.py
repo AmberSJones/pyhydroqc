@@ -39,7 +39,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/Users/amber/PycharmProjects/LRO-anomaly-detection/LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/LRO_data/")
 
 # RULES BASED DETECTION #
 #########################################
