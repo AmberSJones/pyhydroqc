@@ -14,17 +14,17 @@ print("ARIMA exploration script begin.")
 # DEFINE SITE and VARIABLE #
 #########################################
 # site = "BlackSmithFork"
-# site = "FranklinBasin"
+site = "FranklinBasin"
 # site = "MainStreet"
 # site = "Mendon"
-site = "TonyGrove"
+# site = "TonyGrove"
 # site = "WaterLab"
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -62,7 +62,7 @@ print(pdqParam)
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 20
+maximum = 13
 minimum = -2
 temp_df = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
@@ -96,7 +96,6 @@ detections = anomaly_utilities.detect_anomalies(temp_df['observed'], predictions
 
 # Use events function to widen and number anomalous events
 temp_df['labeled_event'] = anomaly_utilities.anomaly_events(temp_df['labeled_anomaly'], wf=2)
-temp_df['detected_anomaly'] = detections['anomaly']
 temp_df['all_anomalies'] = temp_df.eval('detected_anomaly or anomaly')
 temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['all_anomalies'], wf=2)
 
@@ -138,8 +137,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 500
-minimum = 175
+maximum = 380
+minimum = 120
 cond_df = rules_detect.range_check(cond_df, maximum, minimum)
 length = 6
 cond_df = rules_detect.persistence(cond_df, length)
@@ -214,8 +213,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 9.0
-minimum = 8.0
+maximum = 9.2
+minimum = 7.5
 ph_df = rules_detect.range_check(ph_df, maximum, minimum)
 length = 6
 ph_df = rules_detect.persistence(ph_df, length)
@@ -290,8 +289,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 14
-minimum = 7
+maximum = 13
+minimum = 8
 do_df = rules_detect.range_check(do_df, maximum, minimum)
 length = 6
 do_df = rules_detect.persistence(do_df, length)
@@ -308,7 +307,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(do_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.01)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.15)
 threshold.index = residuals.index
 
 plt.figure()

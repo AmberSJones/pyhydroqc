@@ -29,6 +29,7 @@ def build_arima_model(data, p, d, q, summary):
     residuals are the model errors.
     predictions are the in sample, one step ahead model forecasted values.
     """
+
     model = api.tsa.SARIMAX(data, order=(p, d, q))
     model_fit = model.fit(disp=0)
     residuals = pd.DataFrame(model_fit.resid)

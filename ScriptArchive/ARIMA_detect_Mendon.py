@@ -15,8 +15,8 @@ print("ARIMA exploration script begin.")
 #########################################
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
-site = "MainStreet"
-# site = "Mendon"
+# site = "MainStreet"
+site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
 sensor = ['temp', 'cond', 'ph', 'do']
@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -62,7 +62,7 @@ print(pdqParam)
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 20
+maximum = 28
 minimum = -2
 temp_df = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
@@ -138,8 +138,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 2700
-minimum = 150
+maximum = 800
+minimum = 200
 cond_df = rules_detect.range_check(cond_df, maximum, minimum)
 length = 6
 cond_df = rules_detect.persistence(cond_df, length)
@@ -214,8 +214,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 9.5
-minimum = 7.5
+maximum = 9.0
+minimum = 7.4
 ph_df = rules_detect.range_check(ph_df, maximum, minimum)
 length = 6
 ph_df = rules_detect.persistence(ph_df, length)
@@ -291,7 +291,7 @@ plt.show()
 # RULES BASED DETECTION #
 #########################################
 maximum = 15
-minimum = 5
+minimum = 3
 do_df = rules_detect.range_check(do_df, maximum, minimum)
 length = 6
 do_df = rules_detect.persistence(do_df, length)

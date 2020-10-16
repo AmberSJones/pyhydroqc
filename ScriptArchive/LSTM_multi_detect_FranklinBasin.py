@@ -22,217 +22,6 @@ print('Tensorflow version:', tf.__version__)
 
 print("LSTM exploration script begin.")
 
-################################################
-# LSTM Univariate Retrieve and Preprocess Data #
-################################################
-
-# DEFINE SITE and VARIABLE #
-#########################################
-# site = "BlackSmithFork"
-# site = "FranklinBasin"
-# site = "MainStreet"
-site = "Mendon"
-# site = "TonyGrove"
-# site = "WaterLab"
-# sensor = "temp"
-sensor = ['cond']
-# sensor = "ph"
-# sensor = "do"
-# sensor = "turb"
-# sensor = "stage"
-year = 2017
-
-# GET DATA #
-#########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
-df = sensor_array[sensor[0]]
-
-# Valid data must be used to train the detector. Options include:
-#   - Use corrected data to train the detector. This is problematic due to pervasive drift corrections throughout.
-#       Also problematic because of -9999 values in the data.
-#   - Use a subset of raw data that is in decent shape without NaNs, -9999 values, or data gaps.
-#       df_sub = df.loc['2017-01-01 00:00':'2017-07-01 00:00']
-#   - Use raw data that have been preprocessed to filter out extreme values and have drift correction applied.
-#   - Either with raw or corrected data for training, use data that are not labeled as anomalous/corrected.
-#   df_cor = df_cor.replace(-9999, np.NaN)
-
-# RULES BASED DETECTION #
-#########################################
-# General sensor ranges for LRO data:
-# Temp min: -5, max: 30
-# SpCond min: 100, max: 900
-# pH min: 7.5, max: 9.0
-# do min: 2, max: 16
-maximum = 900
-minimum = 150
-df = rules_detect.range_check(df, maximum, minimum)
-length = 6
-df = rules_detect.persistence(df, length)
-size = rules_detect.group_size(df)
-df = rules_detect.interpolate(df)
-
-#########################################
-# LSTM Univariate Vanilla Model #
-#########################################
-
-# MODEL CREATION #
-#########################################
-# scales data, reshapes data, builds and trains model, evaluates model results
-time_steps = 10
-samples = 5000
-cells = 128
-dropout = 0.2
-patience = 6
-
-LSTM_univar = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
-
-plt.plot(LSTM_univar.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_univar.history.history['val_loss'], label='Validation Loss')
-plt.legend()
-plt.show()
-
-# DETERMINE THRESHOLD AND DETECT ANOMALIES #
-############################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar.test_residuals[0], 75, 0.01, 4)
-threshold.index = df[time_steps:].index
-
-residuals = pd.DataFrame(LSTM_univar.test_residuals)
-residuals.index = threshold.index
-
-plt.figure()
-# plt.plot(df['raw'], 'b', label='original data')
-plt.plot(residuals, 'b', label='residuals')
-plt.plot(threshold['low'], 'c', label='thresh_low')
-plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
-plt.legend()
-plt.ylabel(sensor)
-plt.show()
-
-observed = df[['observed']][time_steps:]
-detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar.predictions, LSTM_univar.test_residuals, threshold, summary=True)
-
-# Use events function to widen and number anomalous events
-df_anomalies = df.iloc[time_steps:]
-df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
-df_anomalies['detected_anomaly'] = detections['anomaly']
-df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
-df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'])
-
-# DETERMINE METRICS #
-#########################################
-compare = anomaly_utilities.compare_labeled_detected(df_anomalies)
-metrics = anomaly_utilities.metrics(df_anomalies, compare.valid_detections, compare.invalid_detections)
-
-# OUTPUT RESULTS #
-#########################################
-print('\n\n\nScript report:\n')
-print('Sensor: ' + sensor[0])
-print('Year: ' + str(year))
-# print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % metrics.prc)
-print('NPV = %f' % metrics.npv)
-print('Acc = %f' % metrics.acc)
-print('TP  = %i' % metrics.true_positives)
-print('TN  = %i' % metrics.true_negatives)
-print('FP  = %i' % metrics.false_positives)
-print('FN  = %i' % metrics.false_negatives)
-print('F1 = %f' % metrics.f1)
-print('F2 = %f' % metrics.f2)
-print("\n LSTM script end.")
-
-# GENERATE PLOTS #
-#########################################
-plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
-plt.plot(detections['prediction'], 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(detections['prediction'][df_anomalies[df_anomalies['detected_event'] > 0]], 'r+', label='machine detected anomalies')
-plt.legend()
-plt.ylabel(sensor)
-plt.show()
-
-#########################################
-# LSTM Univariate Bidirectional Model #
-#########################################
-
-# MODEL CREATION #
-#########################################
-# scales data, reshapes data, builds and trains model, evaluates model results
-time_steps = 10
-samples = 5000
-cells = 128
-dropout = 0.2
-patience = 6
-
-LSTM_univar_bidir = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
-
-# Plot Metrics and Evaluate the Model
-# plot training loss and validation loss with matplotlib and pyplot
-plt.plot(LSTM_univar_bidir.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_univar_bidir.history.history['val_loss'], label='Validation Loss')
-plt.legend()
-plt.show()
-
-# DETERMINE THRESHOLD AND DETECT ANOMALIES #
-#########################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar_bidir.test_residuals[0], 75, 0.01, 4)
-threshold.index = df[time_steps:-time_steps].index
-
-residuals = pd.DataFrame(LSTM_univar_bidir.test_residuals)
-residuals.index = threshold.index
-
-plt.figure()
-# plt.plot(df['raw'], 'b', label='original data')
-plt.plot(residuals, 'b', label='residuals')
-plt.plot(threshold['low'], 'c', label='thresh_low')
-plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
-plt.legend()
-plt.ylabel(sensor)
-plt.show()
-
-observed = df[['observed']][time_steps:-time_steps]
-detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar_bidir.predictions, LSTM_univar_bidir.test_residuals, threshold, summary=True)
-
-# Use events function to widen and number anomalous events
-df_anomalies = df.iloc[time_steps:]
-df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'])
-df_anomalies['detected_anomaly'] = detections['anomaly']
-df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
-df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'])
-
-# DETERMINE METRICS #
-#########################################
-compare = anomaly_utilities.compare_labeled_detected(df_anomalies)
-metrics = anomaly_utilities.metrics(df_anomalies, compare.valid_detections, compare.invalid_detections)
-
-# OUTPUT RESULTS #
-#########################################
-print('\n\n\nScript report:\n')
-print('Sensor: ' + sensor[0])
-print('Year: ' + str(year))
-# print('Parameters: LSTM, sequence length: %i, training samples: %i, Threshold = %f' %(time_steps, samples, threshold))
-print('PPV = %f' % metrics.prc)
-print('NPV = %f' % metrics.npv)
-print('Acc = %f' % metrics.acc)
-print('TP  = %i' % metrics.true_positives)
-print('TN  = %i' % metrics.true_negatives)
-print('FP  = %i' % metrics.false_positives)
-print('FN  = %i' % metrics.false_negatives)
-print('F1 = %f' % metrics.f1)
-print('F2 = %f' % metrics.f2)
-print("\n LSTM script end.")
-
-# GENERATE PLOTS #
-#########################################
-plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
-plt.plot(detections['prediction'], 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(detections['prediction'][df_anomalies[df_anomalies['detected_event'] > 0]], 'r+', label='machine detected anomalies')
-plt.legend()
-plt.ylabel(sensor)
-plt.show()
-
 ##################################################
 # LSTM Multivariate Retrieve and Preprocess Data #
 ##################################################
@@ -240,28 +29,22 @@ plt.show()
 # DEFINE SITE and VARIABLE #
 #########################################
 # site = "BlackSmithFork"
-# site = "FranklinBasin"
-site = "MainStreet"
+site = "FranklinBasin"
+# site = "MainStreet"
 # site = "Mendon"
 # site = "TonyGrove"
 # site = "WaterLab"
 sensor = ['temp', 'cond', 'ph', 'do']
-year = 2014
+year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="/LRO_data/")
 
 # RULES BASED DETECTION #
 #########################################
-# General sensor ranges for LRO data:
-# Temp min: -5, max: 30
-# SpCond min: 100, max: 900
-# pH min: 7.5, max: 9.0
-# do min: 2, max: 16
-
-maximum = [30, 900, 9.0, 16]
-minimum = [-5, 100, 7.5, 2]
+maximum = [13, 380, 9.2, 13]
+minimum = [-2, 120, 7.5, 8]
 length = 6
 
 size = []
@@ -303,7 +86,7 @@ print(df_anomaly.shape)
 #########################################
 # scales data, reshapes data, builds and trains model, evaluates model results
 time_steps = 10
-samples = 5000
+samples = 10000
 cells = 128
 dropout = 0.2
 patience = 6
@@ -325,8 +108,8 @@ residuals.index = df_observed[time_steps:].index
 predictions.index = df_observed[time_steps:].index
 
 window_sz = [40, 40, 40, 40]
-alpha = [0.01, 0.01, 0.01, 0.01]
-min_range = [0.2, 4, 0.02, 0.04]
+alpha = [0.0001, 0.0001, 0.0001, 0.001]
+min_range = [0.25, 5, 0.01, 0.15]
 
 threshold = []
 for i in range(0, LSTM_multivar.test_residuals.shape[1]):
@@ -356,8 +139,7 @@ for i in range(0, len(detections_array)):
     all_data = sensor_array[sensor[i]].iloc[time_steps:]
     all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'])
     all_data['detected_anomaly'] = detections_array[i]['anomaly']
-    all_data['all_anomalies'] = all_data.eval('detected_anomaly or anomaly')
-    all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'])
+    all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['detected_anomaly'])
     df_array.append(all_data)
 
 # DETERMINE METRICS #
@@ -441,7 +223,6 @@ for i in range(0, len(sensor)):
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
-    plt.plot(detections_array[i]['prediction'][df_array[i][df_array[i]['detected_event'] > 0]], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
@@ -454,7 +235,7 @@ for i in range(0, len(sensor)):
 #########################################
 # scales data, reshapes data, builds and trains model, evaluates model results
 time_steps = 10
-samples = 5000
+samples = 10000
 cells = 128
 dropout = 0.2
 patience = 6
@@ -474,8 +255,8 @@ residuals = pd.DataFrame(LSTM_multivar_bidir.test_residuals)
 residuals.index = df_observed[time_steps:-time_steps].index
 
 window_sz = [40, 40, 40, 40]
-alpha = [0.01, 0.01, 0.01, 0.01]
-min_range = [0.2, 4, 0.02, 0.04]
+alpha = [0.0001, 0.0001, 0.0001, 0.001]
+min_range = [0.25, 5, 0.01, 0.15]
 
 threshold = []
 for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
@@ -585,10 +366,10 @@ print('F2 = %f' % do_metrics.f2)
 for i in range(0, len(sensor)):
     plt.figure()
     plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-    #plt.plot(df_observed[df_observed.columns[i]], 'm', label='corrected data' )
+    # plt.plot(df_observed[df_observed.columns[i]], 'm', label='corrected data' )
     plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
     plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(detections_array[i]['prediction'][df_array[i][df_array[i]['detected_event'] > 0]], 'r+', label='machine detected anomalies')
+    plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor[i])
     plt.show()
