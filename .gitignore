@@ -1,1 +1,5 @@
+__pycache__/
+.DS_Store
 .idea
+test_stuff.py
+PlottingEtcJunk.py
