@@ -16,15 +16,15 @@ print("ARIMA exploration script begin.")
 # site = "BlackSmithFork"
 # site = "FranklinBasin"
 # site = "MainStreet"
-site = "Mendon"
-# site = "TonyGrove"
+# site = "Mendon"
+site = "TonyGrove"
 # site = "WaterLab"
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -62,7 +62,7 @@ print(pdqParam)
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 28
+maximum = 20
 minimum = -2
 temp_df = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
@@ -138,8 +138,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 800
-minimum = 200
+maximum = 500
+minimum = 175
 cond_df = rules_detect.range_check(cond_df, maximum, minimum)
 length = 6
 cond_df = rules_detect.persistence(cond_df, length)
@@ -215,7 +215,7 @@ plt.show()
 # RULES BASED DETECTION #
 #########################################
 maximum = 9.0
-minimum = 7.4
+minimum = 8.0
 ph_df = rules_detect.range_check(ph_df, maximum, minimum)
 length = 6
 ph_df = rules_detect.persistence(ph_df, length)
@@ -290,8 +290,8 @@ plt.show()
 
 # RULES BASED DETECTION #
 #########################################
-maximum = 15
-minimum = 3
+maximum = 14
+minimum = 7
 do_df = rules_detect.range_check(do_df, maximum, minimum)
 length = 6
 do_df = rules_detect.persistence(do_df, length)
@@ -308,7 +308,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(do_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.15)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.01)
 threshold.index = residuals.index
 
 plt.figure()
