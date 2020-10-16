@@ -9,6 +9,10 @@ import anomaly_utilities
 import model_workflow
 import pandas as pd
 
+#####################################
+# SITE SPECIFIC SETTINGS #
+#####################################
+
 # RETRIEVE DATA #
 #########################################
 site = 'FranklinBasin'
@@ -51,10 +55,23 @@ pdqParams = [
 ]
 pdqParam = pd.DataFrame(pdqParams, columns=sensors, index=sites)
 
+# LSTM PARAMETERS #
+#########################################
+time_steps = 10
+samples = 20000
+cells = 128
+dropout = 0.2
+patience = 6
+
+
+##############################################
+# MODEL AND ANOMALY DETECTION IMPLEMENTATION #
+##############################################
+
 # ARIMA BASED DETECTION #
 #########################################
 ARIMA_detect =[]
-for i in len(0, sensor):
+for i in range(0, len(sensor)):
     p, d, q = pdqParam[sensor[i]][site]
     print('sensor: ' + str(sensor[i]) + ', p, d, q = (' + str(p) + ', ' + str(d) + ', ' + str(q) + ')')
     df = sensor_array[sensor[i]]
@@ -62,21 +79,13 @@ for i in len(0, sensor):
         model_workflow.ARIMA_detect(
             df, sensor[i], p, d, q, minimum[i], maximum[i], length, window_sz[i], alpha[i], min_range[i], wf[i]))
 
-# LSTM PARAMETERS #
-#########################################
-time_steps = 10
-samples = 10000
-cells = 128
-dropout = 0.2
-patience = 6
-
 # LSTM BASED DETECTION #
 #########################################
 
 # DATA: univariate,  MODEL: vanilla #
 model_type = 'vanilla'
 LSTM_detect_univar = []
-for i in len(0, sensor):
+for i in range(0, len(sensor)):
     df = sensor_array[sensor[i]]
     LSTM_detect_univar.append(
         model_workflow.LSTM_detect_univar(
@@ -86,7 +95,7 @@ for i in len(0, sensor):
 # DATA: univariate,  MODEL: bidirectional #
 model_type = 'bidirectional'
 LSTM_detect_univar_bidir = []
-for i in len(0, sensor):
+for i in range(0, len(sensor)):
     df = sensor_array[sensor[i]]
     LSTM_detect_univar_bidir.append(
         model_workflow.LSTM_detect_univar(
