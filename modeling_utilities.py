@@ -16,6 +16,7 @@ import statsmodels.api as api
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, RepeatVector, TimeDistributed, Bidirectional
+import warnings
 
 
 def build_arima_model(data, p, d, q, summary):
