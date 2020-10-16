@@ -49,7 +49,7 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
     print('Model type: ARIMA')
-    print('Sensor:' + str(sensor))
+    print('Sensor: ' + str(sensor))
     print('PPV = %f' % metrics.prc)
     print('NPV = %f' % metrics.npv)
     print('Acc = %f' % metrics.acc)
@@ -141,7 +141,7 @@ def LSTM_detect_univar(df, sensor,
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
     print('Model type: LSTM univariate ' + str(model_type))
-    print('Sensor:' + str(sensor))
+    print('Sensor: ' + str(sensor))
     print('PPV = %f' % metrics.prc)
     print('NPV = %f' % metrics.npv)
     print('Acc = %f' % metrics.acc)
@@ -272,7 +272,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
     for i in range(0, len(metrics_array)):
         print('\n\n\nMetrics report:\n')
         print('Model type: LSTM multivariate ' + str(model_type))
-        print('Sensor:' + str(sensor[i]))
+        print('Sensor: ' + str(sensor[i]))
         print('PPV = %f' % metrics_array[i].prc)
         print('NPV = %f' % metrics_array[i].npv)
         print('Acc = %f' % metrics_array[i].acc)
