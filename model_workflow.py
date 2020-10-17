@@ -101,6 +101,7 @@ def LSTM_detect_univar(df, sensor,
         model = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
     else:
         model = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
+    plt.figure()
     plt.plot(model.history.history['loss'], label='Training Loss')
     plt.plot(model.history.history['val_loss'], label='Validation Loss')
     plt.legend()
@@ -214,6 +215,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells,
                                                        dropout, patience)
     # Plot Metrics and Evaluate the Model
+    plt.figure()
     plt.plot(model.history.history['loss'], label='Training Loss')
     plt.plot(model.history.history['val_loss'], label='Validation Loss')
     plt.legend()
@@ -253,10 +255,10 @@ def LSTM_detect_multivar(sensor_array, sensor,
     for i in range(0, len(detections_array)):
         all_data = []
         all_data = sensor_array[sensor[i]].iloc[time_steps:]
-        all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'], wf)
+        all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'], wf[i])
         all_data['detected_anomaly'] = detections_array[i]['anomaly']
         all_data['all_anomalies'] = all_data.eval('detected_anomaly or anomaly')
-        all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'], wf)
+        all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'], wf[i])
         df_array.append(all_data)
 
     # DETERMINE METRICS #
