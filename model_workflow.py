@@ -50,15 +50,7 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     print('\n\n\nScript report:\n')
     print('Model type: ARIMA')
     print('Sensor: ' + str(sensor))
-    print('PPV = %f' % metrics.prc)
-    print('NPV = %f' % metrics.npv)
-    print('Acc = %f' % metrics.acc)
-    print('TP  = %i' % metrics.true_positives)
-    print('TN  = %i' % metrics.true_negatives)
-    print('FP  = %i' % metrics.false_positives)
-    print('FN  = %i' % metrics.false_negatives)
-    print('F1 = %f' % metrics.f1)
-    print('F2 = %f' % metrics.f2)
+    anomaly_utilities.print_metrics(metrics)
     print("\nARIMA script end.")
 
     # GENERATE PLOTS #
@@ -142,15 +134,7 @@ def LSTM_detect_univar(df, sensor,
     print('\n\n\nScript report:\n')
     print('Model type: LSTM univariate ' + str(model_type))
     print('Sensor: ' + str(sensor))
-    print('PPV = %f' % metrics.prc)
-    print('NPV = %f' % metrics.npv)
-    print('Acc = %f' % metrics.acc)
-    print('TP  = %i' % metrics.true_positives)
-    print('TN  = %i' % metrics.true_negatives)
-    print('FP  = %i' % metrics.false_positives)
-    print('FN  = %i' % metrics.false_negatives)
-    print('F1 = %f' % metrics.f1)
-    print('F2 = %f' % metrics.f2)
+    anomaly_utilities.print_metrics(metrics)
     print("\n LSTM script end.")
 
     # GENERATE PLOTS #
@@ -273,15 +257,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
         print('\n\n\nMetrics report:\n')
         print('Model type: LSTM multivariate ' + str(model_type))
         print('Sensor: ' + str(sensor[i]))
-        print('PPV = %f' % metrics_array[i].prc)
-        print('NPV = %f' % metrics_array[i].npv)
-        print('Acc = %f' % metrics_array[i].acc)
-        print('TP  = %i' % metrics_array[i].true_positives)
-        print('TN  = %i' % metrics_array[i].true_negatives)
-        print('FP  = %i' % metrics_array[i].false_positives)
-        print('FN  = %i' % metrics_array[i].false_negatives)
-        print('F1 = %f' % metrics_array[i].f1)
-        print('F2 = %f' % metrics_array[i].f2)
+        anomaly_utilities.print_metrics(metrics_array[i])
 
     # GENERATE PLOTS #
     for i in range(0, len(sensor)):
