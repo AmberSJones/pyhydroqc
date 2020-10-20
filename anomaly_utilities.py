@@ -11,6 +11,7 @@
 import os
 import numpy as np
 import pandas as pd
+import matplotlib as plt
 from scipy.stats import norm
 import warnings
 pd.options.mode.chained_assignment = None
@@ -398,4 +399,21 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
         print('\n\n\nratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
 
     return detected_anomaly
-  
+
+
+def plt_threshold(residuals, threshold, sensor):
+    plt.plot(residuals, 'b', label='residuals')
+    plt.plot(threshold['low'], 'c', label='thresh_low')
+    plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
+    plt.legend()
+    plt.ylabel(sensor)
+
+
+def plt_results(raw, predictions, labels, detections, sensor):
+    plt.plot(raw, 'b', label='original data')
+    plt.plot(predictions, 'c', label='predicted values')
+    plt.plot(raw[labels], 'mo', mfc='none', label='technician labeled anomalies')
+    plt.plot(predictions[detections > 0], 'r+', label='machine detected anomalies')
+    plt.legend()
+    plt.ylabel(sensor)
+

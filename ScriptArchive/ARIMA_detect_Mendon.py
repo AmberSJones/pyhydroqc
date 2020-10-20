@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -68,7 +68,7 @@ temp_df = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
 temp_df = rules_detect.persistence(temp_df, length)
 size = rules_detect.group_size(temp_df)
-df = rules_detect.interpolate(temp_df)
+temp_df = rules_detect.interpolate(temp_df)
 
 # MODEL CREATION #
 #########################################
@@ -80,7 +80,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(temp_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.25)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 30, 0.0001, 0.4)
 threshold.index = residuals.index
 
 plt.figure()
@@ -124,9 +124,9 @@ print("\nTemperature ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(temp_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(temp_df['raw'][temp_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[temp_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[0])
@@ -144,7 +144,7 @@ cond_df = rules_detect.range_check(cond_df, maximum, minimum)
 length = 6
 cond_df = rules_detect.persistence(cond_df, length)
 size = rules_detect.group_size(cond_df)
-df = rules_detect.interpolate(cond_df)
+cond_df = rules_detect.interpolate(cond_df)
 
 # MODEL CREATION #
 #########################################
@@ -156,7 +156,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(cond_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 5)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.00001, 5)
 threshold.index = residuals.index
 
 plt.figure()
@@ -200,9 +200,9 @@ print("\nSpecific Conductance ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(cond_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(cond_df['raw'][cond_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[cond_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[1])
@@ -220,7 +220,7 @@ ph_df = rules_detect.range_check(ph_df, maximum, minimum)
 length = 6
 ph_df = rules_detect.persistence(ph_df, length)
 size = rules_detect.group_size(ph_df)
-df = rules_detect.interpolate(ph_df)
+ph_df = rules_detect.interpolate(ph_df)
 
 # MODEL CREATION #
 #########################################
@@ -232,7 +232,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(ph_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.01)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 20, 0.0001, 0.03)
 threshold.index = residuals.index
 
 plt.figure()
@@ -276,9 +276,9 @@ print("\npH ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(ph_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(ph_df['raw'][ph_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[ph_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[2])
@@ -296,7 +296,7 @@ do_df = rules_detect.range_check(do_df, maximum, minimum)
 length = 6
 do_df = rules_detect.persistence(do_df, length)
 size = rules_detect.group_size(do_df)
-df = rules_detect.interpolate(do_df)
+do_df = rules_detect.interpolate(do_df)
 
 # MODEL CREATION #
 #########################################
@@ -308,7 +308,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(do_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.15)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 20, 0.001, 0.15)
 threshold.index = residuals.index
 
 plt.figure()
@@ -352,9 +352,9 @@ print("\nDissolved Oxygen ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(do_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(do_df['raw'][do_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[do_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[3])
