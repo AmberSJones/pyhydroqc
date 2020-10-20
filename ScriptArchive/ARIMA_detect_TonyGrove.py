@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -80,7 +80,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(temp_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.25)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 30, 0.00001, 0.4)
 threshold.index = residuals.index
 
 plt.figure()
@@ -144,7 +144,7 @@ cond_df = rules_detect.range_check(cond_df, maximum, minimum)
 length = 6
 cond_df = rules_detect.persistence(cond_df, length)
 size = rules_detect.group_size(cond_df)
-df = rules_detect.interpolate(cond_df)
+cond_df = rules_detect.interpolate(cond_df)
 
 # MODEL CREATION #
 #########################################
@@ -156,7 +156,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(cond_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 5)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 96, 0.0001, 5)
 threshold.index = residuals.index
 
 plt.figure()
@@ -232,7 +232,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(ph_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.01)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 48, 0.0001, 0.02)
 threshold.index = residuals.index
 
 plt.figure()
@@ -308,7 +308,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(do_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.01)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.00001, 0.15)
 threshold.index = residuals.index
 
 plt.figure()
