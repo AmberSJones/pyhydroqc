@@ -28,15 +28,9 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], window_sz, alpha, min_range)
     threshold.index = residuals.index
     plt.figure()
-    plt.plot(residuals, 'b', label='residuals')
-    plt.plot(threshold['low'], 'c', label='thresh_low')
-    plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
-    plt.legend()
-    plt.ylabel(sensor[0])
+    anomaly_utilities.plt_threshold(residuals, threshold, sensor[0])
     plt.show()
-
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
-
     # Use events function to widen and number anomalous events
     df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], wf)
     df['detected_anomaly'] = detections['anomaly']
@@ -45,22 +39,20 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     # DETERMINE METRICS #
     anomaly_utilities.compare_events(df, wf)
     metrics = anomaly_utilities.metrics(df)
-
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
     print('Model type: ARIMA')
     print('Sensor: ' + str(sensor))
     anomaly_utilities.print_metrics(metrics)
     print("\nARIMA script end.")
-
     # GENERATE PLOTS #
     plt.figure()
-    plt.plot(df['raw'], 'b', label='original data')
-    plt.plot(predictions, 'c', label='predicted values')
-    plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(predictions[df['detected_event'] > 0], 'r+', label='machine detected anomalies')
-    plt.legend()
-    plt.ylabel(sensor[0])
+    anomaly_utilities.plt_results(
+        raw=df['raw'],
+        predictions=predictions,
+        labels=df['labeled_anomaly'],
+        detections=df['detected_event'],
+        sensor=sensor[0])
     plt.show()
 
     ARIMA_detect = ModelWorkflow()
@@ -92,6 +84,7 @@ def LSTM_detect_univar(df, sensor,
         model = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
     else:
         model = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
+    plt.figure()
     plt.plot(model.history.history['loss'], label='Training Loss')
     plt.plot(model.history.history['val_loss'], label='Validation Loss')
     plt.legend()
@@ -106,11 +99,7 @@ def LSTM_detect_univar(df, sensor,
     residuals = pd.DataFrame(model.test_residuals)
     residuals.index = threshold.index
     plt.figure()
-    plt.plot(residuals, 'b', label='residuals')
-    plt.plot(threshold['low'], 'c', label='thresh_low')
-    plt.plot(threshold['high'], 'm', mfc='none', label='thresh_high')
-    plt.legend()
-    plt.ylabel(sensor)
+    anomaly_utilities.plt_threshold(residuals, threshold, sensor[0])
     plt.show()
     if model_type == 'vanilla':
         observed = df[['observed']][time_steps:]
@@ -124,27 +113,24 @@ def LSTM_detect_univar(df, sensor,
     df_anomalies['detected_anomaly'] = detections['anomaly']
     df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
     df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], wf)
-
     # DETERMINE METRICS #
     anomaly_utilities.compare_events(df_anomalies, wf)
     metrics = anomaly_utilities.metrics(df_anomalies)
-
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
     print('Model type: LSTM univariate ' + str(model_type))
     print('Sensor: ' + str(sensor))
     anomaly_utilities.print_metrics(metrics)
     print("\n LSTM script end.")
-
     # GENERATE PLOTS #
     plt.figure()
-    plt.plot(df['raw'], 'b', label='original data')
-    plt.plot(detections['prediction'], 'c', label='predicted values')
-    plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-    plt.plot(detections['prediction'][df_anomalies['detected_event'] > 0], 'r+',
-             label='machine detected anomalies')
-    plt.legend()
-    plt.ylabel(sensor)
+    anomaly_utilities.plt_results(
+        raw=df['raw'],
+        predictions=detections['prediction'],
+        labels=df['labeled_anomaly'],
+        detections=df_anomalies['detected_event'],
+        sensor=sensor[0]
+    )
     plt.show()
 
     LSTM_detect_univar = ModelWorkflow()
@@ -196,6 +182,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells,
                                                        dropout, patience)
     # Plot Metrics and Evaluate the Model
+    plt.figure()
     plt.plot(model.history.history['loss'], label='Training Loss')
     plt.plot(model.history.history['val_loss'], label='Validation Loss')
     plt.legend()
@@ -213,11 +200,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
         threshold_df.index = residuals.index
         threshold.append(threshold_df)
         plt.figure()
-        plt.plot(residuals.iloc[:, i], 'b', label='residuals')
-        plt.plot(threshold[i]['low'], 'c', label='thresh_low')
-        plt.plot(threshold[i]['high'], 'm', mfc='none', label='thresh_high')
-        plt.legend()
-        plt.ylabel(sensor[i])
+        anomaly_utilities.plt_threshold(residuals.iloc[:, i], threshold[i], sensor[i])
         plt.show()
 
     if model_type == 'vanilla':
@@ -235,10 +218,10 @@ def LSTM_detect_multivar(sensor_array, sensor,
     for i in range(0, len(detections_array)):
         all_data = []
         all_data = sensor_array[sensor[i]].iloc[time_steps:]
-        all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'], wf)
+        all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'], wf[i])
         all_data['detected_anomaly'] = detections_array[i]['anomaly']
         all_data['all_anomalies'] = all_data.eval('detected_anomaly or anomaly')
-        all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'], wf)
+        all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'], wf[i])
         df_array.append(all_data)
 
     # DETERMINE METRICS #
@@ -260,16 +243,13 @@ def LSTM_detect_multivar(sensor_array, sensor,
     # GENERATE PLOTS #
     for i in range(0, len(sensor)):
         plt.figure()
-        plt.plot(df_raw[df_raw.columns[i]], 'b', label='original data')
-        plt.plot(detections_array[i]['prediction'], 'c', label='predicted values')
-        plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['labeled_anomaly']], 'mo', mfc='none',
-                 label='technician labeled anomalies')
-        plt.plot(detections_array[i]['prediction'][detections_array[i]['anomaly']], 'r+',
-                 label='machine detected anomalies')
-        plt.plot(detections_array[i]['prediction'][df_array[i]['detected_event'] > 0], 'r+',
-                 label='machine detected anomalies')
-        plt.legend()
-        plt.ylabel(sensor[i])
+        anomaly_utilities.plt_results(
+            raw=df_raw[df_raw.columns[i]],
+            predictions=detections_array[i]['prediction'],
+            labels=sensor_array[sensor[i]]['labeled_anomaly'],
+            detections=df_array[i]['detected_event'],
+            sensor=sensor[i]
+            )
         plt.show()
 
     LSTM_detect_multivar = ModelWorkflow()

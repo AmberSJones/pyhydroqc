@@ -24,7 +24,7 @@ year = [2014, 2015, 2016, 2017, 2018, 2019]
 
 # GET DATA #
 #########################################
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
 temp_df = sensor_array[sensor[0]]
 cond_df = sensor_array[sensor[1]]
 ph_df = sensor_array[sensor[2]]
@@ -80,7 +80,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(temp_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.25)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 20, 0.00001, 0.25)
 threshold.index = residuals.index
 
 plt.figure()
@@ -95,9 +95,10 @@ plt.show()
 detections = anomaly_utilities.detect_anomalies(temp_df['observed'], predictions, residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
-temp_df['labeled_event'] = anomaly_utilities.anomaly_events(temp_df['labeled_anomaly'], wf=2)
+temp_df['labeled_event'] = anomaly_utilities.anomaly_events(temp_df['labeled_anomaly'], wf=1)
+temp_df['detected_anomaly'] = detections['anomaly']
 temp_df['all_anomalies'] = temp_df.eval('detected_anomaly or anomaly')
-temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['all_anomalies'], wf=2)
+temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['all_anomalies'], wf=1)
 
 # DETERMINE METRICS #
 #########################################
@@ -155,7 +156,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(cond_df
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 5)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 30, 0.00001, 4)
 threshold.index = residuals.index
 
 plt.figure()
@@ -170,10 +171,10 @@ plt.show()
 detections = anomaly_utilities.detect_anomalies(cond_df['observed'], predictions, residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
-cond_df['labeled_event'] = anomaly_utilities.anomaly_events(cond_df['labeled_anomaly'], wf=2)
+cond_df['labeled_event'] = anomaly_utilities.anomaly_events(cond_df['labeled_anomaly'], wf=1)
 cond_df['detected_anomaly'] = detections['anomaly']
 cond_df['all_anomalies'] = cond_df.eval('detected_anomaly or anomaly')
-cond_df['detected_event'] = anomaly_utilities.anomaly_events(cond_df['all_anomalies'], wf=2)
+cond_df['detected_event'] = anomaly_utilities.anomaly_events(cond_df['all_anomalies'], wf=1)
 
 # DETERMINE METRICS #
 #########################################
@@ -231,7 +232,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(ph_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.0001, 0.01)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 30, 0.00001, 0.02)
 threshold.index = residuals.index
 
 plt.figure()
@@ -307,7 +308,7 @@ model_fit, residuals, predictions = modeling_utilities.build_arima_model(do_df['
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 40, 0.001, 0.15)
+threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], 30, 0.0001, 0.15)
 threshold.index = residuals.index
 
 plt.figure()
