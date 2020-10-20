@@ -102,8 +102,8 @@ temp_df['detected_event'] = anomaly_utilities.anomaly_events(temp_df['all_anomal
 
 # DETERMINE METRICS #
 #########################################
-compare = anomaly_utilities.compare_labeled_detected(temp_df)
-metrics = anomaly_utilities.metrics(temp_df, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(temp_df, 2)
+metrics = anomaly_utilities.metrics(temp_df)
 
 # OUTPUT RESULTS #
 #########################################
@@ -178,8 +178,8 @@ cond_df['detected_event'] = anomaly_utilities.anomaly_events(cond_df['all_anomal
 
 # DETERMINE METRICS #
 #########################################
-compare = anomaly_utilities.compare_labeled_detected(cond_df)
-metrics = anomaly_utilities.metrics(cond_df, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(cond_df, 2)
+metrics = anomaly_utilities.metrics(cond_df)
 
 # OUTPUT RESULTS #
 #########################################
@@ -254,8 +254,8 @@ ph_df['detected_event'] = anomaly_utilities.anomaly_events(ph_df['all_anomalies'
 
 # DETERMINE METRICS #
 #########################################
-compare = anomaly_utilities.compare_labeled_detected(ph_df)
-metrics = anomaly_utilities.metrics(ph_df, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(ph_df, 2)
+metrics = anomaly_utilities.metrics(ph_df)
 
 # OUTPUT RESULTS #
 #########################################
@@ -330,8 +330,8 @@ do_df['detected_event'] = anomaly_utilities.anomaly_events(do_df['all_anomalies'
 
 # DETERMINE METRICS #
 #########################################
-compare = anomaly_utilities.compare_labeled_detected(do_df)
-metrics = anomaly_utilities.metrics(do_df, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(do_df, 2)
+metrics = anomaly_utilities.metrics(do_df)
 
 # OUTPUT RESULTS #
 #########################################

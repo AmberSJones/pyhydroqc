@@ -106,8 +106,8 @@ df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], 1)
 
 # DETERMINE METRICS #
 #########################################
-compare = anomaly_utilities.compare_labeled_detected(df)
-metrics = anomaly_utilities.metrics(df, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(df, 1)
+metrics = anomaly_utilities.metrics(df)
 
 # OUTPUT RESULTS #
 #########################################
