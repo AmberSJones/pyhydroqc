@@ -30,7 +30,7 @@ Contains functions for rules-based anomaly detection and preprocessing. Function
 Contains functions for performing anomaly detection and correction:
 - get_data: Retrieves and formats data
 - anomaly_events: Widens anomaly detections
-- compare_labeled_detected: Compares anomaly events detected by an algorithm to events labeled by a technician
+- compare_events: Compares anomaly events detected by an algorithm to events labeled by a technician
 - metrics: Determines performance metrics of the detections relative to labeled data.
 - group_bools: Indexes contiguous groups of anomalous and normal data to facilitate correction.
 - xfade: Uses a cross-fade to blend forecasted and backcasted data over anomaly events for generating data correction.
