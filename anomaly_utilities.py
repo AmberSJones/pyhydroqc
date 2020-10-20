@@ -194,6 +194,18 @@ def metrics(df, valid_detections, invalid_detections):
     return metrics
 
 
+def print_metrics(metrics):
+    print('PPV = %f' % metrics.prc)
+    print('NPV = %f' % metrics.npv)
+    print('Acc = %f' % metrics.acc)
+    print('TP  = %i' % metrics.true_positives)
+    print('TN  = %i' % metrics.true_negatives)
+    print('FP  = %i' % metrics.false_positives)
+    print('FN  = %i' % metrics.false_negatives)
+    print('F1 = %f' % metrics.f1)
+    print('F2 = %f' % metrics.f2)
+
+
 def group_bools(df):
     """
     group_bools indexes each grouping of anomalies (1) and normal points (0) as numbered sets.
