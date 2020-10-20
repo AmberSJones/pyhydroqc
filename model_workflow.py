@@ -43,8 +43,8 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     df['all_anomalies'] = df.eval('detected_anomaly or anomaly')
     df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], wf)
     # DETERMINE METRICS #
-    compare = anomaly_utilities.compare_labeled_detected(df)
-    metrics = anomaly_utilities.metrics(df, compare.valid_detections, compare.invalid_detections)
+    anomaly_utilities.compare_events(df, wf)
+    metrics = anomaly_utilities.metrics(df)
 
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
@@ -69,7 +69,6 @@ def ARIMA_detect(df, sensor, p, d, q, minimum, maximum, length, window_sz, alpha
     ARIMA_detect.model_fit = model_fit
     ARIMA_detect.threshold = threshold
     ARIMA_detect.detections = detections
-    ARIMA_detect.compare = compare
     ARIMA_detect.metrics = metrics
 
     return ARIMA_detect
@@ -127,8 +126,8 @@ def LSTM_detect_univar(df, sensor,
     df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], wf)
 
     # DETERMINE METRICS #
-    compare = anomaly_utilities.compare_labeled_detected(df_anomalies)
-    metrics = anomaly_utilities.metrics(df_anomalies, compare.valid_detections, compare.invalid_detections)
+    anomaly_utilities.compare_events(df_anomalies, wf)
+    metrics = anomaly_utilities.metrics(df_anomalies)
 
     # OUTPUT RESULTS #
     print('\n\n\nScript report:\n')
@@ -155,7 +154,6 @@ def LSTM_detect_univar(df, sensor,
     LSTM_detect_univar.threshold = threshold
     LSTM_detect_univar.detections = detections
     LSTM_detect_univar.df_anomalies = df_anomalies
-    LSTM_detect_univar.compare = compare
     LSTM_detect_univar.metrics = metrics
 
     return LSTM_detect_univar
@@ -247,9 +245,9 @@ def LSTM_detect_multivar(sensor_array, sensor,
     compare_array = []
     metrics_array = []
     for i in range(0, len(df_array)):
-        compare = anomaly_utilities.compare_labeled_detected(df_array[i])
+        anomaly_utilities.compare_events(df_array[i], wf)
         compare_array.append(compare)
-        metrics = anomaly_utilities.metrics(df_array[i], compare_array[i].valid_detections, compare_array[i].invalid_detections)
+        metrics = anomaly_utilities.metrics(df_array[i])
         metrics_array.append(metrics)
 
     # OUTPUT RESULTS #
