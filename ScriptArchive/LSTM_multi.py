@@ -126,17 +126,17 @@ for i in range(0, len(test_score_array)):
     df_array.append(all_data)
 
 # Determine Metrics
-compare_temp = anomaly_utilities.compare_labeled_detected(df_array[0])
-temp_metrics = anomaly_utilities.metrics(df_array[0], compare_temp.valid_detections, compare_temp.invalid_detections)
+anomaly_utilities.compare_events(df_array[0])
+temp_metrics = anomaly_utilities.metrics(df_array[0])
 
-compare_cond = anomaly_utilities.compare_labeled_detected(df_array[1])
-cond_metrics = anomaly_utilities.metrics(df_array[1], compare_cond.valid_detections, compare_cond.invalid_detections)
+anomaly_utilities.compare_events(df_array[1])
+cond_metrics = anomaly_utilities.metrics(df_array[1])
 
-compare_ph = anomaly_utilities.compare_labeled_detected(df_array[2])
-ph_metrics = anomaly_utilities.metrics(df_array[2], compare_ph.valid_detections, compare_ph.invalid_detections)
+anomaly_utilities.compare_events(df_array[2])
+ph_metrics = anomaly_utilities.metrics(df_array[2])
 
-compare_do = anomaly_utilities.compare_labeled_detected(df_array[3])
-do_metrics = anomaly_utilities.metrics(df_array[3], compare_temp.valid_detections, compare_temp.invalid_detections)
+anomaly_utilities.compare_events(df_array[3])
+do_metrics = anomaly_utilities.metrics(df_array[3])
 
 
 # OUTPUT RESULTS #
