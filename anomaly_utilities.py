@@ -104,67 +104,97 @@ class CompareDetectionsContainer:
     pass
 
 
-def compare_labeled_detected(df):
+def assign_cm(val, len, wf):
     """
-    compare_labeled_detected compares anomalous events that are technician labeled and machine detected.
-    Labeled and detected data may be widened to increase the window of overlap.
+    assign_cm is a small helper function used in compare_events
+    inputs:
+    val is a string value to specify which area of the confusion matrix this point belongs to: 'tp', 'fp', or 'fn'
+    len is how long the total array should be
+    wf determines how many points should be turned into 'tn' on both edges of the array
+    output:
+    cm is an array of length len, with wf 'tn's at the beginning and the end filed with val in between
+    """
+    cm = ['tn' for i in range(len)]
+    for i in range(wf, len-wf):
+        cm[i] = val
+    return cm
+
+
+def compare_events(df, wf=1):
+    """
+    compare_events compares anomalous events that are technician labeled and machine detected.
+    Labeled and detected data may have been widened to increase the window of overlap.
+    wf is the widening factor used when generating events
     df is a data frame with required columns:
+    'labeled_anomaly': array of booleans based on expert labeled anomalies.
+    'detected_anomaly': array of machine detected anomaly booleans based on modelling.
     'labeled_event': array of numbered events based on expert labeled anomalies.
     'detected_event': array of numbered events based on machine detected anomalies.
     Outputs:
-    labeled_in_detected: boolean indicating the labeled points that appear in the detections.
-    detected_in_labeled: boolean indicating the detected point that appear in the labeled.
-    valid_detections: boolean indicating whether the detections were also present in the labeled.
-    invalid_detections: boolean indicating detections that were not present in the labeled.
+    'grp': a new column representing the indices of event groups.
+    'conf_mtx': a new column that gives the confusion matrix value for each data point.
     """
-    # generate lists of detected anomalies and valid detections
-    compare = CompareDetectionsContainer()
-    labeled_in_detected = [0]
-    detected_in_labeled = [0]
-    valid_detections = [0]
-    invalid_detections = [0]
-    for i in range(0, len(df['detected_event'])):
-        if (0 != df['detected_event'][i]):  # anomaly detected
-            if (0 != df['labeled_event'][i]):  # labeled as anomaly
-                if (labeled_in_detected[-1] != df['labeled_event'][i]):  # if not already in list of detected anomalies
-                    labeled_in_detected.append(df['labeled_event'][i])
-                if (detected_in_labeled[-1] != df['detected_event'][i]):
-                    detected_in_labeled.append(df['detected_event'][i])
-                if (valid_detections[-1] != df['detected_event'][i]):  # if not already in list of valid detections
-                    valid_detections.append(df['detected_event'][i])
 
-    det_ind = 0
-    for i in range(1, max(df['detected_event'])):
-        if (det_ind < len(valid_detections)):
-            if i == valid_detections[det_ind]:
-                det_ind += 1
-            else:
-                invalid_detections.append(i)
+    # initialize variables
+    grp_idx = 0
+    df['grp'] = -1  # initialize to error flag
+    df['conf_mtx'] = 'tn'
+    prev_la = df['labeled_event'][0]
+    prev_da = df['detected_event'][0]
+    prev_gi = 0
 
-    labeled_in_detected.pop(0)
-    valid_detections.pop(0)
-    invalid_detections.pop(0)
+    for i in range(0, len(df['labeled_event'])):  # for every row of data
 
-    compare.labeled_in_detected = labeled_in_detected
-    compare.valid_detections = valid_detections
-    compare.invalid_detections = invalid_detections
-    compare.detected_in_labeled = detected_in_labeled
+        # if this row is an event transition case
+        if (prev_la != df['labeled_event'][i] or prev_da != df['detected_event'][i]):
 
-    return compare
+            # if coming from a true negative case
+            if (prev_la == 0 and prev_da ==0):
+                grp_idx += 1
+
+            # if entering a true negative case
+            elif (df['labeled_event'][i] == 0 and df['detected_event'][i] == 0):
+                grp_idx += 1
+
+            # if it's a complete flip-flop case
+            elif (prev_la != df['labeled_event'][i] and prev_da != df['detected_event'][i]):
+                grp_idx += 1
+
+        df['grp'][i] = grp_idx  # update the group index for this row
+
+        # if this row is a group transition
+        if (grp_idx != prev_gi):
+            # add confusion matrix category to previous group
+
+            # if this event group is both labeled and detected as anomalous case
+            if (any(df['detected_event'][df['grp'] == prev_gi]) and any(df['labeled_event'][df['grp'] == prev_gi])):
+                # True Positive group
+                df['conf_mtx'][df['grp'] == prev_gi] = assign_cm('tp', len(df[df['grp'] == prev_gi]), wf)
+            # if this event group is detected as anomalous but not labeled
+            elif (any(df['detected_event'][df['grp'] == prev_gi])):
+                # False Positive group
+                df['conf_mtx'][df['grp'] == prev_gi] = assign_cm('fp', len(df[df['grp'] == prev_gi]), wf)
+            # if this event group is labeled as anomalous but not detected
+            elif (any(df['labeled_event'][df['grp'] == prev_gi])):
+                # False Negative group
+                df['conf_mtx'][df['grp'] == prev_gi] = assign_cm('fn', len(df[df['grp'] == prev_gi]), wf)
+
+        # update previous state variables
+        prev_la = df['labeled_event'][i]
+        prev_da = df['detected_event'][i]
+        prev_gi = grp_idx
+    return
 
 
 class MetricsContainer:
     pass
 
 
-def metrics(df, valid_detections, invalid_detections):
+def metrics(df):
     """
     metrics evaluates detector performance by comparing machine detected anomalies to technician labeled anomalies.
     df is a data frame with required columns:
-    'detected_event': boolean corresponding to machine detected anomalies where True (1) = anomalous data point.
-    'labeled_event': boolean corresponding to technician labeled anomalies where True (1) = anomalous data point.
-    valid_detections: output from compare function.
-    invalid_detections: output from compare function.
+    'conf_mtx': strings representing where in a confusion matrix the data point belongs
     Outputs:
     true_positives is the count of valid detections.
     false_negatives is the count of missed events.
@@ -178,12 +208,10 @@ def metrics(df, valid_detections, invalid_detections):
     f2 is a statistic that gives more weight to true positives.
     """
     metrics = MetricsContainer()
-    metrics.true_positives = sum(df['detected_event'].value_counts()[valid_detections])
-    metrics.false_negatives = sum(df['labeled_event'].value_counts()[1:]) - metrics.true_positives
-    metrics.false_positives = sum(df['detected_event'].value_counts()[invalid_detections])
-    metrics.true_negatives = \
-        len(df['detected_event']) - metrics.true_positives - metrics.false_negatives - metrics.false_positives
-
+    metrics.true_positives = len(df['conf_mtx'][df['conf_mtx'] == 'tp'])
+    metrics.false_negatives = len(df['conf_mtx'][df['conf_mtx'] == 'fn'])
+    metrics.false_positives = len(df['conf_mtx'][df['conf_mtx'] == 'fp'])
+    metrics.true_negatives = len(df['conf_mtx'][df['conf_mtx'] == 'tn'])
     metrics.prc = metrics.PPV = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
     metrics.npv = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
     metrics.acc = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])

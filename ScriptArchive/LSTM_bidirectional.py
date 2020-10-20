@@ -112,8 +112,8 @@ df_anomalies['detected_anomaly'] = test_score_array[0]['anomaly']
 df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['detected_anomaly'])
 
 # Determine Metrics
-compare = anomaly_utilities.compare_labeled_detected(df_anomalies)
-metrics = anomaly_utilities.metrics(df_anomalies, compare.valid_detections, compare.invalid_detections)
+anomaly_utilities.compare_events(df_anomalies, 0)
+metrics = anomaly_utilities.metrics(df_anomalies)
 
 # OUTPUT RESULTS #
 #########################################
