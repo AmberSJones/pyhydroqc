@@ -68,7 +68,7 @@ temp_df = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
 temp_df = rules_detect.persistence(temp_df, length)
 size = rules_detect.group_size(temp_df)
-df = rules_detect.interpolate(temp_df)
+temp_df = rules_detect.interpolate(temp_df)
 
 # MODEL CREATION #
 #########################################
@@ -124,9 +124,9 @@ print("\nTemperature ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(temp_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(temp_df['raw'][temp_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[temp_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[0])
@@ -200,9 +200,9 @@ print("\nSpecific Conductance ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(cond_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(cond_df['raw'][cond_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[cond_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[1])
@@ -276,9 +276,9 @@ print("\npH ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(ph_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(ph_df['raw'][ph_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[ph_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[2])
@@ -352,9 +352,9 @@ print("\nDissolved Oxygen ARIMA script end.")
 # GENERATE PLOTS #
 #########################################
 plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
+plt.plot(do_df['raw'], 'b', label='original data')
 plt.plot(predictions, 'c', label='predicted values')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
+plt.plot(do_df['raw'][do_df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(predictions[do_df['detected_event'] > 0], 'r+', label='machine detected anomalies')
 plt.legend()
 plt.ylabel(sensor[3])
