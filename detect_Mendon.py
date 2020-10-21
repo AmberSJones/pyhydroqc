@@ -1,5 +1,5 @@
 #####################################
-# ANOMALY DETECTION: FRANKLIN BASIN #
+# ANOMALY DETECTION: MENDON #
 #####################################
 # This script performs anomaly detection for multiple variables at Franklin Basin site. Parameters are defined.
 # The complete workflow for model development and anomaly detection is carried out.
@@ -15,19 +15,19 @@ import pandas as pd
 
 # RETRIEVE DATA #
 #########################################
-site = 'FranklinBasin'
+site = 'Mendon'
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 
 # GENERAL PARAMETERS #
 #########################################
-maximum = [13, 380, 9.2, 13]
-minimum = [-2, 120, 7.5, 8]
+maximum = [28, 800, 9.0, 15]
+minimum = [-2, 200, 7.4, 3]
 length = 6
-window_sz = [30, 30, 30, 30]
-alpha = [0.0001, 0.0001, 0.00001, 0.0001]
-min_range = [0.25, 4, 0.02, 0.15]
+window_sz = [30, 40, 20, 30]
+alpha = [0.0001, 0.00001, 0.0001, 0.001]
+min_range = [0.4, 5, 0.03, 0.15]
 wf = [1, 1, 1, 1]
 
 # ARIMA PARAMETERS #
