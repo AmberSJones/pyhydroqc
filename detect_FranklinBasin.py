@@ -25,9 +25,9 @@ df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./L
 maximum = [13, 380, 9.2, 13]
 minimum = [-2, 120, 7.5, 8]
 length = 6
-window_sz = [40, 40, 40, 40]
-alpha = [0.0001, 0.0001, 0.0001, 0.001]
-min_range = [0.25, 5, 0.01, 0.15]
+window_sz = [30, 30, 30, 30]
+alpha = [0.0001, 0.0001, 0.00001, 0.0001]
+min_range = [0.25, 4, 0.02, 0.15]
 wf = [1, 1, 1, 1]
 
 # ARIMA PARAMETERS #

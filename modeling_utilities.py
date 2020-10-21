@@ -105,7 +105,10 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
     if summary:
         model.summary()
-    history = train_model(X_train, y_train, model, patience)
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -155,7 +158,10 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
     if summary:
         model.summary()
-    history = train_model(X_train, y_train, model, patience)
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_sequenced_dataset(df_raw_scaled, time_steps)
@@ -206,7 +212,10 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary
     model = create_bidir_model(cells, time_steps, num_features, dropout)
     if summary:
         model.summary()
-    history = train_model(X_train, y_train, model, patience)
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -256,7 +265,10 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
     model = create_bidir_model(cells, time_steps, num_features, dropout)
     if summary:
         model.summary()
-    history = train_model(X_train, y_train, model, patience)
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, time_steps)

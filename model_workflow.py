@@ -53,7 +53,6 @@ def ARIMA_detect(df, sensor, p, d, q,
 
     # OUTPUT RESULTS #
     if output:
-        print('\nScript report:\n')
         print('Model type: ARIMA')
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
@@ -99,7 +98,7 @@ def LSTM_detect_univar(df, sensor,
         model = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary)
     else:
         model = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary)
-    print(str(model_type) + ' LSTM model complete.')
+    print(str(sensor) + ' ' + str(model_type) + ' LSTM model complete.')
     if plots:
         plt.figure()
         plt.plot(model.history.history['loss'], label='Training Loss')
@@ -140,7 +139,6 @@ def LSTM_detect_univar(df, sensor,
 
     # OUTPUT RESULTS #
     if output:
-        print('\n\n\nScript report:\n')
         print('Model type: LSTM univariate ' + str(model_type))
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
@@ -205,7 +203,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
     else:
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells,
                                                        dropout, patience, summary)
-    print(str(model_type) + ' LSTM model complete.')
+    print(str(sensor) + ' ' + str(model_type) + ' LSTM model complete.')
     # Plot Metrics and Evaluate the Model
     if plots:
         plt.figure()
@@ -263,7 +261,6 @@ def LSTM_detect_multivar(sensor_array, sensor,
     # OUTPUT RESULTS #
     if output:
         for i in range(0, len(metrics_array)):
-            print('\n\n\nMetrics report:\n')
             print('Model type: LSTM multivariate ' + str(model_type))
             print('Sensor: ' + str(sensor[i]))
             anomaly_utilities.print_metrics(metrics_array[i])
