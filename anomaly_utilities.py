@@ -11,7 +11,7 @@
 import os
 import numpy as np
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from scipy.stats import norm
 import warnings
 pd.options.mode.chained_assignment = None

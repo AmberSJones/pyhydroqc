@@ -35,6 +35,7 @@ def build_arima_model(data, p, d, q, summary):
     model = api.tsa.SARIMAX(data, order=(p, d, q))
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
     warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
+    warnings.filterwarning('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
     model_fit = model.fit(disp=0)
     warnings.filterwarnings('default')
     residuals = pd.DataFrame(model_fit.resid)
@@ -86,7 +87,7 @@ class LSTMModelContainer:
     """
 
 
-def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
+def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_univar builds, trains, and evaluates a vanilla LSTM model for univariate data.
     """
@@ -96,12 +97,14 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     X_train, y_train = create_clean_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
-    model.summary()
+    if summary:
+        model.summary()
     history = train_model(X_train, y_train, model, patience)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
@@ -134,7 +137,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     return LSTM_univar
 
 
-def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_multivar builds, trains, and evaluates a vanilla LSTM model for multivariate data.
     """
@@ -144,12 +147,14 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     X_train, y_train = create_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
-    model.summary()
+    if summary:
+        model.summary()
     history = train_model(X_train, y_train, model, patience)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
@@ -182,7 +187,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     return LSTM_multivar
 
 
-def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
+def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_univar_bidir builds, trains, and evaluates a bidirectional LSTM model for univariate data.
     """
@@ -193,12 +198,14 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
 
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_bidir_model(cells, time_steps, num_features, dropout)
-    model.summary()
+    if summary:
+        model.summary()
     history = train_model(X_train, y_train, model, patience)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
@@ -231,7 +238,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
     return LSTM_univar_bidir
 
 
-def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_multivar_bidir builds, trains, and evaluates a bidirectional LSTM model for multivariate data.
     """
@@ -241,12 +248,14 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
     X_train, y_train = create_bidir_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_bidir_model(cells, time_steps, num_features, dropout)
-    model.summary()
+    if summary:
+        model.summary()
     history = train_model(X_train, y_train, model, patience)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
