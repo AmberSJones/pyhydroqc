@@ -1,0 +1,3 @@
+*.py linguist-language=Python
+
+ScriptArchive/LSTM_AD.ipynb -linguist-vendored
