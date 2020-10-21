@@ -35,6 +35,7 @@ def build_arima_model(data, p, d, q, summary):
     model = api.tsa.SARIMAX(data, order=(p, d, q))
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
     warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
+    warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
     model_fit = model.fit(disp=0)
     warnings.filterwarnings('default')
     residuals = pd.DataFrame(model_fit.resid)
@@ -86,7 +87,7 @@ class LSTMModelContainer:
     """
 
 
-def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
+def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_univar builds, trains, and evaluates a vanilla LSTM model for univariate data.
     """
@@ -96,13 +97,18 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     X_train, y_train = create_clean_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
-    model.summary()
-    history = train_model(X_train, y_train, model, patience)
+    if summary:
+        model.summary()
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -134,7 +140,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience):
     return LSTM_univar
 
 
-def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_multivar builds, trains, and evaluates a vanilla LSTM model for multivariate data.
     """
@@ -144,13 +150,18 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     X_train, y_train = create_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_vanilla_model(cells, time_steps, num_features, dropout)
-    model.summary()
-    history = train_model(X_train, y_train, model, patience)
+    if summary:
+        model.summary()
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_sequenced_dataset(df_raw_scaled, time_steps)
@@ -182,7 +193,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     return LSTM_multivar
 
 
-def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
+def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_univar_bidir builds, trains, and evaluates a bidirectional LSTM model for univariate data.
     """
@@ -193,13 +204,18 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
 
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_bidir_model(cells, time_steps, num_features, dropout)
-    model.summary()
-    history = train_model(X_train, y_train, model, patience)
+    if summary:
+        model.summary()
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -231,7 +247,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience):
     return LSTM_univar_bidir
 
 
-def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience):
+def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
     """
     LSTM_multivar_bidir builds, trains, and evaluates a bidirectional LSTM model for multivariate data.
     """
@@ -241,13 +257,18 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
     X_train, y_train = create_bidir_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
-    print(X_train.shape)
-    print(y_train.shape)
-    print(num_features)
+    if summary:
+        print('X_train shape: ' + str(X_train.shape))
+        print('y_train shape: ' + str(y_train.shape))
+        print('Number of features: ' + str(num_features))
 
     model = create_bidir_model(cells, time_steps, num_features, dropout)
-    model.summary()
-    history = train_model(X_train, y_train, model, patience)
+    if summary:
+        model.summary()
+        verbose = 1
+    else:
+        verbose = 0
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, time_steps)
@@ -485,7 +506,7 @@ def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae
     return model
 
 
-def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
+def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min', epochs=100, verbose=1, batch_size=32,
                 validation_split=0.1):
     """
     train_model fits the model to training data. Early stopping ensures that too many epochs of training are not used.
@@ -501,10 +522,11 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     history = model.fit(
         X_train, y_train,
         epochs=epochs,  # just set to something high, early stopping will monitor.
+        verbose=verbose, # how to give output. 0 is silent. 1 is progress bar. 2 is one line per epoch.
         batch_size=batch_size,  # this can be optimized later
         validation_split=validation_split,  # use 10% of data for validation, use 90% for training.
         callbacks=[es],  # early stopping similar to earlier
-        shuffle=False  # because order matters
-    )
+        shuffle=False,  # because order matters
+        )
 
     return history
