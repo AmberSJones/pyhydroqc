@@ -229,7 +229,6 @@ def LSTM_detect_multivar(sensor_array, sensor,
     metrics_array = []
     for i in range(0, len(df_array)):
         anomaly_utilities.compare_events(df_array[i], wf)
-        compare_array.append(compare)
         metrics = anomaly_utilities.metrics(df_array[i])
         metrics_array.append(metrics)
 
