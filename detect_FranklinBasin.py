@@ -117,20 +117,23 @@ for i in range(0, len(sensor)):
 # DATA: multivariate,  MODEL: vanilla #
 model_type = 'vanilla'
 LSTM_detect_multivar = \
-    model_workflow.LSTM_detect_multivar(sensor_array, sensor,
-                                        minimum, maximum, length,
-                                        model_type, time_steps, samples, cells, dropout, patience,
-                                        window_sz, alpha, min_range, wf,
-                                        plots=True, summary=False, output=True
-                                        )
+    model_workflow.LSTM_detect_multivar(
+        sensor_array, sensor,
+        minimum, maximum, length,
+        model_type, time_steps, samples, cells, dropout, patience,
+        window_sz, alpha, min_range, wf,
+        plots=True, summary=False, output=True
+        )
 
 # DATA: multivariate,  MODEL: bidirectional #
 model_type = 'bidirectional'
 LSTM_detect_multivar_bidirectional = \
-    model_workflow.LSTM_detect_multivar(sensor_array, sensor,
-                                        minimum, maximum, length,
-                                        model_type, time_steps, samples, cells, dropout, patience,
-                                        window_sz, alpha, min_range, wf,
-                                        plots=True, summary=False, output=True
-                                        )
+    model_workflow.LSTM_detect_multivar(
+        sensor_array, sensor,
+        minimum, maximum, length,
+        model_type, time_steps, samples, cells, dropout, patience,
+        window_sz, alpha, min_range, wf,
+        plots=True, summary=False, output=True
+        )
+
 #########################################

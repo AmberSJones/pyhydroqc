@@ -35,7 +35,7 @@ def build_arima_model(data, p, d, q, summary):
     model = api.tsa.SARIMAX(data, order=(p, d, q))
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
     warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
-    warnings.filterwarning('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
+    warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
     model_fit = model.fit(disp=0)
     warnings.filterwarnings('default')
     residuals = pd.DataFrame(model_fit.resid)
