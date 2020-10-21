@@ -108,7 +108,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, patience, verbose)
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -161,7 +161,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, patience, verbose)
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_sequenced_dataset(df_raw_scaled, time_steps)
@@ -215,7 +215,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, patience, verbose)
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
     X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], time_steps)
@@ -268,7 +268,7 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, patience, verbose)
+    history = train_model(X_train, y_train, model, patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
     X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, time_steps)
@@ -506,7 +506,7 @@ def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae
     return model
 
 
-def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min', epochs=100, batch_size=32,
+def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min', epochs=100, verbose=1, batch_size=32,
                 validation_split=0.1):
     """
     train_model fits the model to training data. Early stopping ensures that too many epochs of training are not used.
@@ -522,10 +522,11 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     history = model.fit(
         X_train, y_train,
         epochs=epochs,  # just set to something high, early stopping will monitor.
+        verbose=verbose, # how to give output. 0 is silent. 1 is progress bar. 2 is one line per epoch.
         batch_size=batch_size,  # this can be optimized later
         validation_split=validation_split,  # use 10% of data for validation, use 90% for training.
         callbacks=[es],  # early stopping similar to earlier
-        shuffle=False  # because order matters
-    )
+        shuffle=False,  # because order matters
+        )
 
     return history
