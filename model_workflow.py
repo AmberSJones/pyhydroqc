@@ -56,6 +56,7 @@ def ARIMA_detect(df, sensor, p, d, q,
         print('Model type: ARIMA')
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
+        print('Model report complete\n')
 
     # GENERATE PLOTS #
     if plots:
@@ -142,6 +143,7 @@ def LSTM_detect_univar(df, sensor,
         print('Model type: LSTM univariate ' + str(model_type))
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
+        print('Model report complete\n')
 
     # GENERATE PLOTS #
     if plots:
@@ -264,6 +266,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
             print('Model type: LSTM multivariate ' + str(model_type))
             print('Sensor: ' + str(sensor[i]))
             anomaly_utilities.print_metrics(metrics_array[i])
+            print('Model report complete\n')
 
     # GENERATE PLOTS #
     if plots:

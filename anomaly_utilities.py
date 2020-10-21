@@ -382,7 +382,7 @@ def detect_anomalies(observed, predictions, residuals, threshold, summary):
 
     # output summary
     if summary:
-        print('\n\n\nratio of detections: %f' % ((sum(detections.anomaly) / len(detections.anomaly)) * 100), '%')
+        print('ratio of detections: %f' % ((sum(detections.anomaly) / len(detections.anomaly)) * 100), '%')
 
     return detections
 
@@ -394,7 +394,7 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
     detected_anomaly = (residuals[0] < threshold['low']) | (threshold['high'] < residuals[0])  # gives bools
     # output summary
     if summary:
-        print('\n\n\nratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
+        print('ratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
 
     return detected_anomaly
 
