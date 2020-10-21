@@ -100,10 +100,6 @@ def anomaly_events(anomaly, wf=1, sf=0.05):
     return event
 
 
-class CompareDetectionsContainer:
-    pass
-
-
 def assign_cm(val, len, wf):
     """
     assign_cm is a small helper function used in compare_events
@@ -183,6 +179,8 @@ def compare_events(df, wf=1):
         prev_la = df['labeled_event'][i]
         prev_da = df['detected_event'][i]
         prev_gi = grp_idx
+
+    df = df.drop(columns='grp')  # delete group index column
     return
 
 
