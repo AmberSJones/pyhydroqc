@@ -18,34 +18,35 @@ class ModelWorkflow:
 def ARIMA_detect(df, sensor, p, d, q,
                  minimum, maximum, length,
                  window_sz, alpha, min_range, wf,
-                 plots=True, save_figs=False, summary=True, output=True, site=False):
+                 rules=False, plots=True, save_figs=False, summary=True, output=True, site=False):
     """
     """
     print('\nARIMA detect script begin.')
     # RULES BASED DETECTION #
-    df = rules_detect.range_check(df, maximum, minimum)
-    df = rules_detect.persistence(df, length)
-    size = rules_detect.group_size(df)
-    df = rules_detect.interpolate(df)
-    print(str(sensor) + ' rules based detection complete. Maximum detected group length = '+str(size))
+    if rules:
+        df = rules_detect.range_check(df, maximum, minimum)
+        df = rules_detect.persistence(df, length)
+        size = rules_detect.group_size(df)
+        df = rules_detect.interpolate(df)
+        print(sensor + ' rules based detection complete. Maximum detected group length = ' + str(size))
 
     # MODEL CREATION #
     model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary)
-    print(str(sensor) + ' ARIMA model complete.')
+    print(sensor + ' ARIMA model complete.')
 
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
     threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], window_sz, alpha, min_range)
     threshold.index = residuals.index
     if plots or save_figs:
         figure = plt.figure()
-        anomaly_utilities.plt_threshold(residuals, threshold, sensor[0])
+        anomaly_utilities.plt_threshold(residuals, threshold, sensor)
         if plots:
             plt.show()
         if save_figs:
             f_name = ''
             if site:
-                f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_ARIMA_threshold_fig.pkl'
+                f_name = (site + '_')
+            f_name = f_name + sensor + '_ARIMA_threshold_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -66,7 +67,7 @@ def ARIMA_detect(df, sensor, p, d, q,
     # OUTPUT RESULTS #
     if output:
         print('Model type: ARIMA')
-        print('Sensor: ' + str(sensor))
+        print('Sensor: ' + sensor)
         anomaly_utilities.print_metrics(metrics)
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
@@ -87,14 +88,13 @@ def ARIMA_detect(df, sensor, p, d, q,
         if save_figs:
             f_name = str()
             if site:
-                f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_ARIMA_fig.pkl'
+                f_name = site + '_'
+            f_name = f_name + sensor + '_ARIMA_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
 
     ARIMA_detect = ModelWorkflow()
-    ARIMA_detect.size = size
     ARIMA_detect.df = df
     ARIMA_detect.model_fit = model_fit
     ARIMA_detect.threshold = threshold
@@ -109,23 +109,24 @@ def LSTM_detect_univar(df, sensor,
                 minimum, maximum, length,
                 model_type, time_steps, samples, cells, dropout, patience,
                 window_sz, alpha, min_range, wf,
-                plots=True, save_figs=False, summary=True, output=True, site=False):
+                rules=False, plots=True, save_figs=False, summary=True, output=True, site=False):
     """
     """
     print('\nLSTM univariate ' + str(model_type) + ' detect script begin.')
     # RULES BASED DETECTION #
-    df = rules_detect.range_check(df, maximum, minimum)
-    df = rules_detect.persistence(df, length)
-    size = rules_detect.group_size(df)
-    df = rules_detect.interpolate(df)
-    print(str(sensor) + ' rules based detection complete. Maximum detected group length = '+str(size))
+    if rules:
+        df = rules_detect.range_check(df, maximum, minimum)
+        df = rules_detect.persistence(df, length)
+        size = rules_detect.group_size(df)
+        df = rules_detect.interpolate(df)
+        print(sensor + ' rules based detection complete. Maximum detected group length = '+str(size))
 
     # MODEL CREATION #
     if model_type == 'vanilla':
         model = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary)
     else:
         model = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary)
-    print(str(sensor) + ' ' + str(model_type) + ' LSTM model complete.')
+    print(sensor + ' ' + str(model_type) + ' LSTM model complete.')
     if plots:
         plt.figure()
         plt.plot(model.history.history['loss'], label='Training Loss')
@@ -143,14 +144,14 @@ def LSTM_detect_univar(df, sensor,
     residuals.index = threshold.index
     if plots or save_figs:
         figure = plt.figure()
-        anomaly_utilities.plt_threshold(residuals, threshold, sensor[0])
+        anomaly_utilities.plt_threshold(residuals, threshold, sensor)
         if plots:
             plt.show()
         if save_figs:
             f_name = ''
             if site:
-                f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + 'threshold_fig.pkl'
+                f_name = site + '_'
+            f_name = f_name + sensor + '_LSTM_uni_' + model_type + '_threshold_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -177,7 +178,7 @@ def LSTM_detect_univar(df, sensor,
     # OUTPUT RESULTS #
     if output:
         print('Model type: LSTM univariate ' + str(model_type))
-        print('Sensor: ' + str(sensor))
+        print('Sensor: ' + sensor)
         anomaly_utilities.print_metrics(metrics)
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
@@ -191,21 +192,20 @@ def LSTM_detect_univar(df, sensor,
             predictions=detections['prediction'],
             labels=df['labeled_event'],
             detections=df_anomalies['detected_event'],
-            sensor=sensor[0]
+            sensor=sensor
             )
         if plots:
             plt.show()
         if save_figs:
             f_name = str()
             if site:
-                f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + '_fig.pkl'
+                f_name = site + '_'
+            f_name = f_name + sensor + '_LSTM_uni_' + model_type + '_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
 
     LSTM_detect_univar = ModelWorkflow()
-    LSTM_detect_univar.size = size
     LSTM_detect_univar.df = df
     LSTM_detect_univar.model = model
     LSTM_detect_univar.threshold = threshold
@@ -221,28 +221,29 @@ def LSTM_detect_multivar(sensor_array, sensor,
                 minimum, maximum, length,
                 model_type, time_steps, samples, cells, dropout, patience,
                 window_sz, alpha, min_range, wf,
-                plots=True, save_figs=False, summary=True, output=True, site=False):
+                rules = False, plots=True, save_figs=False, summary=True, output=True, site=False):
     """
     """
     print('\nLSTM multivariate ' + str(model_type) + ' detect script begin.')
     # RULES BASED DETECTION #
-    size = []
-    for i in range(0, len(sensor_array)):
-        sensor_array[sensor[i]] = rules_detect.range_check(sensor_array[sensor[i]], maximum[i], minimum[i])
-        sensor_array[sensor[i]] = rules_detect.persistence(sensor_array[sensor[i]], length)
-        s = rules_detect.group_size(sensor_array[sensor[i]])
-        size.append(s)
-        sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
-        print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
-    print('Rules based detection complete.\n')
+    if rules:
+        size = []
+        for i in range(0, len(sensor_array)):
+            sensor_array[sensor[i]] = rules_detect.range_check(sensor_array[sensor[i]], maximum[i], minimum[i])
+            sensor_array[sensor[i]] = rules_detect.persistence(sensor_array[sensor[i]], length[i])
+            s = rules_detect.group_size(sensor_array[sensor[i]])
+            size.append(s)
+            sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
+            print(sensor[i] + ' maximum detected group length = ' + str(size[i]))
+        print('Rules based detection complete.\n')
     # Create new data frames with raw  and observed (after applying rules) and preliminary anomaly detections for selected sensors
     df_raw = pd.DataFrame(index=sensor_array[sensor[0]].index)
     df_observed = pd.DataFrame(index=sensor_array[sensor[0]].index)
     df_anomaly = pd.DataFrame(index=sensor_array[sensor[0]].index)
     for i in range(0, len(sensor_array)):
-        df_raw[str(sensor[i]) + '_raw'] = sensor_array[sensor[i]]['raw']
-        df_observed[str(sensor[i]) + '_obs'] = sensor_array[sensor[i]]['observed']
-        df_anomaly[str(sensor[i]) + '_anom'] = sensor_array[sensor[i]]['anomaly']
+        df_raw[sensor[i] + '_raw'] = sensor_array[sensor[i]]['raw']
+        df_observed[sensor[i] + '_obs'] = sensor_array[sensor[i]]['observed']
+        df_anomaly[sensor[i] + '_anom'] = sensor_array[sensor[i]]['anomaly']
     print('Raw data shape: ' + str(df_raw.shape))
     print('Observed data shape: ' + str(df_observed.shape))
     print('Initial anomalies data shape: ' + str(df_anomaly.shape))
@@ -283,8 +284,8 @@ def LSTM_detect_multivar(sensor_array, sensor,
             if save_figs:
                 f_name = ''
                 if site:
-                    f_name.append(site + '_')
-                f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + 'threshold_fig.pkl'
+                    f_name = site + '_'
+                f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '_threshold_fig.pkl'
                 figure_file = open(f_name, 'wb')
                 pkl.dump(figure, figure_file)
                 figure_file.close()
@@ -314,20 +315,22 @@ def LSTM_detect_multivar(sensor_array, sensor,
     # DETERMINE METRICS #
     compare_array = []
     metrics_array = []
+    e_metrics_array = []
     for i in range(0, len(df_array)):
         anomaly_utilities.compare_events(df_array[i], wf[i])
         metrics = anomaly_utilities.metrics(df_array[i])
         metrics_array.append(metrics)
+        e_metrics = anomaly_utilities.event_metrics((df_array[i]))
         e_metrics_array.append(e_metrics)
 
     # OUTPUT RESULTS #
     if output:
         for i in range(0, len(metrics_array)):
             print('\nModel type: LSTM multivariate ' + str(model_type))
-            print('Sensor: ' + str(sensor[i]))
-            print('Event based calculations:')
-            anomaly_utilities.print_metrics(e_metrics[i])
+            print('Sensor: ' + sensor[i])
             anomaly_utilities.print_metrics(metrics_array[i])
+            print('Event based calculations:')
+            anomaly_utilities.print_metrics(e_metrics_array[i])
         print('Model report complete\n')
 
     # GENERATE AND SAVE PLOTS #
@@ -346,14 +349,13 @@ def LSTM_detect_multivar(sensor_array, sensor,
             if save_figs:
                     f_name = str()
                     if site:
-                        f_name.append(site + '_')
+                        f_name = site + '_'
                     f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '_fig.pkl'
                     figure_file = open(f_name, 'wb')
                     pkl.dump(figure, figure_file)
                     figure_file.close()
 
     LSTM_detect_multivar = ModelWorkflow()
-    LSTM_detect_multivar.size = size
     LSTM_detect_multivar.sensor_array = sensor_array
     LSTM_detect_multivar.df_observed = df_observed
     LSTM_detect_multivar.df_raw = df_raw
