@@ -20,6 +20,7 @@ def ARIMA_detect(df, sensor, p, d, q,
                  plots=True, summary=True, output=True):
     """
     """
+    print('\nARIMA detect script begin.')
     # RULES BASED DETECTION #
     df = rules_detect.range_check(df, maximum, minimum)
     df = rules_detect.persistence(df, length)
@@ -87,6 +88,7 @@ def LSTM_detect_univar(df, sensor,
                 plots=True, summary=True, output=True):
     """
     """
+    print('\nLSTM univariate ' + str(model_type) + ' detect script begin.')
     # RULES BASED DETECTION #
     df = rules_detect.range_check(df, maximum, minimum)
     df = rules_detect.persistence(df, length)
@@ -176,6 +178,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
                 plots=True, summary=True, output=True):
     """
     """
+    print('\nLSTM multivariate ' + str(model_type) + ' detect script begin.')
     # RULES BASED DETECTION #
     size = []
     for i in range(0, len(sensor_array)):
@@ -184,8 +187,8 @@ def LSTM_detect_multivar(sensor_array, sensor,
         s = rules_detect.group_size(sensor_array[sensor[i]])
         size.append(s)
         sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
-        print(str(sensor[sensor[i]]) + ' maximum detected group length = ' + str(size[s]))
-    print('Rules based detection complete.')
+        print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
+    print('Rules based detection complete.\n')
     # Create new data frames with raw  and observed (after applying rules) and preliminary anomaly detections for selected sensors
     df_raw = pd.DataFrame(index=sensor_array[sensor[0]].index)
     df_observed = pd.DataFrame(index=sensor_array[sensor[0]].index)
@@ -205,7 +208,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
     else:
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells,
                                                        dropout, patience, summary)
-    print(str(sensor) + ' ' + str(model_type) + ' LSTM model complete.')
+    print('multivariate ' + str(model_type) + ' LSTM model complete.\n')
     # Plot Metrics and Evaluate the Model
     if plots:
         plt.figure()
@@ -256,17 +259,17 @@ def LSTM_detect_multivar(sensor_array, sensor,
     compare_array = []
     metrics_array = []
     for i in range(0, len(df_array)):
-        anomaly_utilities.compare_events(df_array[i], wf)
+        anomaly_utilities.compare_events(df_array[i], wf[i])
         metrics = anomaly_utilities.metrics(df_array[i])
         metrics_array.append(metrics)
 
     # OUTPUT RESULTS #
     if output:
         for i in range(0, len(metrics_array)):
-            print('Model type: LSTM multivariate ' + str(model_type))
+            print('\nModel type: LSTM multivariate ' + str(model_type))
             print('Sensor: ' + str(sensor[i]))
             anomaly_utilities.print_metrics(metrics_array[i])
-            print('Model report complete\n')
+        print('Model report complete\n')
 
     # GENERATE PLOTS #
     if plots:
