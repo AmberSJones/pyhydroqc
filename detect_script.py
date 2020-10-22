@@ -16,16 +16,70 @@ import pandas as pd
 
 # RETRIEVE DATA #
 #########################################
-site = 'FranklinBasin'
+site = ' '
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
 
-# RULES DETECTION PARAMETERS #
+# FRANKLIN BASIN PARAMETERS #
 #########################################
 maximum = [13, 380, 9.2, 13]
 minimum = [-2, 120, 7.5, 8]
 length = [6, 3, 3, 3]
+window_sz = [30, 30, 30, 30]
+alpha = [0.0001, 0.0001, 0.00001, 0.0001]
+min_range = [0.25, 4, 0.02, 0.15]
+wf = [1, 1, 1, 1]
+
+# TONY GROVE PARAMETERS #
+#########################################
+maximum = [20, 500, 9.0, 14]
+minimum = [-2, 175, 8.0, 7]
+length = 6
+window_sz = [30, 40, 40, 30]
+alpha = [0.00001, 0.00001, 0.00001, 0.0001]
+min_range = [0.4, 5, 0.02, 0.15]
+wf = [1, 1, 1, 1]
+
+# WATERLAB PARAMETERS #
+#########################################
+maximum = [18, 450, 9.2, 14]
+minimum = [-2, 200, 8.0, 7]
+length = 6
+window_sz = [30, 40, 40, 30]
+alpha = [0.0001, 0.0001, 0.00001, 0.00001]
+min_range = [0.4, 5, 0.02, 0.15]
+wf = [1, 1, 1, 1]
+
+# MAIN STREET PARAMETERS #
+#########################################
+maximum = [20, 2700, 9.5, 15]
+minimum = [-2, 150, 7.5, 5]
+length = 6
+window_sz = [30, 40, 20, 30]
+alpha = [0.00001, 0.000001, 0.0001, 0.00001]
+min_range = [0.4, 5, 0.03, 0.25]
+wf = [1, 1, 1, 1]
+
+# MENDON PARAMETERS #
+#########################################
+maximum = [28, 800, 9.0, 15]
+minimum = [-2, 200, 7.4, 3]
+length = 6
+window_sz = [30, 40, 20, 30]
+alpha = [0.0001, 0.00001, 0.0001, 0.001]
+min_range = [0.4, 5, 0.03, 0.15]
+wf = [1, 1, 1, 1]
+
+# BLACKSMITH FORK PARAMETERS #
+#########################################
+maximum = [28, 900, 9.2, 14]
+minimum = [-2, 200, 7.2, 2]
+length = 6
+window_sz = [30, 20, 30, 30]
+alpha = [0.0001, 0.01, 0.00001, 0.0001]
+min_range = [0.4, 4, 0.03, 0.15]
+wf = [1, 1, 1, 1]
 
 # RULES BASED ANOMALY DETECTION #
 #########################################
@@ -38,13 +92,6 @@ for i in range(0, len(sensor_array)):
     sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
     print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
 print('Rules based detection complete.\n')
-
-# ANOMALY DETECTION PARAMETERS #
-#########################################
-window_sz = [30, 30, 30, 30]
-alpha = [0.0001, 0.0001, 0.00001, 0.0001]
-min_range = [0.25, 4, 0.02, 0.15]
-wf = [1, 1, 1, 1]
 
 # ARIMA PARAMETERS #
 #########################################
