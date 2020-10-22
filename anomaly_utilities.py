@@ -410,7 +410,7 @@ def plt_threshold(residuals, threshold, sensor):
 def plt_results(raw, predictions, labels, detections, sensor):
     plt.plot(raw, 'b', label='original data')
     plt.plot(predictions, 'c', label='predicted values')
-    plt.plot(raw[labels], 'mo', mfc='none', label='technician labeled anomalies')
+    plt.plot(raw[labels > 0], 'mo', mfc='none', label='technician labeled anomalies')
     plt.plot(predictions[detections > 0], 'r+', label='machine detected anomalies')
     plt.legend()
     plt.ylabel(sensor)

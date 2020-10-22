@@ -65,7 +65,7 @@ def ARIMA_detect(df, sensor, p, d, q,
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=predictions,
-            labels=df['labeled_anomaly'],
+            labels=df['labeled_event'],
             detections=df['detected_event'],
             sensor=sensor[0])
         plt.show()
@@ -153,7 +153,7 @@ def LSTM_detect_univar(df, sensor,
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=detections['prediction'],
-            labels=df['labeled_anomaly'],
+            labels=df['labeled_event'],
             detections=df_anomalies['detected_event'],
             sensor=sensor[0]
         )
@@ -278,7 +278,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
             anomaly_utilities.plt_results(
                 raw=df_raw[df_raw.columns[i]],
                 predictions=detections_array[i]['prediction'],
-                labels=sensor_array[sensor[i]]['labeled_anomaly'],
+                labels=sensor_array[sensor[i]]['labeled_event'],
                 detections=df_array[i]['detected_event'],
                 sensor=sensor[i]
                 )
