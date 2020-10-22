@@ -61,12 +61,15 @@ def ARIMA_detect(df, sensor, p, d, q,
     # DETERMINE METRICS #
     anomaly_utilities.compare_events(df, wf)
     metrics = anomaly_utilities.metrics(df)
+    e_metrics = anomaly_utilities.event_metrics(df)
 
     # OUTPUT RESULTS #
     if output:
         print('Model type: ARIMA')
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
+        print('Event based calculations:')
+        anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
 
     # GENERATE AND SAVE PLOTS #
@@ -97,6 +100,7 @@ def ARIMA_detect(df, sensor, p, d, q,
     ARIMA_detect.threshold = threshold
     ARIMA_detect.detections = detections
     ARIMA_detect.metrics = metrics
+    ARIMA_detect.e_metrics = e_metrics
 
     return ARIMA_detect
 
@@ -168,12 +172,15 @@ def LSTM_detect_univar(df, sensor,
     # DETERMINE METRICS #
     anomaly_utilities.compare_events(df_anomalies, wf)
     metrics = anomaly_utilities.metrics(df_anomalies)
+    e_metrics = anomaly_utilities.event_metrics(df)
 
     # OUTPUT RESULTS #
     if output:
         print('Model type: LSTM univariate ' + str(model_type))
         print('Sensor: ' + str(sensor))
         anomaly_utilities.print_metrics(metrics)
+        print('Event based calculations:')
+        anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
 
     # GENERATE AND SAVE PLOTS #
@@ -205,6 +212,7 @@ def LSTM_detect_univar(df, sensor,
     LSTM_detect_univar.detections = detections
     LSTM_detect_univar.df_anomalies = df_anomalies
     LSTM_detect_univar.metrics = metrics
+    LSTM_detect_univar.e_metrics = e_metrics
 
     return LSTM_detect_univar
 
@@ -310,12 +318,15 @@ def LSTM_detect_multivar(sensor_array, sensor,
         anomaly_utilities.compare_events(df_array[i], wf[i])
         metrics = anomaly_utilities.metrics(df_array[i])
         metrics_array.append(metrics)
+        e_metrics_array.append(e_metrics)
 
     # OUTPUT RESULTS #
     if output:
         for i in range(0, len(metrics_array)):
             print('\nModel type: LSTM multivariate ' + str(model_type))
             print('Sensor: ' + str(sensor[i]))
+            print('Event based calculations:')
+            anomaly_utilities.print_metrics(e_metrics[i])
             anomaly_utilities.print_metrics(metrics_array[i])
         print('Model report complete\n')
 
@@ -353,5 +364,6 @@ def LSTM_detect_multivar(sensor_array, sensor,
     LSTM_detect_multivar.df_array = df_array
     LSTM_detect_multivar.compare_array = compare_array
     LSTM_detect_multivar.metrics_array = metrics_array
+    LSTM_detect_multivar.e_metrics_array = e_metrics_array
 
     return LSTM_detect_univar
