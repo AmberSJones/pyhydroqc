@@ -45,7 +45,7 @@ def ARIMA_detect(df, sensor, p, d, q,
             f_name = ''
             if site:
                 f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_ARIMA_threshold.pkl'
+            f_name = f_name + sensor[0] + '_ARIMA_threshold_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -85,7 +85,7 @@ def ARIMA_detect(df, sensor, p, d, q,
             f_name = str()
             if site:
                 f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_ARIMA.pkl'
+            f_name = f_name + sensor[0] + '_ARIMA_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -146,7 +146,7 @@ def LSTM_detect_univar(df, sensor,
             f_name = ''
             if site:
                 f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + 'threshold.pkl'
+            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + 'threshold_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -193,7 +193,7 @@ def LSTM_detect_univar(df, sensor,
             f_name = str()
             if site:
                 f_name.append(site + '_')
-            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + '.pkl'
+            f_name = f_name + sensor[0] + '_LSTM_uni_' + model_type + '_fig.pkl'
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
@@ -276,7 +276,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
                 f_name = ''
                 if site:
                     f_name.append(site + '_')
-                f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + 'threshold.pkl'
+                f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + 'threshold_fig.pkl'
                 figure_file = open(f_name, 'wb')
                 pkl.dump(figure, figure_file)
                 figure_file.close()
@@ -336,7 +336,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
                     f_name = str()
                     if site:
                         f_name.append(site + '_')
-                    f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '.pkl'
+                    f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '_fig.pkl'
                     figure_file = open(f_name, 'wb')
                     pkl.dump(figure, figure_file)
                     figure_file.close()
