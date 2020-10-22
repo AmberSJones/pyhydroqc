@@ -150,7 +150,6 @@ def LSTM_detect_univar(df, sensor,
             figure_file = open(f_name, 'wb')
             pkl.dump(figure, figure_file)
             figure_file.close()
-
     if model_type == 'vanilla':
         observed = df[['observed']][time_steps:]
     else:
@@ -247,6 +246,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
     else:
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells,
                                                        dropout, patience, summary)
+
     print('multivariate ' + str(model_type) + ' LSTM model complete.\n')
     # Plot Metrics and Evaluate the Model
     if plots:

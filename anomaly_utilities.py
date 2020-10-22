@@ -194,9 +194,9 @@ def metrics(df):
     df is a data frame with required columns:
     'conf_mtx': strings representing where in a confusion matrix the data point belongs
     Outputs:
-    true_positives is the count of valid detections.
-    false_negatives is the count of missed events.
-    false_positives is the count of incorrect detections.
+    true_positives is the count of data points from valid detections.
+    false_negatives is the count of data points from missed events.
+    false_positives is the count of data points from incorrect detections.
     true_negatives is the count of valid undetected data.
     prc is the precision of detections.
     npv is negative predicted value.
@@ -210,7 +210,7 @@ def metrics(df):
     metrics.false_negatives = len(df['conf_mtx'][df['conf_mtx'] == 'fn'])
     metrics.false_positives = len(df['conf_mtx'][df['conf_mtx'] == 'fp'])
     metrics.true_negatives = len(df['conf_mtx'][df['conf_mtx'] == 'tn'])
-    metrics.prc = metrics.PPV = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
+    metrics.prc = metrics.ppv = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
     metrics.npv = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
     metrics.acc = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])
     metrics.rcl = metrics.true_positives / (metrics.true_positives + metrics.false_negatives)
@@ -221,12 +221,62 @@ def metrics(df):
     return metrics
 
 
+def event_metrics(df):
+    """
+    event_metrics is used to calculate an alternative set of metrics where every event
+    is treated with equal weight regardless of its size.
+    df is a data frame with required columns:
+    'conf_mtx': strings representing where in a confusion matrix the data point belongs
+    Outputs:
+    true_positives is the count of valid detection events.
+    false_negatives is the count of missed events.
+    false_positives is the count of incorrect detections.
+    prc is the precision of detections.
+    npv is negative predicted value.
+    acc is accuracy of detections.
+    rcl is recall of detections.
+    f1 is a statistic that balances true positives and false negatives.
+    f2 is a statistic that gives more weight to true positives.
+    """
+    metrics = MetricsContainer()
+    tp_events = 0
+    fp_events = 0
+    fn_events = 0
+    prev_cm = 'tn'
+    for i in range(0, len(df['conf_mtx'])):  # for every row of data
+
+        # if the confusion matrix class has changed
+        if (df['conf_mtx'][i] != prev_cm):
+
+            if (df['conf_mtx'][i] == 'tp'):  # true positive case
+                tp_events += 1
+            elif (df['conf_mtx'][i] == 'fp'):  # false positive case
+                fp_events += 1
+            elif (df['conf_mtx'][i] == 'fn'):  # false negative case
+                fn_events += 1
+            prev_cm = df['conf_mtx'][i]
+    
+    # calculate metrics
+    metrics.true_positives = tp_events
+    metrics.false_positives = fp_events
+    metrics.false_negatives = fn_events
+    metrics.prc = metrics.ppv = tp_events / (tp_events + fp_events)
+    metrics.rcl = tp_events / (tp_events + fn_events)
+    metrics.f1 = 2.0 * (metrics.prc * metrics.rcl) / (metrics.prc + metrics.rcl)
+    metrics.f2 = 5.0 * tp_events / \
+                 (5.0 * tp_events + 4.0 * fn_events + fp_events)
+    return metrics
+
+
 def print_metrics(metrics):
     print('PPV = %f' % metrics.prc)
-    print('NPV = %f' % metrics.npv)
-    print('Acc = %f' % metrics.acc)
+    if hasattr(metrics, 'npv'):
+        print('NPV = %f' % metrics.npv)
+    if hasattr(metrics, 'acc'):
+        print('Acc = %f' % metrics.acc)
     print('TP  = %i' % metrics.true_positives)
-    print('TN  = %i' % metrics.true_negatives)
+    if hasattr(metrics, 'true_negatives'):
+        print('TN  = %i' % metrics.true_negatives)
     print('FP  = %i' % metrics.false_positives)
     print('FN  = %i' % metrics.false_negatives)
     print('F1 = %f' % metrics.f1)
