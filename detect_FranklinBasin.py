@@ -80,7 +80,7 @@ for i in range(0, len(sensor)):
             df, sensor[i], p, d, q,
             minimum[i], maximum[i], length,
             window_sz[i], alpha[i], min_range[i], wf[i],
-            plots=True, summary=False, output=True
+            plots=False, save_figs=True, summary=False, output=True, site=site
             ))
 
 # LSTM BASED DETECTION #
@@ -97,7 +97,7 @@ for i in range(0, len(sensor)):
             minimum[i], maximum[i], length,
             model_type, time_steps, samples, cells, dropout, patience,
             window_sz[i], alpha[i], min_range[i], wf[i],
-            plots=True, summary=False, output=True
+            plots=False, save_figs=True, summary=False, output=True, site=site
         ))
 
 # DATA: univariate,  MODEL: bidirectional #
@@ -111,7 +111,7 @@ for i in range(0, len(sensor)):
             minimum[i], maximum[i], length,
             model_type, time_steps, samples, cells, dropout, patience,
             window_sz[i], alpha[i], min_range[i], wf[i],
-            plots=True, summary=False, output=True
+            plots=False, save_figs=True, summary=False, output=True, site=site
             ))
 
 # DATA: multivariate,  MODEL: vanilla #
@@ -122,7 +122,7 @@ LSTM_detect_multivar = \
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,
         window_sz, alpha, min_range, wf,
-        plots=True, summary=False, output=True
+        plots=False, save_figs=True, summary=False, output=True, site=site
         )
 
 # DATA: multivariate,  MODEL: bidirectional #
@@ -133,7 +133,7 @@ LSTM_detect_multivar_bidirectional = \
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,
         window_sz, alpha, min_range, wf,
-        plots=True, summary=False, output=True
+        plots=False, save_figs=True, summary=False, output=True, site=site
         )
 
 #########################################
