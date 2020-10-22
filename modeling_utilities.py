@@ -94,7 +94,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
 
-    X_train, y_train = create_clean_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
+    X_train, y_train = create_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -147,7 +147,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
 
-    X_train, y_train = create_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
+    X_train, y_train = create_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -200,7 +200,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
 
-    X_train, y_train = create_bidir_clean_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
+    X_train, y_train = create_bidir_training_dataset(df[['obs_scaled']], df[['anomaly']], samples, time_steps)
 
     num_features = X_train.shape[2]
 
@@ -254,7 +254,7 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
 
-    X_train, y_train = create_bidir_clean_training_dataset(df_scaled, df_anomaly, samples, time_steps)
+    X_train, y_train = create_bidir_training_dataset(df_scaled, df_anomaly, samples, time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -310,36 +310,9 @@ def create_scaler(data):
     return scaler
 
 
-def create_training_dataset(X, training_samples="", time_steps=10):
+def create_training_dataset(X, anomalies, training_samples="", time_steps=10):
     """
     create_training_dataset creates a training dataset based on random selection.
-    Reshapes data to temporalize it into (samples, timestamps, features).
-    X is the data to be reshaped.
-    training_samples is the number of observations used for training.
-    time_stamps defines a sequence of how far back to consider for each sample/row.
-    Outputs:
-    Xs is an array of data reshaped for input into an LSTM model.
-    ys is an array of data outputs corresponding to each Xs input.
-    """
-    Xs, ys = [], []  # start empty list
-    if training_samples == "":
-        training_samples = int(len(X) * 0.10)
-
-    # create sample sequences from a randomized subset of the data series for training
-    j = sample(range(0, len(X) - time_steps - 2), training_samples)
-    for i in range(training_samples):  # for every sample sequence to be created
-        #j = randint(0, len(X) - time_steps - 2)
-        #v = X.iloc[j:(j + time_steps)].values  # data from j to the end of time step
-        v = X.iloc[j[i]:(j[i] + time_steps)].values  # data from j to the end of time step
-        ys.append(X.iloc[j[i] + time_steps])
-        Xs.append(v)
-
-    return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
-
-
-def create_clean_training_dataset(X, anomalies, training_samples="", time_steps=10):
-    """
-    create_clean_training_dataset creates a training dataset based on random selection.
     Reshapes data to temporalize it into (samples, timestamps, features). Ensures that no data that has been corrected
     as part of preprocessing will be used for training the model.
     X is the data to be reshaped.
@@ -385,34 +358,9 @@ def create_sequenced_dataset(X, time_steps=10):
     return np.array(Xs), np.array(ys)  # convert lists into numpy arrays and return
 
 
-def create_bidir_training_dataset(X, training_samples="", time_steps=10):
+def create_bidir_training_dataset(X, anomalies, training_samples="", time_steps=10):
     """
     create_bidir_training_dataset creates a training dataset based on random selection.
-    Reshapes data to temporalize it into (samples, timestamps, features).
-    X is the data to be reshaped.
-    training_samples is the number of observations used for training.
-    time_stamps defines a sequence of how far back and how far forward to consider for each sample/row.
-    Outputs:
-    Xs is an array of data reshaped for input into an LSTM model.
-    ys is an array of data outputs corresponding to each Xs input.
-    """
-    Xs, ys = [], []  # start empty list
-    if training_samples == "":
-        training_samples = int(len(X) * 0.10)
-
-    # create sample sequences from a randomized subset of the data series for training
-    for i in range(training_samples):  # for every sample sequence to be created
-        j = randint(time_steps, len(X) - time_steps)
-        v = X.iloc[(j - time_steps):(j + time_steps)].values  # data from j backward and forward the specified number of time steps
-        Xs.append(v)
-        ys.append(X.iloc[j].values)
-
-    return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
-
-
-def create_bidir_clean_training_dataset(X, anomalies, training_samples="", time_steps=10):
-    """
-    create_bidir_clean_training_dataset creates a training dataset based on random selection.
     Reshapes data to temporalize it into (samples, timestamps, features). Ensures that no data that has been corrected
     as part of preprocessing will be used for training the model.
     X is the data to be reshaped.
@@ -456,22 +404,6 @@ def create_bidir_sequenced_dataset(X, time_steps=10):
         ys.append(X.iloc[i].values)
 
     return np.array(Xs).astype(np.float32), np.array(ys)  # convert lists into numpy arrays and return
-
-
-def create_autoen_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
-    """
-    Uses sequential model class from keras. Adds LSTM layer. Input requires samples, timesteps, features.
-    Hyperparameters include number of cells, dropout rate. Output is encoded feature vector of the input data.
-    Uses autoencoder by mirroring/reversing encoder to be a decoder.
-    """
-    model = Sequential()
-    model.add(LSTM(cells, input_shape=(time_steps, num_features), return_sequences=False, dropout=dropout)),  # one LSTM layer with dropout regularization
-    model.add(RepeatVector(time_steps))  # replicates the feature vectors from LSTM layer output vector by the number of time steps (e.g., 30 times)
-    model.add(LSTM(cells, return_sequences=True, dropout=dropout))   # mirror the encoder in the reverse fashion to create the decoder
-    model.add(TimeDistributed(Dense(num_features)))  # add time distributed layer to get output in correct shape. creates a vector of length = num features output from previous layer.
-    model.compile(loss=input_loss, optimizer=input_optimizer)
-
-    return model
 
 
 def create_vanilla_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
