@@ -18,7 +18,7 @@ class ModelWorkflow:
 def ARIMA_detect(df, sensor, p, d, q,
                  minimum, maximum, length,
                  window_sz, alpha, min_range, wf,
-                 rules=False, plots=True, save_figs=False, summary=True, output=True, site=False):
+                 rules=False, plots=True, summary=True, output=True, site=False):
     """
     """
     print('\nARIMA detect script begin.')
@@ -37,19 +37,10 @@ def ARIMA_detect(df, sensor, p, d, q,
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
     threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], window_sz, alpha, min_range)
     threshold.index = residuals.index
-    if plots or save_figs:
-        figure = plt.figure()
+    if plots:
+        plt.figure()
         anomaly_utilities.plt_threshold(residuals, threshold, sensor)
-        if plots:
-            plt.show()
-        if save_figs:
-            f_name = ''
-            if site:
-                f_name = (site + '_')
-            f_name = f_name + sensor + '_ARIMA_threshold_fig.pkl'
-            figure_file = open(f_name, 'wb')
-            pkl.dump(figure, figure_file)
-            figure_file.close()
+        plt.show()
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
 
@@ -73,9 +64,9 @@ def ARIMA_detect(df, sensor, p, d, q,
         anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
 
-    # GENERATE AND SAVE PLOTS #
-    if plots or save_figs:
-        figure = plt.figure()
+    # GENERATE PLOTS #
+    if plots:
+        plt.figure()
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=detections['prediction'],
@@ -83,16 +74,7 @@ def ARIMA_detect(df, sensor, p, d, q,
             detections=df['detected_event'],
             sensor=sensor[0]
         )
-        if plots:
-            plt.show()
-        if save_figs:
-            f_name = str()
-            if site:
-                f_name = site + '_'
-            f_name = f_name + sensor + '_ARIMA_fig.pkl'
-            figure_file = open(f_name, 'wb')
-            pkl.dump(figure, figure_file)
-            figure_file.close()
+        plt.show()
 
     ARIMA_detect = ModelWorkflow()
     ARIMA_detect.df = df
@@ -109,7 +91,7 @@ def LSTM_detect_univar(df, sensor,
                 minimum, maximum, length,
                 model_type, time_steps, samples, cells, dropout, patience,
                 window_sz, alpha, min_range, wf,
-                rules=False, plots=True, save_figs=False, summary=True, output=True, site=False):
+                rules=False, plots=True, summary=True, output=True, site=False):
     """
     """
     print('\nLSTM univariate ' + str(model_type) + ' detect script begin.')
@@ -142,19 +124,10 @@ def LSTM_detect_univar(df, sensor,
         threshold.index = df[time_steps:-time_steps].index
     residuals = pd.DataFrame(model.test_residuals)
     residuals.index = threshold.index
-    if plots or save_figs:
-        figure = plt.figure()
+    if plots:
+        plt.figure()
         anomaly_utilities.plt_threshold(residuals, threshold, sensor)
-        if plots:
-            plt.show()
-        if save_figs:
-            f_name = ''
-            if site:
-                f_name = site + '_'
-            f_name = f_name + sensor + '_LSTM_uni_' + model_type + '_threshold_fig.pkl'
-            figure_file = open(f_name, 'wb')
-            pkl.dump(figure, figure_file)
-            figure_file.close()
+        plt.show()
     if model_type == 'vanilla':
         observed = df[['observed']][time_steps:]
     else:
@@ -184,9 +157,9 @@ def LSTM_detect_univar(df, sensor,
         anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
 
-    # GENERATE AND SAVE PLOTS #
-    if plots or save_figs:
-        figure = plt.figure()
+    # GENERATE PLOTS #
+    if plots:
+        plt.figure()
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=detections['prediction'],
@@ -194,16 +167,7 @@ def LSTM_detect_univar(df, sensor,
             detections=df_anomalies['detected_event'],
             sensor=sensor
             )
-        if plots:
-            plt.show()
-        if save_figs:
-            f_name = str()
-            if site:
-                f_name = site + '_'
-            f_name = f_name + sensor + '_LSTM_uni_' + model_type + '_fig.pkl'
-            figure_file = open(f_name, 'wb')
-            pkl.dump(figure, figure_file)
-            figure_file.close()
+        plt.show()
 
     LSTM_detect_univar = ModelWorkflow()
     LSTM_detect_univar.df = df
@@ -221,7 +185,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
                 minimum, maximum, length,
                 model_type, time_steps, samples, cells, dropout, patience,
                 window_sz, alpha, min_range, wf,
-                rules = False, plots=True, save_figs=False, summary=True, output=True, site=False):
+                rules = False, plots=True, summary=True, output=True, site=False):
     """
     """
     print('\nLSTM multivariate ' + str(model_type) + ' detect script begin.')
@@ -276,19 +240,10 @@ def LSTM_detect_multivar(sensor_array, sensor,
         threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], window_sz[i], alpha[i], min_range[i])
         threshold_df.index = residuals.index
         threshold.append(threshold_df)
-        if plots or save_figs:
-            figure = plt.figure()
+        if plots:
+            plt.figure()
             anomaly_utilities.plt_threshold(residuals.iloc[:, i], threshold[i], sensor[i])
-            if plots:
-                plt.show()
-            if save_figs:
-                f_name = ''
-                if site:
-                    f_name = site + '_'
-                f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '_threshold_fig.pkl'
-                figure_file = open(f_name, 'wb')
-                pkl.dump(figure, figure_file)
-                figure_file.close()
+            plt.show()
     print('Threshold determination complete.')
 
     if model_type == 'vanilla':
@@ -333,10 +288,10 @@ def LSTM_detect_multivar(sensor_array, sensor,
             anomaly_utilities.print_metrics(e_metrics_array[i])
         print('Model report complete\n')
 
-    # GENERATE AND SAVE PLOTS #
-    if plots or save_figs:
+    # GENERATE PLOTS #
+    if plots:
         for i in range(0, len(sensor)):
-            figure = plt.figure()
+            plt.figure()
             anomaly_utilities.plt_results(
                 raw=df_raw[df_raw.columns[i]],
                 predictions=detections_array[i]['prediction'],
@@ -344,16 +299,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
                 detections=df_array[i]['detected_event'],
                 sensor=sensor[i]
                 )
-            if plots:
-                plt.show()
-            if save_figs:
-                    f_name = str()
-                    if site:
-                        f_name = site + '_'
-                    f_name = f_name + sensor[i] + '_LSTM_multi_' + model_type + '_fig.pkl'
-                    figure_file = open(f_name, 'wb')
-                    pkl.dump(figure, figure_file)
-                    figure_file.close()
+            plt.show()
 
     LSTM_detect_multivar = ModelWorkflow()
     LSTM_detect_multivar.sensor_array = sensor_array
