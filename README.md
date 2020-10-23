@@ -85,5 +85,4 @@ This software depends on the following Python packages:
 - tensorflow
 - statsmodels
 - sklearn
-- tensorflow
 - pmdarima
