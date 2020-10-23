@@ -38,7 +38,7 @@ def ARIMA_detect(df, sensor, p, d, q,
     threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], window_sz, alpha, min_range)
     threshold.index = residuals.index
     if plots:
-        figure = plt.figure()
+        plt.figure()
         anomaly_utilities.plt_threshold(residuals, threshold, sensor)
         plt.show()
     print('Threshold determination complete.')
@@ -66,7 +66,7 @@ def ARIMA_detect(df, sensor, p, d, q,
 
     # GENERATE PLOTS #
     if plots:
-        figure = plt.figure()
+        plt.figure()
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=detections['prediction'],
@@ -125,7 +125,7 @@ def LSTM_detect_univar(df, sensor,
     residuals = pd.DataFrame(model.test_residuals)
     residuals.index = threshold.index
     if plots:
-        figure = plt.figure()
+        plt.figure()
         anomaly_utilities.plt_threshold(residuals, threshold, sensor)
         plt.show()
     if model_type == 'vanilla':
@@ -159,7 +159,7 @@ def LSTM_detect_univar(df, sensor,
 
     # GENERATE PLOTS #
     if plots:
-        figure = plt.figure()
+        plt.figure()
         anomaly_utilities.plt_results(
             raw=df['raw'],
             predictions=detections['prediction'],
@@ -241,7 +241,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
         threshold_df.index = residuals.index
         threshold.append(threshold_df)
         if plots:
-            figure = plt.figure()
+            plt.figure()
             anomaly_utilities.plt_threshold(residuals.iloc[:, i], threshold[i], sensor[i])
             plt.show()
     print('Threshold determination complete.')
@@ -291,7 +291,7 @@ def LSTM_detect_multivar(sensor_array, sensor,
     # GENERATE PLOTS #
     if plots:
         for i in range(0, len(sensor)):
-            figure = plt.figure()
+            plt.figure()
             anomaly_utilities.plt_results(
                 raw=df_raw[df_raw.columns[i]],
                 predictions=detections_array[i]['prediction'],
