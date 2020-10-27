@@ -20,8 +20,9 @@ def range_check(df, maximum, minimum):
     # could do some sort of look up table with the values for each sensor
     # could also add seasonal checks
     df = df.eval('anomaly = raw > @maximum or raw < @minimum')
+    range_count = sum(df['anomaly'])
 
-    return df
+    return df, range_count
 
 
 def persistence(df, length):
@@ -31,16 +32,16 @@ def persistence(df, length):
     length is the duration of persistent/repeated values to be flagged.
     Output is the dataframe with column 'anomaly' modified.
     """
-    # temp = df.copy(deep=True)
     temp = df[['raw', 'anomaly']].copy(deep=True)
     temp['value_grp'] = (temp.raw.diff(1) == 0)
     temp['value_grp'] = anomaly_utilities.anomaly_events(temp['value_grp'], 0, 1)
     for i in range(1, max(temp['value_grp']) + 1):
         if(len(temp['value_grp'][temp['value_grp'] == i]) >= length):
             temp['anomaly'][temp['value_grp'] == i] = True
+    persist_count = sum(temp['value_grp'] != 0)
     df['anomaly'] = temp['anomaly']
 
-    return df
+    return df, persist_count
 
 
 def group_size(df):
@@ -72,3 +73,10 @@ def interpolate(df, limit=10000):
     df['observed'].interpolate(method='linear', inplace=True, limit=limit)
 
     return df
+
+def add_labels(df, value = -9999):
+    """
+    add_labels adds an indicator that there is an anomalous value that should have been labeled by the expert but was not.
+    df is a data frame with columns 'raw' of raw data, 'cor' of corrected data, and a boolean column 'labeled_anomaly'.
+    """
+    df['labeled_anomaly'] = np.where((df['raw'] == -9999) | (df['cor'] == -9999), True, df['labeled_anomaly'])
