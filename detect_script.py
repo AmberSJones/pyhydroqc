@@ -1,7 +1,7 @@
 #####################################
-# ANOMALY DETECTION: FRANKLIN BASIN #
+# ANOMALY DETECTION #
 #####################################
-# This script performs anomaly detection for multiple variables at Franklin Basin site. Parameters are defined.
+# This script performs anomaly detection for multiple variables. Parameters are defined.
 # The complete workflow for model development and anomaly detection is carried out.
 # Model types include ARIMA and LSTM (univariate/multivariate and vanilla/bidirectional).
 
@@ -11,7 +11,6 @@ import rules_detect
 import copy
 import pandas as pd
 
-site = 'BlackSmithFork'
 
 class WFParams:
     pass
@@ -333,6 +332,9 @@ site_params.append(copy.deepcopy(copy.deepcopy(sensor_params)))
 
 # RETRIEVE DATA #
 #########################################
+
+site = 'FranklinBasin'
+
 sites = ['FranklinBasin', 'TonyGrove', 'WaterLab', 'MainStreet', 'Mendon', 'BlackSmithFork']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 sensor = ['temp', 'cond', 'ph', 'do']

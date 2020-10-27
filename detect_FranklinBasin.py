@@ -96,7 +96,7 @@ for i in range(0, len(sensor)):
             df, sensor[i], p, d, q,
             minimum[i], maximum[i], length[i],
             window_sz[i], alpha[i], min_range[i], wf[i],
-            rules=False, plots=False, save_figs=True, summary=False, output=True, site=site
+            rules=False, plots=False, summary=False, output=True, site=site
             ))
 
 # LSTM BASED DETECTION #
@@ -113,7 +113,7 @@ for i in range(0, len(sensor)):
             minimum[i], maximum[i], length[i],
             model_type, time_steps, samples, cells, dropout, patience,
             window_sz[i], alpha[i], min_range[i], wf[i],
-            rules=False, plots=False, save_figs=True, summary=False, output=True, site=site
+            rules=False, plots=False, summary=False, output=True, site=site
         ))
 
 # DATA: univariate,  MODEL: bidirectional #
@@ -124,10 +124,10 @@ for i in range(0, len(sensor)):
     LSTM_detect_univar_bidir.append(
         model_workflow.LSTM_detect_univar(
             df, sensor[i],
-            minimum[i], maximum[i], length,
+            minimum[i], maximum[i], length[i],
             model_type, time_steps, samples, cells, dropout, patience,
             window_sz[i], alpha[i], min_range[i], wf[i],
-            rules=False, plots=False, save_figs=True, summary=False, output=True, site=site
+            rules=False, plots=False, summary=False, output=True, site=site
             ))
 
 # DATA: multivariate,  MODEL: vanilla #
@@ -138,7 +138,7 @@ LSTM_detect_multivar = \
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,
         window_sz, alpha, min_range, wf,
-        rules=False, plots=False, save_figs=True, summary=False, output=True, site=site
+        rules=False, plots=False, summary=False, output=True, site=site
         )
 
 # DATA: multivariate,  MODEL: bidirectional #
@@ -149,7 +149,7 @@ LSTM_detect_multivar_bidirectional = \
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,
         window_sz, alpha, min_range, wf,
-        rules=False, plots=False, save_figs=True, summary=False, output=True, site=site
+        rules=False, plots=False, summary=False, output=True, site=site
         )
 
 #########################################
