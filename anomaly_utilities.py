@@ -81,7 +81,9 @@ def anomaly_events(anomaly, wf=1, sf=0.05):
     # search through data assigning each point an event (positive integer) or 0 for points not belonging to an event
     for i in range(wf, len(anomaly) - wf):
         if (sum(anomaly[i-wf:i+wf+1]) != 0):  # if there are anomalies within the wf window
-            if (event[-1] == 0):  # if the last event value is 0, then a new event has been encountered
+            if (len(event) == 0):  # if event is empty
+                event_count +=1  # increment the event counter
+            elif (event[-1] == 0):  # if the last event value is 0, then a new event has been encountered
                 event_count += 1  # increment the event counter
             event.append(event_count)  # append the event array with the current event number
         else:  # no anomalies are within the wf window

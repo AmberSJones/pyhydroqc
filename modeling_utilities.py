@@ -36,7 +36,7 @@ def build_arima_model(data, p, d, q, summary):
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
     warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
     warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
-    model_fit = model.fit(disp=0)
+    model_fit = model.fit(disp=0, warn_convergence=False)
     warnings.filterwarnings('default')
     residuals = pd.DataFrame(model_fit.resid)
     predict = model_fit.get_prediction()
