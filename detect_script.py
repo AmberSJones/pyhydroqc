@@ -46,7 +46,7 @@ wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.25
 wfparam.widen = 1
-wfparam.pdq = [6, 1, 4]
+wfparam.pdq = [1, 1, 3]
 sensor_params.append(copy.deepcopy(wfparam))
 
 #cond params
@@ -333,14 +333,14 @@ site_params.append(copy.deepcopy(copy.deepcopy(sensor_params)))
 # RETRIEVE DATA #
 #########################################
 
-site = 'FranklinBasin'
-
 sites = ['FranklinBasin', 'TonyGrove', 'WaterLab', 'MainStreet', 'Mendon', 'BlackSmithFork']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
 sensor = ['temp', 'cond', 'ph', 'do']
-if site == 'BlackSmithFork': year.pop(0)
+
 
 for j in range(0, len(sites)):
+    site = sites[j]
+    if site == 'BlackSmithFork': year.pop(0)
     print("\n\n###########################################\n#Processing data for site: "
           + sites[j] + ".\n###########################################")
     df_full, sensor_array = anomaly_utilities.get_data(sites[j], sensor, year, path="./LRO_data/")
@@ -348,14 +348,19 @@ for j in range(0, len(sites)):
 
     # RULES BASED ANOMALY DETECTION #
     #########################################
-    size = []
+    range_count = []
+    persist_count = []
+    # size = []
     for i in range(0, len(sensor_array)):
-        sensor_array[sensor[i]] = rules_detect.range_check(sensor_array[sensor[i]], site_params[j][i].max_range, site_params[j][i].min_range)
-        sensor_array[sensor[i]] = rules_detect.persistence(sensor_array[sensor[i]], site_params[j][i].persist)
-        s = rules_detect.group_size(sensor_array[sensor[i]])
-        size.append(s)
+        sensor_array[sensor[i]], r_c = rules_detect.range_check(sensor_array[sensor[i]], site_params[j][i].max_range, site_params[j][i].min_range)
+        range_count.append(r_c)
+        sensor_array[sensor[i]], p_c = rules_detect.persistence(sensor_array[sensor[i]], site_params[j][i].persist)
+        persist_count.append(p_c)
+        # s = rules_detect.group_size(sensor_array[sensor[i]])
+        # size.append(s)
+        sensor_array[sensor[i]] = rules_detect.add_labels(sensor_array[sensor[i]], -9999)
         sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
-        print(str(sensor[i]) + ' longest detected group = ' + str(size[i]))
+        # print(str(sensor[i]) + ' longest detected group = ' + str(size[i]))
     print('Rules based detection complete.\n')
 
 
@@ -418,4 +423,4 @@ for j in range(0, len(sites)):
 
     #########################################
 
-    print("Finished processing data: " + site[j])
+    print("Finished processing data: " + sites[j])

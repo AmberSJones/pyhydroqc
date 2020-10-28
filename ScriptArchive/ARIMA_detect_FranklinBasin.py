@@ -64,9 +64,9 @@ print(pdqParam)
 #########################################
 maximum = 13
 minimum = -2
-temp_df = rules_detect.range_check(temp_df, maximum, minimum)
+temp_df, range_count = rules_detect.range_check(temp_df, maximum, minimum)
 length = 6
-temp_df = rules_detect.persistence(temp_df, length)
+temp_df, persist_count = rules_detect.persistence(temp_df, length)
 size = rules_detect.group_size(temp_df)
 temp_df = rules_detect.interpolate(temp_df)
 

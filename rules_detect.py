@@ -5,9 +5,8 @@
 # Functions include range check, persistence check, and linear interpolation for correction.
 
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import anomaly_utilities
+import math
 
 
 def range_check(df, maximum, minimum):
@@ -69,7 +68,7 @@ def interpolate(df, limit=10000):
     limit is the maximum length/number of points of acceptable interpolation.
     Output is the dataframe with column 'observed' for determined corrections.
     """
-    df['observed'] = (np.where(df['anomaly'], np.nan, df['raw']))
+    df['observed'] = np.where(df['anomaly'], np.nan, df['raw'])
     df['observed'].interpolate(method='linear', inplace=True, limit=limit)
 
     return df
@@ -78,5 +77,8 @@ def add_labels(df, value = -9999):
     """
     add_labels adds an indicator that there is an anomalous value that should have been labeled by the expert but was not.
     df is a data frame with columns 'raw' of raw data, 'cor' of corrected data, and a boolean column 'labeled_anomaly'.
+    Considers a specified 'no data value' (default is -9999) as well as nan values.
     """
-    df['labeled_anomaly'] = np.where((df['raw'] == -9999) | (df['cor'] == -9999), True, df['labeled_anomaly'])
+    df['labeled_anomaly'] = np.where((df['raw'] == value) | (df['cor'] == value) | (df['cor'].isnull()), True, df['labeled_anomaly'])
+
+    return df
