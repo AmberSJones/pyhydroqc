@@ -19,7 +19,7 @@ import pandas as pd
 site = 'FranklinBasin'
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
 
 # RULES DETECTION PARAMETERS #
 #########################################
@@ -43,18 +43,6 @@ for i in range(0, len(sensor_array)):
     sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
     # print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
 print('Rules based detection complete.\n')
-
-
-# Results Plot #
-plt.figure()
-plt.plot(sensor_array[sensor[i]]['raw'], 'b', label='original data')
-plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['anomaly']], 'r+', label='machine detected anomalies')
-plt.legend()
-plt.ylabel(sensor)
-plt.show()
-
-
-
 
 # ANOMALY DETECTION PARAMETERS #
 #########################################
