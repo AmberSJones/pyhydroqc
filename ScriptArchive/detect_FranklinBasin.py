@@ -19,7 +19,7 @@ import pandas as pd
 site = 'FranklinBasin'
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="./LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
 
 # RULES DETECTION PARAMETERS #
 #########################################
@@ -29,7 +29,7 @@ length = [6, 3, 3, 3]
 
 # RULES BASED ANOMALY DETECTION #
 #########################################
-size = []
+# size = []
 range_count = []
 persist_count = []
 for i in range(0, len(sensor_array)):
@@ -37,12 +37,24 @@ for i in range(0, len(sensor_array)):
     range_count.append(r_c)
     sensor_array[sensor[i]], p_c = rules_detect.persistence(sensor_array[sensor[i]], length[i])
     persist_count.append(p_c)
-    s = rules_detect.group_size(sensor_array[sensor[i]])
-    size.append(s)
+    # s = rules_detect.group_size(sensor_array[sensor[i]])
+    # size.append(s)
     sensor_array[sensor[i]] = rules_detect.add_labels(sensor_array[sensor[i]], -9999)
     sensor_array[sensor[i]] = rules_detect.interpolate(sensor_array[sensor[i]])
-    print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
+    # print(str(sensor[i]) + ' maximum detected group length = ' + str(size[i]))
 print('Rules based detection complete.\n')
+
+
+# Results Plot #
+plt.figure()
+plt.plot(sensor_array[sensor[i]]['raw'], 'b', label='original data')
+plt.plot(sensor_array[sensor[i]]['raw'][sensor_array[sensor[i]]['anomaly']], 'r+', label='machine detected anomalies')
+plt.legend()
+plt.ylabel(sensor)
+plt.show()
+
+
+
 
 # ANOMALY DETECTION PARAMETERS #
 #########################################
