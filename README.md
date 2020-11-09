@@ -1,7 +1,7 @@
 # Anomaly Detection and Correction for Aquatic Sensor Data
-This repository contains a software to identify and correct anomalous values in time series data collected by in situ aquatic sensors. The code was developed for application to data colleccted in the Logan River Observatory, sourced at http://lrodata.usu.edu/tsa/ or https://www.hydroshare.org/search/?q=logan%20river%20observatory.
+This repository contains software to identify and correct anomalous values in time series data collected by in situ aquatic sensors. The code was developed for application to data collected in the Logan River Observatory, sourced at http://lrodata.usu.edu/tsa/ or https://www.hydroshare.org/search/?q=logan%20river%20observatory.
 
-Methods currently implemented include ARIMA (AutoRegressive Integrated Moving Average), LSTM (Long Short Term Memory), and Prophet. All are time series regresion methods that detect anomalies by comparing model estimates to sensor observations and labeling points as anomlous when they exceed a threshold.
+Methods currently implemented include ARIMA (AutoRegressive Integrated Moving Average) and LSTM (Long Short Term Memory). These are time series regression methods that detect anomalies by comparing model estimates to sensor observations and labeling points as anomalous when they exceed a threshold.
 
 There are multiple possible approaches for applying LSTM for anomaly detection/correction. 
 - Vanilla LSTM: uses past values of a single variable to estimate the next value of that variable.
@@ -9,13 +9,13 @@ There are multiple possible approaches for applying LSTM for anomaly detection/c
 - Bidirectional LSTM: uses past and future values of a single variable to estimate a value for that variable at the time step of interest.
 - Multivariate Bidirectional LSTM: uses past and future values of multiple variables to estimate a value for all variables at the time step of interest.
 
-Correction approaches depend on the method. For ARIMA, each group of consecutive anomalous points is considered as a unit. Separate ARIMA models are developed for valid points preceding and following the anomolous group. Model estimates are blended to achieve a correction. For LSTM, correction may be based on a univariate or multivariate approach. Each point is considered as a unit. The developed model is used to estimate a correction to the first anomalous point in a group, which will then be used as input to estimate the following anomalous point, and so on.
+Correction approaches depend on the method. For ARIMA, each group of consecutive anomalous points is considered as a unit to be corrected. Separate ARIMA models are developed for valid points preceding and following the anomalous group. Model estimates are blended to achieve a correction. For LSTM, correction may be based on a univariate or multivariate approach. Correction is made on a point-by-point basis where each point is considered a separate unit to be corrected. The developed model is used to estimate a correction to the first anomalous point in a group, which is then used as input to estimate the following anomalous point, and so on.
 
-Files are organized by method for anomaly detection and data correction. Utilities files contain functions called by the other scripts. A typical workflow involves:
+Files are organized by method for anomaly detection and data correction. Utilities files contain functions, wrappers, and parameter definitions called by the other scripts. A typical workflow involves:
 1. Retrieving data
 2. Applying rules-based detection to screen data and apply initial corrections
 3. Developing a model (i.e., ARIMA or LSTM)
-4. Applying model to make time series predicitons
+4. Applying model to make time series predictions
 5. Determining a threshold and detecting anomalies by comparing sensor observations to modeled results
 6. Widening the window over which an anomaly is identified
 7. Comparing anomaly detections to data labeled by technicians (if available) and determining metrics
@@ -23,55 +23,60 @@ Files are organized by method for anomaly detection and data correction. Utiliti
 
 ## File Descriptions
 
+### detect.script.py
+This script contains the code to apply anomaly detection methods to data from four sensors (water temperature, specific conductance, pH, dissolved oxygen) at six sites in the Logan River Observatory. The script calls functions to retrieve data, perform rules based anomaly detection and correction, develop and get estimates from five models (ARIMA, LSTM univaraite, LSTM univariate bidirectional, LSTM multivaraiate, and LSTM multivariate bidirectional), determine dynamic thresholds and detect anomalies, widen the window of detection and compare to raw data, and determine metrics. This application script refers to parameters stored in the parameters file.
+
+### parameters.py
+This file contains assignments of parameters for all steps of the anomaly detection workflow. Parameters are defined specific to each site and sensor that are referenced in the detect script. LSTM parameters are consistent across sites and variables. ARIMA hyper parameters are specific to each site/sensor combination, other parameters are used for rules based anomaly detection, determining dynamic thresholds, and for widening anomalous events.  
+
 ### anomaly_utilities.py
 Contains functions for performing anomaly detection and correction:
-- get_data: Retrieves and formats data
-- anomaly_events: Widens anomalies and indexes events or groups of anomalous data
-- assign_cm: A helper function for resizing anomaly events to the original size before widening
-- compare_events: Compares anomaly events detected by an algorithm to events labeled by a technician
+- get_data: Retrieves and formats data. Data from the LRO was extracted from the database to csv files, and retrieval is based on site, sensor, and year according to the file organization. To pass through subsequent steps, the required format is a data frame with columns corresponding to datetime (as the index), raw data, corrected data, and data labels (anomalies identified by technicians).
+- anomaly_events: Widens anomalies and indexes events or groups of anomalous data.
+- assign_cm: A helper function for resizing anomaly events to the original size for determining metrics.
+- compare_events: Compares anomaly events detected by an algorithm to events labeled by a technician.
 - metrics: Determines performance metrics of the detections relative to labeled data.
 - event_metrics: Determines performance metrics based on number of events rather than the number of data points.
 - print_metrics: Prints the metrics to the console.
-- group_bools: Indexes contiguous groups of anomalous and normal data to facilitate correction.
+- group_bools: Indexes contiguous groups of anomalous and valid data to facilitate correction.
 - xfade: Uses a cross-fade to blend forecasted and backcasted data over anomaly events for generating data correction.
-- set_dynamic_threshold: Creates a threshold envelope based on residual deviations.
+- set_dynamic_threshold: Creates a threshold that varies dynamically based on the model residuals.
 - set_cons_threshold: Creates a threshold of constant value.
-- detect_anomalies: Uses model residuals and threshold values to classify anomalous data
-- plt_threshold: Plots thresholds and residuals
-- plt_results: Plots the results of raw data, model predictions, detected and labeled anomalies
+- detect_anomalies: Uses model residuals and threshold values to classify anomalous data.
+- plt_threshold: Plots thresholds and model residuals.
+- plt_results: Plots raw data, model predictions, detected and labeled anomalies.
 
 ### modeling_utilities.py
 Contains functions for building and training models:
-- build_arima_model, LSTM_univar, LSTM_multivar, LSTM_univar_bidir, LSTM_multivar_bidir: are wrappers that call other functions to scale (for LSTM models only) and reshape data, create and train a model, and output model predictions and residuals.
+- build_arima_model, LSTM_univar, LSTM_multivar, LSTM_univar_bidir, LSTM_multivar_bidir: wrappers that call other functions in the file to scale and reshape data (for LSTM models only), create and train a model, and output model predictions and residuals.
 - create_scaler: Creates a scaler object for scaling and unscaling data.
-- create_training_dataset and create_bidir_training_dataset: Creates a training dataset based on a random selection of points. Reshapes data to include the desired time_steps for input to the LSTM model - either only past data or past and future data (bidirectional). Ensures that data already identified as anomalous are not used.
-- create_sequenced_dataset and create_bidir_sequenced_dataset: Reshapes all inputs into sequences that include time_steps for input to the LSTM model - either only past data or past and future data (bidirectional). Used for testing or for applying the model to a full dataset.
-- create_vanilla_model, create_bidir_model: are helper functions used to create single layer LSTM models.
-- train_model: Fits the model to training data. Uses a validation subset to monitor for improvemens to ensure that training is not too long.
+- create_training_dataset and create_bidir_training_dataset: Creates a training dataset based on a random selection of points from the dataset. Reshapes data to include the desired time_steps for input to the LSTM model - the number of past data points to examine or past and future points (bidirectional). Ensures that data already identified as anomalous (i.e., by rules based detection) are not used.
+- create_sequenced_dataset and create_bidir_sequenced_dataset: Reshapes all inputs into sequences that include time_steps for input to the LSTM model - using either only past data points or past and future data points (bidirectional). Used for testing or for applying the model to a full dataset.
+- create_vanilla_model, create_bidir_model: Helper functions used to create single layer LSTM models.
+- train_model: Fits the model to training data. Uses a validation subset to monitor for improvements to ensure that training is not too long.
 
 ### rules_detect.py
-Contains functions for rules-based anomaly detection and preprocessing. Functions include:
-- range_check: Scans for data outside of user defined limits and marks them as anomalous
-- persistence: Scans for repeated values in the data and marks them as anomalous
-- group_size: Identifies the maximum length of identified anomalous groups
-- interpolate: Corrects data with linear interpolation, a typical approach for short anomalous events
-Depends on anomaly_utilities.py
+Contains functions for rules based anomaly detection and preprocessing. Depends on anomaly_utilities.py Functions include:
+- range_check: Scans for data outside of user defined limits and marks the points as anomalous.
+- persistence: Scans for repeated values in the data and marks the points as anomalous if the duration exceeds a user defined length.
+- group_size: Determines the maximum length of anomalous groups identified by the previous steps.
+- interpolate: Corrects data with linear interpolation, a typical approach for short anomalous events.
+- add_labels: Enables the addition of anomaly labels (referring to anomalies previously identified by an expert) in the case that labels may have been missed for corrected data that are NaN or a no data value (e.g, -9999).
 
 ### model_workflow.py
-Contain functionality to build and train ARIMA and LSTM models, apply it to make predictions, set a threshold, detect anomalies, widens anomalous events, and determines metrics. Function names are: ARIMA_detect, LSTM_detect_univar, and LSTM_detect_multivar. 
-Depends on anomaly_utilities.py, modeling_utilities.py, and rules_detect.py
+Contains functionality to build and train ARIMA and LSTM models, apply the models to make predictions, set thresholds, detect anomalies, widen anomalous events, and determine metrics. Depends on anomaly_utilities.py, modeling_utilities.py, and rules_detect.py. 
+Wrapper function names are: ARIMA_detect, LSTM_detect_univar, and LSTM_detect_multivar. LSTM model workflows include options for vanilla or bidirectional. Within each wrapper function, the full detection workflow is followed. Options allow for output of plots, summaries, and metrics.
 
 ### ARIMA_correct.py
-Contains functionality to perform corrections and plot results using ARIMA models:
-- ARIMA_group:
-- ARIMA_forecast: Creates predictions of data where anomalies occur
-- generate_corrections: The primary function called to determine corrections. Passes through data with anomalies and determines corrections using picewise ARIMA models. Corrections are determined by averaging both a forecast and a backcast.
-Depends on anomaly_utilities.py
+Contains functionality to perform corrections and plot results using ARIMA models. Depends on anomaly_utilities.py.
+- ARIMA_group: Ensures that the valid data surrounding anomalous points and groups of points are sufficient forecasting/backcasting.
+- ARIMA_forecast: Creates predictions of data where anomalies occur.
+- generate_corrections: The primary function for determining corrections. Passes through data with anomalies and determines corrections using piecewise ARIMA models. Corrections are determined by averaging together (cross fade) both a forecast and a backcast.
 
 ### LSTM_correct.py
-Separate functions correct univariate and multivariate data and plot results. The functions step through each data point and determine a correction based on the previous time_steps.
-- LSTM_correct
-- LSTM_multi_correct
+Separate functions correct univariate and multivariate data and plot results. The functions step through each data point and determine a correction based on the previous time_steps with a developed model.
+- LSTM_correct: performs corrections for univariate data and model.
+- LSTM_multi_correct: performs corrections for multivariate data and model.
 
 ## Dependencies
 This software depends on the following Python packages:
@@ -86,3 +91,4 @@ This software depends on the following Python packages:
 - statsmodels
 - sklearn
 - pmdarima
+- copy
