@@ -47,7 +47,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 13
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.25
@@ -58,7 +58,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 380
 wfparam.min_range = 120
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 4.0
@@ -69,7 +69,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.2
 wfparam.min_range = 7.5
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.02
@@ -80,7 +80,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 13
 wfparam.min_range = 8
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.15
@@ -96,7 +96,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 20
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.4
@@ -107,7 +107,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 500
 wfparam.min_range = 175
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 40
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 5.0
@@ -118,7 +118,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.0
 wfparam.min_range = 8.0
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 40
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.02
@@ -129,7 +129,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 14
 wfparam.min_range = 7
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.15
@@ -145,7 +145,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 18
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.4
@@ -156,7 +156,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 450
 wfparam.min_range = 200
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 40
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 5.0
@@ -167,7 +167,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.2
 wfparam.min_range = 8.0
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 40
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.02
@@ -178,7 +178,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 14
 wfparam.min_range = 7
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.15
@@ -194,7 +194,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 20
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.4
@@ -205,7 +205,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 2700
 wfparam.min_range = 150
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 40
 wfparam.alpha = 0.000001
 wfparam.threshold_min = 5.0
@@ -216,7 +216,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.5
 wfparam.min_range = 7.5
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 20
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.03
@@ -227,7 +227,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 15
 wfparam.min_range = 5
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.25
@@ -243,7 +243,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 28
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.4
@@ -254,7 +254,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 800
 wfparam.min_range = 200
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 40
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 5.0
@@ -265,7 +265,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.0
 wfparam.min_range = 7.4
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 20
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.03
@@ -276,7 +276,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 15
 wfparam.min_range = 3
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.001
 wfparam.threshold_min = 0.15
@@ -292,7 +292,7 @@ sensor_params = []
 #temp params
 wfparam.max_range = 28
 wfparam.min_range = -2
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.4
@@ -303,7 +303,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #cond params
 wfparam.max_range = 900
 wfparam.min_range = 200
-wfparam.persist = 10
+wfparam.persist = 30
 wfparam.window_sz = 20
 wfparam.alpha = 0.01
 wfparam.threshold_min = 4.0
@@ -314,7 +314,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #ph params
 wfparam.max_range = 9.2
 wfparam.min_range = 7.2
-wfparam.persist = 30
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.00001
 wfparam.threshold_min = 0.03
@@ -325,7 +325,7 @@ sensor_params.append(copy.deepcopy(wfparam))
 #do params
 wfparam.max_range = 14
 wfparam.min_range = 2
-wfparam.persist = 10
+wfparam.persist = 45
 wfparam.window_sz = 30
 wfparam.alpha = 0.0001
 wfparam.threshold_min = 0.15
