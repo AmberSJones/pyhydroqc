@@ -16,16 +16,16 @@ import pandas as pd
 
 # RETRIEVE DATA #
 #########################################
-site = 'FranklinBasin'
+site = 'MainStreet'
 sensor = ['temp', 'cond', 'ph', 'do']
 year = [2014, 2015, 2016, 2017, 2018, 2019]
-df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="../LRO_data/")
+df_full, sensor_array = anomaly_utilities.get_data(site, sensor, year, path="LRO_data/")
 
 # RULES DETECTION PARAMETERS #
 #########################################
-maximum = [13, 380, 9.2, 13]
-minimum = [-2, 120, 7.5, 8]
-length = [6, 3, 3, 3]
+maximum = [20, 2700, 9.5, 15]
+minimum = [-2, 150, 7.5, 5]
+length = [10, 10, 10, 20]
 
 # RULES BASED ANOMALY DETECTION #
 #########################################
@@ -46,9 +46,9 @@ print('Rules based detection complete.\n')
 
 # ANOMALY DETECTION PARAMETERS #
 #########################################
-window_sz = [30, 30, 30, 30]
-alpha = [0.0001, 0.0001, 0.00001, 0.0001]
-min_range = [0.25, 4, 0.02, 0.15]
+window_sz = [30, 40, 20, 30]
+alpha = [0.00001, 0.000001, 0.0001, 0.00001]
+min_range = [0.4, 5, 0.03, 0.25]
 wf = [1, 1, 1, 1]
 
 # ARIMA PARAMETERS #

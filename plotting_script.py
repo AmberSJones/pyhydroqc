@@ -24,12 +24,12 @@ labels = LSTM_detect_univar[i].df_anomalies['labeled_event']
 detections = LSTM_detect_univar[i].df_anomalies['detected_event']
 
 # LSTM Multivariate
-residuals = LSTM_detect_multivar.detections_array[i]['residual']
-predictions = LSTM_detect_multivar.detections_array[i]['prediction']
-threshold = LSTM_detect_multivar.threshold[i]
-raw = LSTM_detect_multivar.df_raw[df_raw.columns[i]]
-labels = LSTM_detect_multivar.df_array[sensor[i]]['labeled_event']
-detections = LSTM_detect_multivar.df_array[sensor[i]]['detected_event']
+residuals = LSTM_detect_multivar_bidirectional.detections_array[i]['residual']
+predictions = LSTM_detect_multivar_bidirectional.detections_array[i]['prediction']
+threshold = LSTM_detect_multivar_bidirectional.threshold[i]
+raw = LSTM_detect_multivar_bidirectional.df_array[i]['raw']
+labels = LSTM_detect_multivar_bidirectional.df_array[i]['labeled_event']
+detections = LSTM_detect_multivar_bidirectional.df_array[i]['detected_event']
 
 
 # Threshold Plot #
@@ -44,7 +44,7 @@ anomaly_utilities.plt_results(
     predictions=predictions,
     labels=labels,
     detections=detections,
-    sensor=sensor
+    sensor='pH'
 )
 plt.show()
 

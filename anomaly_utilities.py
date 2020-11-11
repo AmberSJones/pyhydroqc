@@ -214,7 +214,7 @@ def metrics(df):
     metrics.true_negatives = len(df['conf_mtx'][df['conf_mtx'] == 'tn'])
     metrics.prc = metrics.ppv = metrics.true_positives / (metrics.true_positives + metrics.false_positives)
     metrics.npv = metrics.true_negatives / (metrics.true_negatives + metrics.false_negatives)
-    metrics.acc = (metrics.true_positives + metrics.true_negatives) / len(df['detected_anomaly'])
+    metrics.acc = (metrics.true_positives + metrics.true_negatives) / len(df['conf_mtx'])
     metrics.rcl = metrics.true_positives / (metrics.true_positives + metrics.false_negatives)
     metrics.f1 = 2.0 * (metrics.prc * metrics.rcl) / (metrics.prc + metrics.rcl)
     metrics.f2 = 5.0 * metrics.true_positives / \
@@ -449,6 +449,26 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
         print('ratio of detections: %f' % ((sum(detected_anomaly)/len(detected_anomaly))*100), '%')
 
     return detected_anomaly
+
+
+def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidir_uni, results_LSTM_van_multi, results_LSTM_bidir_multi):
+    """
+    Each results input argument is a dataframe with the column 'detected_event'.
+    """
+    results_all = pd.DataFrame(index = results_ARIMA.index)
+    results_all['ARIMA'] = results_ARIMA['detected_event'] > 0
+    results_all['LSTM_van_uni'] = results_LSTM_van_uni['detected_event'] > 0
+    results_all['LSTM_bidir_uni'] = results_LSTM_bidir_uni['detected_event'] > 0
+    results_all['LSTM_van_multi'] = results_LSTM_van_multi['detected_event'] > 0
+    results_all['LSTM_bidir_multi'] = results_LSTM_bidir_multi['detected_event'] > 0
+
+    results_all['detected_event'] = results_all.eval('ARIMA or LSTM_van_uni or LSTM_bidir_uni or LSTM_van_multi or LSTM_bidir_multi')
+    results_all['labeled_anomaly'] = df['labeled_anomaly']
+    results_all['labeled_event'] = anomaly_events(results_all['labeled_anomaly'], wf=1)
+    compare_events(results_all, wf=1)
+    metrics = metrics(results_all)
+
+    return results_all, metrics
 
 
 def plt_threshold(residuals, threshold, sensor):

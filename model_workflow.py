@@ -313,4 +313,4 @@ def LSTM_detect_multivar(sensor_array, sensor, params, model_type,
     LSTM_detect_multivar.metrics_array = metrics_array
     LSTM_detect_multivar.e_metrics_array = e_metrics_array
 
-    return LSTM_detect_univar
+    return LSTM_detect_multivar
