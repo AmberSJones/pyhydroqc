@@ -108,7 +108,7 @@ for j in range(0, len(sites)):
     # DATA: multivariate,  MODEL: vanilla #
     model_type = 'vanilla'
     methods_output.LSTM_multivar = \
-        model_workflow.LSTM_multivar(
+        model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type,
             rules=False, plots=False, summary=False, output=True, site=site
             )
@@ -116,7 +116,7 @@ for j in range(0, len(sites)):
     # DATA: multivariate,  MODEL: bidirectional #
     model_type = 'bidirectional'
     methods_output.LSTM_multivar_bidir = \
-        model_workflow.LSTM_multivar_bidir(
+        model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type,
             rules=False, plots=False, summary=False, output=True, site=site
             )
@@ -129,11 +129,11 @@ for j in range(0, len(sites)):
         results_all, metrics = \
             anomaly_utilities.aggregate_results(
                 sensor_array[sensor[i]],
-                methods_output.ARIMA_detect[i].df,
-                methods_output.LSTM_detect_univar[i].df_anomalies,
-                methods_output.LSTM_detect_univar_bidir[i].df_anomalies,
-                methods_output.LSTM_detect_multivar.df_array[i],
-                methods_output.LSTM_detect_multivar_bidirectional.df_array[i]
+                methods_output.ARIMA[i].df,
+                methods_output.LSTM_univar[i].df_anomalies,
+                methods_output.LSTM_univar_bidir[i].df_anomalies,
+                methods_output.LSTM_multivar.df_array[i],
+                methods_output.LSTM_multivar_bidir.df_array[i]
                 )
 
         print('\nOverall metrics')

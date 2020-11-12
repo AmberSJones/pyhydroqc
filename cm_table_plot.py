@@ -8,6 +8,7 @@ models = ['ARIMA', 'LSTM\nunivar', 'LSTM\nunivar\nbidir', 'LSTM\nmulti', 'LSTM\n
 cols = ['Temperature', 'Specific Conductance', 'pH', 'Dissolved Oxygen']
 rows = ['Franklin Basin', 'Tony Grove', 'Water Lab', 'Main Street', 'Mendon', 'Blacksmith Fork']
 ind = np.arange(5)
+
 TP = [(849, 836, 835, 835, 835),            # FB temp
       (6871, 4032, 4020, 4646, 4623),       # FB cond
       (15692, 15148, 15126, 14898, 14751),  # FB ph
@@ -33,6 +34,34 @@ TP = [(849, 836, 835, 835, 835),            # FB temp
       (5724, 5656, 5653, 5491, 5469),       # BF ph
       (2768, 2967, 2785, 2982, 2786),       # BF do
      ]
+
+
+TP_rules = [783,  # FB temp
+            1887,  # FB cond
+            12079,  # FB ph
+            564,  # FB do
+            30000,  # TG temp
+            1000,  # TG cond
+            2000,  # TG ph
+            700,  # TG do
+            900,  # WL temp
+            8000,  # WL cond
+            10000,  # WL ph
+            13000,  # WL do
+            300,  # MS temp
+            3000,  # MS cond
+            12000,  # MS ph
+            7000,  # MS do
+            5000,  # Me temp
+            10000,  # Me cond
+            15000,  # Me ph
+            4000,  # Me do
+            800,  # BF temp
+            1500,  # BF cond
+            5000,  # BF ph
+            2000,  # BF do
+            ]
+
 
 FN = [(43, 45, 45, 45, 45),                 # FB temp
       (77, 2904, 2913, 2288, 2310),         # FB cond
@@ -86,25 +115,55 @@ FP = [(863, 760, 738, 751, 750),            # FB temp
       (347, 335, 333, 336, 335),            # BF do
      ]
 
-fig,axes = plt.subplots(nrows = 6, ncols=4)
+FP_rules = [251,  # FB temp
+            145,  # FB cond
+            1560,  # FB ph
+            2895,  # FB do
+            5000,  # TG temp
+            30,  # TG cond
+            12000,  # TG ph
+            1500,  # TG do
+            50,  # WL temp
+            20,  # WL cond
+            500,  # WL ph
+            100,  # WL do
+            200,  # MS temp
+            100,  # MS cond
+            1000,  # MS ph
+            500,  # MS do
+            200,  # Me temp
+            5,  # Me cond
+            1000,  # Me ph
+            1000,  # Me do
+            5,  # BF temp
+            700,  # BF cond
+            2000,  # BF ph
+            100,  # BF do
+            ]
 
-for i,ax in enumerate(axes.flat):
+
+fig, axes = plt.subplots(nrows=6, ncols=4)
+
+for i, ax in enumerate(axes.flat):
 
     p1 = ax.bar(ind, TP[i], color=colors[0])
     p2 = ax.bar(ind, FN[i], color=colors[1], bottom=np.array(TP[i]))
     p3 = ax.bar(ind, FP[i], color=colors[2], bottom=np.array(FN[i])+np.array(TP[i]))
+    p4 = ax.axhline(y=TP_rules[i], linewidth=1.5, linestyle='--', color='k')
+    p5 = ax.axhline(y=np.array(FN[i][0]) + np.array(TP[i][0]) + FP_rules[i], linewidth=1.5, linestyle='--', color='gray')
     # ax.legend((p1[0],p2[0],p3[0]),('True Positives', 'False Negatives', 'False Positives'))
     ax.set_xticks(ind)
     if(i >= 20):
         ax.set_xticklabels(models)
     else:
-        ax.set_xticklabels(('','','','',''))
+        ax.set_xticklabels(('', '', '', '', ''))
 
 for ax, col in zip(axes[0], cols):
     ax.set_title(col)
-for ax, row in zip(axes[:,0], rows):
+for ax, row in zip(axes[:, 0], rows):
     ax.set_ylabel(row, size='large')
 
-plt.figlegend((p1[0],p2[0],p3[0]),('True Positives', 'False Negatives', 'False Positives'),
-              loc=(0.905,0.47))
+plt.figlegend((p1[0], p2[0], p3[0], p4, p5),
+              ('True Positives', 'False Negatives', 'False Positives', 'Rules Based True Positives', 'Rules Based False Positives'),
+              loc=(0.905, 0.47))
 plt.show()
