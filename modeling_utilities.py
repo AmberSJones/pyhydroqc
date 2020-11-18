@@ -87,7 +87,7 @@ class LSTMModelContainer:
     """
 
 
-def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
+def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary, name, model_output=True, model_save=True):
     """
     LSTM_univar builds, trains, and evaluates a vanilla LSTM model for univariate data.
     """
@@ -125,11 +125,15 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    if model_save:
+        model.save('saved/models/LSTM_univar_' + str(name))
+
     LSTM_univar = LSTMModelContainer()
+    if model_output:
+        LSTM_univar.model = model
+        LSTM_univar.history = history
     LSTM_univar.X_train = X_train
     LSTM_univar.y_train = y_train
-    LSTM_univar.model = model
-    LSTM_univar.history = history
     LSTM_univar.X_test = X_test
     LSTM_univar.y_test = y_test
     LSTM_univar.model_eval = model_eval
@@ -140,7 +144,7 @@ def LSTM_univar(df, time_steps, samples, cells, dropout, patience, summary):
     return LSTM_univar
 
 
-def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
+def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary, name, model_output=True, model_save=True):
     """
     LSTM_multivar builds, trains, and evaluates a vanilla LSTM model for multivariate data.
     """
@@ -178,11 +182,15 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    if model_save:
+        model.save('saved/models/LSTM_multivar_' + str(name))
+
     LSTM_multivar = LSTMModelContainer()
+    if model_output:
+        LSTM_multivar.model = model
+        LSTM_multivar.history = history
     LSTM_multivar.X_train = X_train
     LSTM_multivar.y_train = y_train
-    LSTM_multivar.model = model
-    LSTM_multivar.history = history
     LSTM_multivar.X_test = X_test
     LSTM_multivar.y_test = y_test
     LSTM_multivar.model_eval = model_eval
@@ -193,7 +201,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, d
     return LSTM_multivar
 
 
-def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary):
+def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary, name, model_output=True, model_save=True):
     """
     LSTM_univar_bidir builds, trains, and evaluates a bidirectional LSTM model for univariate data.
     """
@@ -232,11 +240,15 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    if model_save:
+        model.save('saved/models/LSTM_univar_bidir_' + str(name))
+
     LSTM_univar_bidir = LSTMModelContainer()
+    if model_output:
+        LSTM_univar_bidir.model = model
+        LSTM_univar_bidir.history = history
     LSTM_univar_bidir.X_train = X_train
     LSTM_univar_bidir.y_train = y_train
-    LSTM_univar_bidir.model = model
-    LSTM_univar_bidir.history = history
     LSTM_univar_bidir.X_test = X_test
     LSTM_univar_bidir.y_test = y_test
     LSTM_univar_bidir.model_eval = model_eval
@@ -247,7 +259,7 @@ def LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience, summary
     return LSTM_univar_bidir
 
 
-def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary):
+def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience, summary, name, model_output=True, model_save=True):
     """
     LSTM_multivar_bidir builds, trains, and evaluates a bidirectional LSTM model for multivariate data.
     """
@@ -285,11 +297,15 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, ce
     train_residuals = pd.DataFrame(np.abs(train_predictions - y_train_unscaled))
     test_residuals = pd.DataFrame(np.abs(predictions - y_test_unscaled))
 
+    if model_save:
+        model.save('saved/models/LSTM_multiivar_bidir_' + str(name))
+
     LSTM_multivar_bidir = LSTMModelContainer()
+    if model_output:
+        LSTM_univar_bidir.model = model
+        LSTM_univar_bidir.history = history
     LSTM_multivar_bidir.X_train = X_train
     LSTM_multivar_bidir.y_train = y_train
-    LSTM_multivar_bidir.model = model
-    LSTM_multivar_bidir.history = history
     LSTM_multivar_bidir.X_test = X_test
     LSTM_multivar_bidir.y_test = y_test
     LSTM_multivar_bidir.model_eval = model_eval

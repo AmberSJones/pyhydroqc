@@ -466,9 +466,9 @@ def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidi
     results_all['labeled_anomaly'] = df['labeled_anomaly']
     results_all['labeled_event'] = anomaly_events(results_all['labeled_anomaly'], wf=1)
     compare_events(results_all, wf=1)
-    metrics = metrics(results_all)
+    metrics_all = metrics(results_all)
 
-    return results_all, metrics
+    return results_all, metrics_all
 
 
 def plt_threshold(residuals, threshold, sensor):
