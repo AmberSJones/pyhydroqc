@@ -85,8 +85,8 @@ def ARIMA_detect(df, sensor, params,
     return ARIMA_detect
 
 
-def LSTM_detect_univar(df, sensor, params, model_type,
-                rules=False, plots=True, summary=True, output=True, site=False):
+def LSTM_detect_univar(df, sensor, params, model_type, name,
+                rules=False, plots=True, summary=True, output=True, site=False, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM univariate ' + str(model_type) + ' detections.')
@@ -100,9 +100,9 @@ def LSTM_detect_univar(df, sensor, params, model_type,
 
     # MODEL CREATION #
     if model_type == 'vanilla':
-        model = modeling_utilities.LSTM_univar(df, params.time_steps, params.samples, params.cells, params.dropout, params.patience, summary)
+        model = modeling_utilities.LSTM_univar(df, params.time_steps, params.samples, params.cells, params.dropout, params.patience, summary, name, model_output, model_save)
     else:
-        model = modeling_utilities.LSTM_univar_bidir(df, params.time_steps, params.samples, params.cells, params.dropout, params.patience, summary)
+        model = modeling_utilities.LSTM_univar_bidir(df, params.time_steps, params.samples, params.cells, params.dropout, params.patience, summary, name, model_output, model_save)
     print(sensor + ' ' + str(model_type) + ' LSTM model complete.')
     if plots:
         plt.figure()
@@ -179,8 +179,8 @@ def LSTM_detect_univar(df, sensor, params, model_type,
     return LSTM_detect_univar
 
 
-def LSTM_detect_multivar(sensor_array, sensor, params, model_type,
-                rules = False, plots=True, summary=True, output=True, site=False):
+def LSTM_detect_multivar(sensor_array, sensor, params, model_type, name,
+                rules = False, plots=True, summary=True, output=True, site=False, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM multivariate ' + str(model_type) + ' detections.')
@@ -210,10 +210,10 @@ def LSTM_detect_multivar(sensor_array, sensor, params, model_type,
     # MODEL CREATION #
     if model_type == 'vanilla':
         model = modeling_utilities.LSTM_multivar(df_observed, df_anomaly, df_raw, params[0].time_steps, params[0].samples,
-                                                 params[0].cells, params[0].dropout, params[0].patience, summary)
+                                                 params[0].cells, params[0].dropout, params[0].patience, summary, name, model_output, model_save)
     else:
         model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, params[0].time_steps, params[0].samples,
-                                                       params[0].cells, params[0].dropout, params[0].patience, summary)
+                                                       params[0].cells, params[0].dropout, params[0].patience, summary, name, model_output, model_save)
 
     print('multivariate ' + str(model_type) + ' LSTM model complete.\n')
     # Plot Metrics and Evaluate the Model
