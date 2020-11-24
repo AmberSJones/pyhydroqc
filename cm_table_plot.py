@@ -9,7 +9,6 @@ cols = ['Temperature', 'Specific Conductance', 'pH', 'Dissolved Oxygen']
 rows = ['Franklin Basin', 'Tony Grove', 'Water Lab', 'Main Street', 'Mendon', 'Blacksmith Fork']
 ind = np.arange(5)
 
-
 # To extract data from site_detect object from code output #
 
 TP_all = []
@@ -344,7 +343,6 @@ plt.show()
 
 
 # old numbers. rules based are made up.
-
 
 TP = [(849, 836, 835, 835, 835),            # FB temp
       (6871, 4032, 4020, 4646, 4623),       # FB cond
