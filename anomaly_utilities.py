@@ -17,7 +17,7 @@ import warnings
 pd.options.mode.chained_assignment = None
 
 
-def get_data(site, sensor, year, path=""):
+def get_data(sites, sensors, years, path=""):
     """
     get_data imports a single year of data based on files named by site, sensor/variable, and year.
         Includes labeling of data as anomalous.
@@ -34,8 +34,8 @@ def get_data(site, sensor, year, path=""):
     if path == "":
         path = os.getcwd() + "/"
     df_full = pd.DataFrame()
-    for i in range(0, len(year)):
-        df_year = pd.read_csv(path + site + str(year[i]) + ".csv",
+    for yr in years:
+        df_year = pd.read_csv(path + site + yr + ".csv",
                          skipinitialspace=True,
                          engine='python',
                          header=0,
@@ -44,15 +44,14 @@ def get_data(site, sensor, year, path=""):
                          infer_datetime_format=True)
         df_full = pd.concat([df_full, df_year], axis=0)
     # create data frames with raw, corrected, and labeled data
-    sensor_array = []
-    for i in range(0, len(sensor)):
+    sensor_array = dict()
+    for snsr in sensors:
         df = []
         df = pd.DataFrame(index=df_full.index)
-        df['raw'] = df_full[[sensor[i]]]
-        df['cor'] = df_full[[sensor[i] + "_cor"]]
-        df['labeled_anomaly'] = ~df_full[sensor[i] + "_qual"].isnull()
-        sensor_array.append(df)
-    sensor_array = dict(zip(sensor, sensor_array))
+        df['raw'] = df_full[snsr]
+        df['cor'] = df_full[snsr + "_cor"]
+        df['labeled_anomaly'] = ~df_full[snsr + "_qual"].isnull()
+        sensor_array[snsr] = df
 
     return df_full, sensor_array
 
