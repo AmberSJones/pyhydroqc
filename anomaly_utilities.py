@@ -35,7 +35,7 @@ def get_data(sites, sensors, years, path=""):
         path = os.getcwd() + "/"
     df_full = pd.DataFrame()
     for yr in years:
-        df_year = pd.read_csv(path + site + yr + ".csv",
+        df_year = pd.read_csv(path + sites + str(yr) + ".csv",
                          skipinitialspace=True,
                          engine='python',
                          header=0,
