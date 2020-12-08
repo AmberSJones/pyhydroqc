@@ -7,6 +7,7 @@
 import anomaly_utilities
 import model_workflow
 import rules_detect
+import ARIMA_correct
 from parameters import site_params, LSTM_params, calib_params
 import pickle
 import pandas as pd
@@ -195,3 +196,5 @@ print('Finished saving output.')
 
 #### Correction
 #########################################
+
+df = ARIMA_correct.generate_corrections(df)
