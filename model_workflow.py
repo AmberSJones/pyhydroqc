@@ -15,7 +15,7 @@ class ModelWorkflow:
 
 
 def ARIMA_detect(df, sensor, params,
-                 rules=False, plots=True, summary=True, output=True, site=False):
+                 rules=False, plots=True, summary=True, output=True):
     """
     """
     print('\nProcessing ARIMA detections.')
@@ -70,7 +70,7 @@ def ARIMA_detect(df, sensor, params,
             predictions=detections['prediction'],
             labels=df['labeled_event'],
             detections=df['detected_event'],
-            sensor=sensor[0]
+            sensor=sensor
         )
         plt.show()
 
@@ -86,7 +86,7 @@ def ARIMA_detect(df, sensor, params,
 
 
 def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
-                rules=False, plots=True, summary=True, output=True, site=False, model_output=True, model_save=True):
+                rules=False, plots=True, summary=True, output=True, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM univariate ' + str(model_type) + ' detections.')
@@ -180,26 +180,26 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
     return LSTM_detect_univar
 
 
-def LSTM_detect_multivar(sensor_array, sensor, params, LSTM_params, model_type, name,
-                rules = False, plots=True, summary=True, output=True, site=False, model_output=True, model_save=True):
+def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name,
+                rules = False, plots=True, summary=True, output=True, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM multivariate ' + str(model_type) + ' detections.')
     # RULES BASED DETECTION #
     if rules:
         size = dict()
-        for snsr in sensor:
-            sensor_array[snsr] = rules_detect.range_check(sensor_array[snsr], params[snsr].max_range, params[snsr].min_range)
-            sensor_array[snsr] = rules_detect.persistence(sensor_array[snsr], params[snsr].persist)
+        for snsr in sensors:
+            sensor_array[snsr], r_c = rules_detect.range_check(sensor_array[snsr], params[snsr].max_range, params[snsr].min_range)
+            sensor_array[snsr], p_c = rules_detect.persistence(sensor_array[snsr], params[snsr].persist)
             size[snsr] = rules_detect.group_size(sensor_array[snsr])
             sensor_array[snsr] = rules_detect.interpolate(sensor_array[snsr])
             print(snsr + ' maximum detected group length = ' + str(size[snsr]))
         print('Rules based detection complete.\n')
-    # Create new data frames with raw  and observed (after applying rules) and preliminary anomaly detections for selected sensors
-    df_raw = pd.DataFrame(index=sensor_array[sensor[0]].index)
-    df_observed = pd.DataFrame(index=sensor_array[sensor[0]].index)
-    df_anomaly = pd.DataFrame(index=sensor_array[sensor[0]].index)
-    for snsr in sensor:
+    # Create new data frames with raw and observed (after applying rules) and preliminary anomaly detections for selected sensors
+    df_raw = pd.DataFrame(index=sensor_array[sensors[0]].index)
+    df_observed = pd.DataFrame(index=sensor_array[sensors[0]].index)
+    df_anomaly = pd.DataFrame(index=sensor_array[sensors[0]].index)
+    for snsr in sensors:
         df_raw[snsr + '_raw'] = sensor_array[snsr]['raw']
         df_observed[snsr + '_obs'] = sensor_array[snsr]['observed']
         df_anomaly[snsr + '_anom'] = sensor_array[snsr]['anomaly']
@@ -225,85 +225,72 @@ def LSTM_detect_multivar(sensor_array, sensor, params, LSTM_params, model_type, 
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
     ts = LSTM_params['time_steps']
     residuals = pd.DataFrame(model.test_residuals)
+    residuals.columns = sensors
+    predictions = pd.DataFrame(model.predictions)
+    predictions.columns = sensors
     if model_type == 'vanilla':
         residuals.index = df_observed[ts:].index
+        predictions.index = df_observed[ts:].index
+        observed = df_observed[ts:]
     else:
         residuals.index = df_observed[ts:-ts].index
+        predictions.index = df_observed[ts:-ts].index
+        observed = df_observed[ts:-ts]
 
-    # todo: address this loop
-    threshold = []
-    for i in range(0, model.test_residuals.shape[1]):
-        threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], params[sensor[i]].window_sz,
-                                                               params[sensor[i]].alpha, params[sensor[i]].threshold_min)
-        threshold_df.index = residuals.index
-        threshold.append(threshold_df)
+    threshold = dict()
+    detections = dict()
+    for snsr in sensors:
+        threshold[snsr] = anomaly_utilities.set_dynamic_threshold(
+            residuals[snsr], params[snsr]['window_sz'], params[snsr]['alpha'], params[snsr]['threshold_min'])
+        threshold[snsr].index = residuals.index
+        detections[snsr] = anomaly_utilities.detect_anomalies(
+            observed[snsr+'_obs'], predictions[snsr], residuals[snsr], threshold[snsr], summary=True)
         if plots:
             plt.figure()
-            anomaly_utilities.plt_threshold(residuals.iloc[:, i], threshold[i], sensor[i])
+            anomaly_utilities.plt_threshold(residuals[snsr], threshold[snsr], sensors[snsr])
             plt.show()
     print('Threshold determination complete.')
 
-    if model_type == 'vanilla':
-        observed = df_observed[ts:]
-    else:
-        observed = df_observed[ts:-ts]
-
-    # todo: address this loop
-    detections_array = []
-    for i in range(0, observed.shape[1]):
-        detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], model.predictions.iloc[:, i],
-                                                           model.test_residuals.iloc[:, i], threshold[i], summary=True)
-        detections_array.append(detections_df)
-
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
-    df_array = []
-    # todo: address this loop
-    for i in range(0, len(detections_array)):
-        all_data = []
+    all_data = dict()
+    for snsr in sensors:
         if model_type == 'vanilla':
-            all_data = sensor_array[sensor[i]].iloc[ts:]
+            all_data[snsr] = sensor_array[snsr].iloc[ts:]
         else:
-            all_data = sensor_array[sensor[i]].iloc[ts:-ts]
-        all_data['labeled_event'] = anomaly_utilities.anomaly_events(all_data['labeled_anomaly'], params[sensor[i]].widen)
-        all_data['detected_anomaly'] = detections_array[i]['anomaly']
-        all_data['all_anomalies'] = all_data.eval('detected_anomaly or anomaly')
-        all_data['detected_event'] = anomaly_utilities.anomaly_events(all_data['all_anomalies'], params[sensor[i]].widen)
-        df_array.append(all_data)
+            all_data[snsr] = sensor_array[snsr].iloc[ts:-ts]
+        all_data[snsr]['labeled_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['labeled_anomaly'], params[snsr]['widen'])
+        all_data[snsr]['detected_anomaly'] = detections[snsr]['anomaly']
+        all_data[snsr]['all_anomalies'] = all_data[snsr].eval('detected_anomaly or anomaly')
+        all_data[snsr]['detected_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['all_anomalies'], params[snsr]['widen'])
 
     # DETERMINE METRICS #
-    compare_array = []
-    metrics_array = []
-    e_metrics_array = []
-    # todo: address this loop
-    for i in range(0, len(df_array)):
-        anomaly_utilities.compare_events(df_array[i], params[sensor[i]].widen)
-        metrics = anomaly_utilities.metrics(df_array[i])
-        metrics_array.append(metrics)
-        e_metrics = anomaly_utilities.event_metrics((df_array[i]))
-        e_metrics_array.append(e_metrics)
+    metrics = dict()
+    e_metrics = dict()
+    for snsr in sensors:
+        anomaly_utilities.compare_events(all_data[snsr], params[snsr]['widen'])
+        metrics[snsr] = anomaly_utilities.metrics(all_data[snsr])
+        e_metrics[snsr] = anomaly_utilities.event_metrics(all_data[snsr])
 
     # OUTPUT RESULTS #
     if output:
-        # todo: address this loop
-        for i in range(0, len(metrics_array)):
+        for snsr in sensors:
             print('\nModel type: LSTM multivariate ' + str(model_type))
-            print('Sensor: ' + sensor[i])
-            anomaly_utilities.print_metrics(metrics_array[i])
+            print('Sensor: ' + snsr)
+            anomaly_utilities.print_metrics(metrics[snsr])
             print('Event based calculations:')
-            anomaly_utilities.print_metrics(e_metrics_array[i])
+            anomaly_utilities.print_metrics(e_metrics[snsr])
         print('Model report complete\n')
 
     # GENERATE PLOTS #
     if plots:
-        # todo: address this loop. need to name them as dictionaries when they are created.
-        for i in range(0, len(sensor)):
+        for snsr in sensors:
             plt.figure()
             anomaly_utilities.plt_results(
-                raw=df_raw[df_raw.columns[i]],
-                predictions=detections_array[i]['prediction'],
-                labels=sensor_array[sensor[i]]['labeled_event'],
-                detections=df_array[i]['detected_event'],
-                sensor=sensor[i]
+                raw=sensor_array[snsr]['raw'],
+                predictions=detections[snsr]['prediction'],
+                labels=sensor_array[snsr]['labeled_event'],
+                detections=all_data[snsr]['detected_event'],
+                sensor=snsr
                 )
             plt.show()
 
@@ -314,10 +301,9 @@ def LSTM_detect_multivar(sensor_array, sensor, params, LSTM_params, model_type, 
     LSTM_detect_multivar.df_anomaly = df_anomaly
     LSTM_detect_multivar.model = model
     LSTM_detect_multivar.threshold = threshold
-    LSTM_detect_multivar.detections_array = detections_array
-    LSTM_detect_multivar.df_array = df_array
-    LSTM_detect_multivar.compare_array = compare_array
-    LSTM_detect_multivar.metrics_array = metrics_array
-    LSTM_detect_multivar.e_metrics_array = e_metrics_array
+    LSTM_detect_multivar.detections = detections
+    LSTM_detect_multivar.all_data = all_data
+    LSTM_detect_multivar.metrics = metrics
+    LSTM_detect_multivar.e_metrics = e_metrics
 
     return LSTM_detect_multivar

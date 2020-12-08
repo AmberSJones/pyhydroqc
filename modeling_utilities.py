@@ -8,14 +8,14 @@
 # A function creates a training dataset based on random selection of the complete dataset,
 #   which also temporalizes data to prepare for LSTM.
 
-from random import randint, sample
+from random import sample
 import numpy as np
 import tensorflow as tf
 import pandas as pd
 import statsmodels.api as api
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, RepeatVector, TimeDistributed, Bidirectional
+from tensorflow.keras.layers import Dense, LSTM, Bidirectional
 import warnings
 
 

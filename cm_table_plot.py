@@ -265,7 +265,6 @@ FP_aggregate = [(377,
 # PLOT FOR ALL MODELS #
 #######################
 fig, axes = plt.subplots(nrows=6, ncols=4)
-
 for i, ax in enumerate(axes.flat):
 
     p1 = ax.bar(ind, TP_all[i], color=colors[0])
