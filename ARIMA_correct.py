@@ -68,15 +68,18 @@ def generate_corrections(df):
     'raw': raw data
     'detected_event': boolean array corresponding to classified anomalies where True = anomalous
     Outputs:
-    df with additional column: 'det_cor' determined correction.
+    df with additional columns:
+        'det_cor' - determined correction
+        'corrected' - boolean indicating whether the data was corrected
     """
 
     # assign group index numbers to each set of consecutiveTrue/False data points
     df = anomaly_utilities.group_bools(df)
-    df = ARIMA_group(df,5)
+    df = ARIMA_group(df)
 
-    # initialize new column of corrected data
+    # create new output columns
     df['det_cor'] = df['raw']
+    df['corrected'] = df['ARIMA_event']
 
     # while there are anomalous groups of points left to correct
     while len(df[df['ARIMA_event'] != 0]) > 0:
@@ -116,7 +119,7 @@ def generate_corrections(df):
             # remove the ARIMA_event
             df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
 
-            # decrement the following ARIMA_groups
+            # decrement the following ARIMA_groups (to merge 0 and 1)
             df.loc[df['ARIMA_group'] > i, 'ARIMA_group'] -= 1
 
         elif (not backcasted):  # if there is no backcast
@@ -126,7 +129,7 @@ def generate_corrections(df):
             # remove the ARIMA_event
             df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
 
-            # merge the last ARIMA_group
+            # merge the last ARIMA_group after correction
             df.loc[df['ARIMA_group'] == i, 'ARIMA_group'] = i - 1
 
         else:  # both a forecast and a backcast exist
@@ -136,7 +139,7 @@ def generate_corrections(df):
             # remove the ARIMA_event
             df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
 
-            # merge the ARIMA_groups
+            # merge the ARIMA_groups after correction
             df.loc[df['ARIMA_group'] == i, 'ARIMA_group'] = i - 1
             df.loc[df['ARIMA_group'] == i + 1, 'ARIMA_group'] = i - 1
 
