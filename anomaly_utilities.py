@@ -289,7 +289,7 @@ def group_bools(df):
     group_bools indexes each grouping of anomalies (1) and normal points (0) as numbered sets.
     Used for anomaly correction.
     df is a data frame with required column:
-    'detected_anomaly': boolean array of classified data points
+    'detected_event': boolean array of classified data points
     Outputs:
     df with additional column: 'group' of boolean groupings
     """
