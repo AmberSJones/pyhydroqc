@@ -10,7 +10,7 @@ import pmdarima as pm
 import warnings
 
 
-def ARIMA_group(anomalies, group, min_group_len=20):
+def ARIMA_group(df, min_group_len=20):
     """Examines detected events and performs conditional widening to ensure
     that widened event is sufficient for forecasting/backcasting.
     df is a data frame with the required columns: 'group' and 'detected_event'
@@ -64,7 +64,7 @@ def ARIMA_forecast(x, l):
     return y
 
 
-def generate_corrections(df, anomalies):
+def generate_corrections(df):
     """generate_corrections uses passes through data with identified anomalies and determines corrections
     using an ARIMA model. Corrections are determined by combining both a forecast and a backcast in a weighted
     average to be informed by non-anamolous data before and after anomalies.
@@ -78,7 +78,7 @@ def generate_corrections(df, anomalies):
     """
 
     # assign group index numbers to each set of consecutiveTrue/False data points
-    df = anomaly_utilities.group_bools(df, 'detected_event', 'group')
+    df = anomaly_utilities.group_bools(df)
     df = ARIMA_group(df)
 
     # create new output columns
