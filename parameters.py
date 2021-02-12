@@ -37,7 +37,7 @@ LSTM_params = {
 #########################################
 
 site_params = {
-    'FB': {
+    'FranklinBasin': {
         'temp': {
             'max_range': 13,
             'min_range': -2,
@@ -79,7 +79,7 @@ site_params = {
             'pdq': [0, 1, 5],
         },
     },
-    'TG': {
+    'TonyGrove': {
         'temp': {
             'max_range': 20,
             'min_range': -2,
@@ -121,7 +121,7 @@ site_params = {
             'pdq': [10, 1, 0],
         },
     },
-    'WL': {
+    'WaterLab': {
         'temp': {
             'max_range': 18,
             'min_range': -2,
@@ -163,7 +163,7 @@ site_params = {
             'pdq': [1, 1, 1],
         },
     },
-    'MS': {
+    'MainStreet': {
         'temp': {
             'max_range': 20,
             'min_range': -2,
@@ -205,7 +205,7 @@ site_params = {
             'pdq': [1, 1, 1],
         },
     },
-    'Men': {
+    'Mendon': {
         'temp': {
             'max_range': 28,
             'min_range': -2,
@@ -247,7 +247,7 @@ site_params = {
             'pdq': [10, 1, 3],
         },
     },
-    'BSF': {
+    'BlacksmithFork': {
         'temp': {
             'max_range': 28,
             'min_range': -2,

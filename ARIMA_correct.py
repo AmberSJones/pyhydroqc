@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import anomaly_utilities
 import pmdarima as pm
+import warnings
 
 
 def ARIMA_group(df, min_group_len=20):
@@ -55,7 +56,10 @@ def ARIMA_forecast(x, l):
     Outputs:
     y is an array of length l of the corrected values as predicted by the model
     """
-    model = pm.auto_arima(x)
+    model = pm.auto_arima(x, error_action='ignore', suppress_warnings=True)
+    warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
+    warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
+    warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
     y = model.predict(l)
     return y
 

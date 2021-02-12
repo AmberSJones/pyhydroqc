@@ -35,7 +35,7 @@ def get_data(sites, sensors, years, path=""):
         path = os.getcwd() + "/"
     df_full = pd.DataFrame()
     for yr in years:
-        df_year = pd.read_csv(path + site + yr + ".csv",
+        df_year = pd.read_csv(path + sites + str(yr) + ".csv",
                          skipinitialspace=True,
                          engine='python',
                          header=0,
@@ -284,7 +284,7 @@ def print_metrics(metrics):
     print('F2 = %f' % metrics.f2)
 
 
-def group_bools(df):
+def group_bools(df, column_in, column_out):
     """
     group_bools indexes each grouping of anomalies (1) and normal points (0) as numbered sets.
     Used for anomaly correction.
@@ -294,23 +294,23 @@ def group_bools(df):
     df with additional column: 'group' of boolean groupings
     """
     # initialize the 'group' column to zeros
-    df['group'] = 0
+    df[column_out] = 0
     # initialize placeholder for boolean state of previous group
-    last = df.iloc[0]['detected_event']
+    last = df.iloc[0][column_in]
     # initialize the group index to zero
     gi = 0
 
     # loop over every row in dataframe
-    for i in range(0, len(df['group'])):
+    for i in range(0, len(df[column_out])):
 
         # if the anomaly bool has changed
-        if last != df.iloc[i]['detected_event']:
+        if last != df.iloc[i][column_in]:
             gi += 1  # increment the group index
         # assign this row to the group index
-        df.iloc[i, df.columns.get_loc('group')] = gi
+        df.iloc[i, df.columns.get_loc(column_out)] = gi
 
         # update last boolean state
-        last = df.iloc[i]['detected_event']
+        last = df.iloc[i][column_in]
 
     return df
 

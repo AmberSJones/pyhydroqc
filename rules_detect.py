@@ -142,7 +142,7 @@ def lin_drift_cor(observed, start, end, gap, replace=True):
     """
     todo: ignore -9999 values
     """
-    result = pd.DataFrame(index = observed.loc[start:end].index)
+    result = pd.DataFrame(index=observed.loc[start:end].index)
     result['ldc'] = pd.Series(dtype=float)
     for i in range(len(observed.loc[start:end])):
         #y = original_value[i] - i * gap / total_num_points
