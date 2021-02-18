@@ -5,7 +5,7 @@
 
 import numpy as np
 import pandas as pd
-import anomaly_utilities
+from PyHydroQC import anomaly_utilities
 import pmdarima as pm
 import warnings
 
@@ -155,21 +155,3 @@ def generate_corrections(df):
     df = df.drop('ARIMA_event', 1)
     df = df.drop('ARIMA_group', 1)
     return df
-
-
-df = generate_corrections(df)
-
-
-############ PLOTTING ##############
-
-import matplotlib.pyplot as plt
-plt.figure()
-plt.plot(df['raw'], 'b', label='original data')
-plt.plot(df['cor'], 'c', label='technician corrected')
-plt.plot(df['raw'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
-plt.plot(df['raw'][df['detected_anomaly']], 'r+', mfc='none', label='machine detected anomalies')
-plt.plot(df['det_cor'], 'm', label='determined_corrected')
-plt.legend()
-plt.ylabel(sensor[0])
-plt.show()
-

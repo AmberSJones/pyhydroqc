@@ -8,7 +8,7 @@
 import copy
 import pickle
 import anomaly_utilities
-import model_workflow
+from PyHydroQC import model_workflow
 import rules_detect
 from parameters import site_params
 
@@ -83,8 +83,8 @@ for j in range(0, len(sites)):
         methods_output.ARIMA.append(copy.deepcopy(
             model_workflow.ARIMA_detect(
                 df, sensor[i], site_params[j][i],
-                rules=False, plots=False, summary=False, output=True, site=site
-                )))
+                rules=False, plots=False, summary=False, metrics=True, output=True
+            )))
     print('ARIMA detection complete.\n')
     del df
 
@@ -99,7 +99,7 @@ for j in range(0, len(sites)):
         name = str(site) + '-' + str(sensor[i])
         method_object = model_workflow.LSTM_detect_univar(
             df, sensor[i], site_params[j][i], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+            rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=True
             )
         methods_output.LSTM_univar.append(copy.deepcopy(method_object))
     del df
@@ -113,7 +113,7 @@ for j in range(0, len(sites)):
         name = str(site) + '-' + str(sensor[i])
         method_object = model_workflow.LSTM_detect_univar(
                 df, sensor[i], site_params[j][i], model_type, name,
-                rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+                rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=True
             )
         methods_output.LSTM_univar_bidir.append(copy.deepcopy(method_object))
     del df
@@ -125,7 +125,7 @@ for j in range(0, len(sites)):
     methods_output.LSTM_multivar = \
         model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site,  model_output=False, model_save=True
+            rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=True
             )
 
     # DATA: multivariate,  MODEL: bidirectional #
@@ -134,7 +134,7 @@ for j in range(0, len(sites)):
     methods_output.LSTM_multivar_bidir = \
         model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+            rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=True
             )
 
     # AGGREGATE DETECTIONS #

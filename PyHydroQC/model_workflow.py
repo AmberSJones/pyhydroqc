@@ -15,7 +15,7 @@ class ModelWorkflow:
 
 
 def ARIMA_detect(df, sensor, params,
-                 rules=False, plots=True, summary=True, output=True):
+                 rules=False, plots=True, summary=True, metrics=False, output=True):
     """
     """
     print('\nProcessing ARIMA detections.')
@@ -49,9 +49,10 @@ def ARIMA_detect(df, sensor, params,
     df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], params['widen'])
 
     # DETERMINE METRICS #
-    anomaly_utilities.compare_events(df, params['widen'])
-    metrics = anomaly_utilities.metrics(df)
-    e_metrics = anomaly_utilities.event_metrics(df)
+    if metrics:
+        anomaly_utilities.compare_events(df, params['widen'])
+        metrics = anomaly_utilities.metrics(df)
+        e_metrics = anomaly_utilities.event_metrics(df)
 
     # OUTPUT RESULTS #
     if output:
@@ -86,7 +87,7 @@ def ARIMA_detect(df, sensor, params,
 
 
 def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
-                rules=False, plots=True, summary=True, output=True, model_output=True, model_save=True):
+                rules=False, plots=True, summary=True, metrics=False, output=True, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM univariate ' + str(model_type) + ' detections.')
@@ -143,9 +144,10 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
     df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], params['widen'])
 
     # DETERMINE METRICS #
-    anomaly_utilities.compare_events(df_anomalies, params['widen'])
-    metrics = anomaly_utilities.metrics(df_anomalies)
-    e_metrics = anomaly_utilities.event_metrics(df_anomalies)
+    if metrics:
+        anomaly_utilities.compare_events(df_anomalies, params['widen'])
+        metrics = anomaly_utilities.metrics(df_anomalies)
+        e_metrics = anomaly_utilities.event_metrics(df_anomalies)
 
     # OUTPUT RESULTS #
     if output:
@@ -181,7 +183,7 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
 
 
 def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name,
-                rules = False, plots=True, summary=True, output=True, model_output=True, model_save=True):
+                rules = False, plots=True, summary=True, metrics=False, output=True, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM multivariate ' + str(model_type) + ' detections.')
@@ -264,12 +266,13 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
         all_data[snsr]['detected_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['all_anomalies'], params[snsr]['widen'])
 
     # DETERMINE METRICS #
-    metrics = dict()
-    e_metrics = dict()
-    for snsr in sensors:
-        anomaly_utilities.compare_events(all_data[snsr], params[snsr]['widen'])
-        metrics[snsr] = anomaly_utilities.metrics(all_data[snsr])
-        e_metrics[snsr] = anomaly_utilities.event_metrics(all_data[snsr])
+    if metrics:
+        metrics = dict()
+        e_metrics = dict()
+        for snsr in sensors:
+            anomaly_utilities.compare_events(all_data[snsr], params[snsr]['widen'])
+            metrics[snsr] = anomaly_utilities.metrics(all_data[snsr])
+            e_metrics[snsr] = anomaly_utilities.event_metrics(all_data[snsr])
 
     # OUTPUT RESULTS #
     if output:

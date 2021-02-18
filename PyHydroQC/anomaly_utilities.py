@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-import warnings
 pd.options.mode.chained_assignment = None
 
 
@@ -26,8 +25,6 @@ def get_data(sites, sensors, years, path=""):
     year (list): the year(s) of interest
     path (string): path to .csv file containing the data of interest
     Outputs:
-    df_full (pandas DataFrame): has 3 columns for each variable/sensor in the .csv file
-        column names are in the format: '<sensor>', '<sensor>_cor', '<sensor>_qual'
     sensor_array (array of pandas DataFrames): each data frame has 3 columns for the 
         variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'.
     """
@@ -43,17 +40,19 @@ def get_data(sites, sensors, years, path=""):
                          parse_dates=True,
                          infer_datetime_format=True)
         df_full = pd.concat([df_full, df_year], axis=0)
-    # create data frames with raw, corrected, and labeled data
+    # create data frames with raw, corrected, and labeled data (if the corrected and labeled data exist)
     sensor_array = dict()
     for snsr in sensors:
         df = []
         df = pd.DataFrame(index=df_full.index)
         df['raw'] = df_full[snsr]
-        df['cor'] = df_full[snsr + "_cor"]
-        df['labeled_anomaly'] = ~df_full[snsr + "_qual"].isnull()
+        if df_full[snsr + "_cor"]:
+            df['cor'] = df_full[snsr + "_cor"]
+        if df_full[snsr + "_qual"]:
+            df['labeled_anomaly'] = ~df_full[snsr + "_qual"].isnull()
         sensor_array[snsr] = df
 
-    return df_full, sensor_array
+    return sensor_array
 
 
 def anomaly_events(anomaly, wf=1, sf=0.05):
