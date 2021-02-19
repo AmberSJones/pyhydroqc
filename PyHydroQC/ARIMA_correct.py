@@ -4,30 +4,29 @@
 # This script includes functionality for making corrections using ARIMA regression.
 
 import numpy as np
-import pandas as pd
 from PyHydroQC import anomaly_utilities
 import pmdarima as pm
 import warnings
 
 
-def ARIMA_group(df, min_group_len=20):
+def ARIMA_group(df, anomalies, group, min_group_len=20):
     """Examines detected events and performs conditional widening to ensure
     that widened event is sufficient for forecasting/backcasting.
     df is a data frame with the required columns: 'group' and 'detected_event'
     and returns with new columns: 'ARIMA_event' and 'ARIMA_group'"""
     ARIMA_group = []
-    df['ARIMA_event'] = df['detected_event']
+    df['ARIMA_event'] = df[anomalies]
     new_gi = 0
     merging = False
     # for each group
-    for i in range(0, (max(df['group']) + 1)):
+    for i in range(0, (max(df[group]) + 1)):
         # determine the length of this group
-        group_len = len(df.loc[df['group'] == i]['group'])
+        group_len = len(df.loc[df[group] == i][group])
         # if this group is not an anomaly event and is too small to support an ARIMA model
-        if ((df.loc[df['group'] == i]['detected_event'][0] == 0) and
+        if ((df.loc[df[group] == i][anomalies][0] == 0) and
             (group_len < min_group_len)):
             # this group needs to be added to previous group
-            df.loc[df['group'] == i, 'ARIMA_event'] = 1
+            df.loc[df[group] == i, 'ARIMA_event'] = 1
             if (new_gi > 0):
                 new_gi -= 1
             ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
@@ -42,7 +41,7 @@ def ARIMA_group(df, min_group_len=20):
                 merging = False
                 new_gi += 1
 
-    if (new_gi < (max(df['group'])/2)):
+    if (new_gi < (max(df[group])/2)):
         print("WARNING: more than half of the anomaly events have been merged!")
     df['ARIMA_group'] = ARIMA_group
     return df
@@ -64,8 +63,11 @@ def ARIMA_forecast(x, l):
     return y
 
 
-def generate_corrections(df):
-    """generate_corrections uses passes through data with identified anomalies and determines corrections
+def generate_corrections(df, observed, anomalies):
+    """
+    df has columns for observed and anomalies
+
+    generate_corrections uses passes through data with identified anomalies and determines corrections
     using an ARIMA model. Corrections are determined by combining both a forecast and a backcast in a weighted
     average to be informed by non-anamolous data before and after anomalies.
     df is a data frame with required columns:
@@ -78,11 +80,11 @@ def generate_corrections(df):
     """
 
     # assign group index numbers to each set of consecutiveTrue/False data points
-    df = anomaly_utilities.group_bools(df)
-    df = ARIMA_group(df)
+    df = anomaly_utilities.group_bools(df, column_in=anomalies, column_out='group')
+    df = ARIMA_group(df, anomalies, 'group')
 
     # create new output columns
-    df['det_cor'] = df['raw']
+    df['det_cor'] = df[observed]
     df['corrected'] = df['ARIMA_event']
 
     # while there are anomalous groups of points left to correct
@@ -100,14 +102,14 @@ def generate_corrections(df):
             # forecast in forward direction
             # create an array of corrected data for current anomalous group
             # i-1 is the index of the previous group being used to forecast
-            yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)]['raw']),
+            yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)][observed]),
                                        len(df.loc[df['ARIMA_group'] == i]))
             forecasted = True
         # perform backcasting to generate corrected data points
         if (i != max(df['ARIMA_group'])): # if not at the end
             # forecast in reverse direction
             # data associated with group i+1 gets flipped for making a forecast
-            yrev = ARIMA_forecast(np.flip(np.array(df.loc[df['ARIMA_group'] == (i + 1)]['raw'])),
+            yrev = ARIMA_forecast(np.flip(np.array(df.loc[df['ARIMA_group'] == (i + 1)][observed])),
                                        len(df.loc[df['ARIMA_group'] == i]))
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
@@ -154,4 +156,5 @@ def generate_corrections(df):
     df = df.drop('group', 1)
     df = df.drop('ARIMA_event', 1)
     df = df.drop('ARIMA_group', 1)
+
     return df
