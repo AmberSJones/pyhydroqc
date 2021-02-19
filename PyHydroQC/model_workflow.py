@@ -15,7 +15,7 @@ class ModelWorkflow:
 
 
 def ARIMA_detect(df, sensor, params,
-                 rules=False, plots=True, summary=True, metrics=False, output=True):
+                 rules=False, plots=False, summary=True, compare=False):
     """
     """
     print('\nProcessing ARIMA detections.')
@@ -43,19 +43,17 @@ def ARIMA_detect(df, sensor, params,
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
 
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
-    df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], params['widen'])
     df['detected_anomaly'] = detections['anomaly']
     df['all_anomalies'] = df.eval('detected_anomaly or anomaly')
     df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], params['widen'])
 
-    # DETERMINE METRICS #
-    if metrics:
+    if compare:
+        df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], params['widen'])
+        # DETERMINE METRICS #
         anomaly_utilities.compare_events(df, params['widen'])
         metrics = anomaly_utilities.metrics(df)
         e_metrics = anomaly_utilities.event_metrics(df)
-
-    # OUTPUT RESULTS #
-    if output:
+        # OUTPUT RESULTS #
         print('Model type: ARIMA')
         print('Sensor: ' + sensor)
         anomaly_utilities.print_metrics(metrics)
@@ -80,14 +78,15 @@ def ARIMA_detect(df, sensor, params,
     ARIMA_detect.model_fit = model_fit
     ARIMA_detect.threshold = threshold
     ARIMA_detect.detections = detections
-    ARIMA_detect.metrics = metrics
-    ARIMA_detect.e_metrics = e_metrics
+    if compare:
+        ARIMA_detect.metrics = metrics
+        ARIMA_detect.e_metrics = e_metrics
 
     return ARIMA_detect
 
 
 def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
-                rules=False, plots=True, summary=True, metrics=False, output=True, model_output=True, model_save=True):
+                rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM univariate ' + str(model_type) + ' detections.')
@@ -138,19 +137,17 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
         df_anomalies = df.iloc[ts:]
     else:
         df_anomalies = df.iloc[ts:-ts]
-    df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'], params['widen'])
     df_anomalies['detected_anomaly'] = detections['anomaly']
     df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
     df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], params['widen'])
 
-    # DETERMINE METRICS #
-    if metrics:
+    if compare:
+        df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'], params['widen'])
+        # DETERMINE METRICS #
         anomaly_utilities.compare_events(df_anomalies, params['widen'])
         metrics = anomaly_utilities.metrics(df_anomalies)
         e_metrics = anomaly_utilities.event_metrics(df_anomalies)
-
-    # OUTPUT RESULTS #
-    if output:
+        # OUTPUT RESULTS #
         print('Model type: LSTM univariate ' + str(model_type))
         print('Sensor: ' + sensor)
         anomaly_utilities.print_metrics(metrics)
@@ -176,14 +173,15 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
     LSTM_detect_univar.threshold = threshold
     LSTM_detect_univar.detections = detections
     LSTM_detect_univar.df_anomalies = df_anomalies
-    LSTM_detect_univar.metrics = metrics
-    LSTM_detect_univar.e_metrics = e_metrics
+    if compare:
+        LSTM_detect_univar.metrics = metrics
+        LSTM_detect_univar.e_metrics = e_metrics
 
     return LSTM_detect_univar
 
 
 def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name,
-                rules = False, plots=True, summary=True, metrics=False, output=True, model_output=True, model_save=True):
+                rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
     print('\nProcessing LSTM multivariate ' + str(model_type) + ' detections.')
@@ -260,23 +258,20 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
             all_data[snsr] = sensor_array[snsr].iloc[ts:]
         else:
             all_data[snsr] = sensor_array[snsr].iloc[ts:-ts]
-        all_data[snsr]['labeled_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['labeled_anomaly'], params[snsr]['widen'])
         all_data[snsr]['detected_anomaly'] = detections[snsr]['anomaly']
         all_data[snsr]['all_anomalies'] = all_data[snsr].eval('detected_anomaly or anomaly')
         all_data[snsr]['detected_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['all_anomalies'], params[snsr]['widen'])
 
-    # DETERMINE METRICS #
-    if metrics:
+    # COMPARE AND DETERMINE METRICS #
+    if compare:
         metrics = dict()
         e_metrics = dict()
         for snsr in sensors:
+            all_data[snsr]['labeled_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['labeled_anomaly'], params[snsr]['widen'])
             anomaly_utilities.compare_events(all_data[snsr], params[snsr]['widen'])
             metrics[snsr] = anomaly_utilities.metrics(all_data[snsr])
             e_metrics[snsr] = anomaly_utilities.event_metrics(all_data[snsr])
-
-    # OUTPUT RESULTS #
-    if output:
-        for snsr in sensors:
+        # OUTPUT RESULTS #
             print('\nModel type: LSTM multivariate ' + str(model_type))
             print('Sensor: ' + snsr)
             anomaly_utilities.print_metrics(metrics[snsr])
@@ -306,7 +301,8 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
     LSTM_detect_multivar.threshold = threshold
     LSTM_detect_multivar.detections = detections
     LSTM_detect_multivar.all_data = all_data
-    LSTM_detect_multivar.metrics = metrics
-    LSTM_detect_multivar.e_metrics = e_metrics
+    if compare:
+        LSTM_detect_multivar.metrics = metrics
+        LSTM_detect_multivar.e_metrics = e_metrics
 
     return LSTM_detect_multivar
