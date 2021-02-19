@@ -17,4 +17,14 @@ For full documentation visit [mkdocs.org](https://www.mkdocs.org).
         ...       # Other markdown pages, images and other files.
         
         
-:::PyHydroQC.ARIMA_correct.generate_corrections
+:::PyHydroQC.anomaly_utilities.get_data
+:::PyHydroQC.anomaly_utilities.anomaly_events
+:::PyHydroQC.anomaly_utilities.assign_cm
+:::PyHydroQC.anomaly_utilities.compare_events
+:::PyHydroQC.anomaly_utilities.metrics
+:::PyHydroQC.anomaly_utilities.event_metrics
+:::PyHydroQC.anomaly_utilities.print_metrics
+:::PyHydroQC.anomaly_utilities.group_bools
+:::PyHydroQC.anomaly_utilities.xfade
+:::PyHydroQC.anomaly_utilities.anomaly_events
+

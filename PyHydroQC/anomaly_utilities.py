@@ -449,7 +449,7 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
     return detected_anomaly
 
 
-def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidir_uni, results_LSTM_van_multi, results_LSTM_bidir_multi):
+def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidir_uni, results_LSTM_van_multi, results_LSTM_bidir_multi, compare=False):
     """
     Each results input argument is a dataframe with the column 'detected_event'.
     """
@@ -461,10 +461,12 @@ def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidi
     results_all['LSTM_bidir_multi'] = results_LSTM_bidir_multi['detected_event'] > 0
 
     results_all['detected_event'] = results_all.eval('ARIMA or LSTM_van_uni or LSTM_bidir_uni or LSTM_van_multi or LSTM_bidir_multi')
-    results_all['labeled_anomaly'] = df['labeled_anomaly']
-    results_all['labeled_event'] = anomaly_events(results_all['labeled_anomaly'], wf=1)
-    compare_events(results_all, wf=1)
-    metrics_all = metrics(results_all)
+
+    if compare:
+        results_all['labeled_anomaly'] = df['labeled_anomaly']
+        results_all['labeled_event'] = anomaly_events(results_all['labeled_anomaly'], wf=1)
+        compare_events(results_all, wf=1)
+        metrics_all = metrics(results_all)
 
     return results_all, metrics_all
 

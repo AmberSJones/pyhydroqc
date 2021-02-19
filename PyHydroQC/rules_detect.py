@@ -4,9 +4,9 @@
 # This script includes functionality for rules based anomaly detection and preprocessing.
 # Functions include range check, persistence check, and linear interpolation for correction.
 
-import numpy as np
-import anomaly_utilities
+from PyHydroQC import anomaly_utilities
 import pandas as pd
+import numpy as np
 
 
 def range_check(df, maximum, minimum):
