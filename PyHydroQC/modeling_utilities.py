@@ -42,7 +42,7 @@ def build_arima_model(data, p, d, q, summary):
     predict = model_fit.get_prediction()
     predictions = pd.DataFrame(predict.predicted_mean)
     residuals[0][0] = 0
-    predictions[0][0] = data[0]
+    predictions.predicted_mean[0] = data[0]
 
     # output summary
     if summary:

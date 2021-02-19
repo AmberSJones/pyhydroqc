@@ -18,7 +18,7 @@ import pandas as pd
 site = 'MainStreet'
 sensors = ['temp', 'cond', 'ph', 'do']
 years = [2014, 2015, 2016, 2017, 2018, 2019]
-df_full, sensor_array = anomaly_utilities.get_data(site, sensors, years, path="LRO_data/")
+sensor_array = anomaly_utilities.get_data(site, sensors, years, path="LRO_data/")
 
 #### Rules Based Anomaly Detection
 #########################################
@@ -37,7 +37,8 @@ for snsr in sensor_array:
     # size.append(s)
     # print(str(snsr) + ' longest detected group = ' + str(size))
 
-    # metrics for rules based detection #
+# metrics for rules based detection #
+for snsr in sensor_array:
     df_rules_metrics = sensor_array[snsr]
     df_rules_metrics['labeled_event'] = anomaly_utilities.anomaly_events(df_rules_metrics['labeled_anomaly'], wf=0)
     df_rules_metrics['detected_event'] = anomaly_utilities.anomaly_events(df_rules_metrics['anomaly'], wf=0)
@@ -67,14 +68,18 @@ calib_dates = dict()
 for cal_snsr in calib_sensors:
     calib_dates[cal_snsr] = \
         pd.read_csv('LRO_data/' + site + '_' + cal_snsr + '_calib_dates.csv', header=1, parse_dates=True, infer_datetime_format=True)
+    calib_dates[cal_snsr]['start'] = pd.to_datetime(calib_dates[cal_snsr]['start'])
+    calib_dates[cal_snsr]['end'] = pd.to_datetime(calib_dates[cal_snsr]['end'])
+    calib_dates[cal_snsr] = calib_dates[cal_snsr].loc[(calib_dates[cal_snsr]['start'] > min(sensor_array[cal_snsr].index)) &
+                                                      (calib_dates[cal_snsr]['start'] < max(sensor_array[cal_snsr].index))]
 
-    for i in range(0, len(calib_dates[cal_snsr])):
+    for i in range(min(calib_dates[cal_snsr].index), max(calib_dates[cal_snsr].index)):
         result, sensor_array[cal_snsr]['observed'] = rules_detect.lin_drift_cor(
-                sensor_array[cal_snsr]['observed'],
-                calib_dates[cal_snsr]['start'][i],
-                calib_dates[cal_snsr]['end'][i],
-                calib_dates[cal_snsr]['gap'][i],
-                replace=True)
+                                                        sensor_array[cal_snsr]['observed'],
+                                                        calib_dates[cal_snsr]['start'][i],
+                                                        calib_dates[cal_snsr]['end'][i],
+                                                        calib_dates[cal_snsr]['gap'][i],
+                                                        replace=True)
 
 #### Model Based Anomaly Detection
 #########################################
@@ -86,7 +91,7 @@ ARIMA = dict()
 for snsr in sensors:
     ARIMA[snsr] = model_workflow.ARIMA_detect(
             sensor_array[snsr], snsr, site_params[site][snsr],
-            rules=False, plots=False, summary=False, metrics=True, output=True)
+            rules=False, plots=False, summary=False, compare=True)
 print('ARIMA detection complete.\n')
 
 ##### LSTM Detection
@@ -99,7 +104,7 @@ for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(
             sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, model_type, name,
-            rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=False)
+            rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ###### DATA: univariate,  MODEL: bidirectional
 
@@ -109,7 +114,7 @@ for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
             sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, model_type, name,
-            rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=False
+            rules=False, plots=False, summary=False,compare=True, model_output=False, model_save=False
         )
 
 ###### DATA: multivariate,  MODEL: vanilla
@@ -118,7 +123,7 @@ model_type = 'vanilla'
 name = site
 LSTM_multivar = model_workflow.LSTM_detect_multivar(
         sensor_array, sensors, site_params[site], LSTM_params, model_type, name,
-        rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=False)
+        rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
 
@@ -126,7 +131,7 @@ model_type = 'bidirectional'
 name = site
 LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
         sensor_array, sensors, site_params[site], LSTM_params, model_type, name,
-        rules=False, plots=False, summary=False, metrics=True, output=True, model_output=False, model_save=False)
+        rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ##### Aggregate Detections for All Models
 #########################################
@@ -134,14 +139,14 @@ LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
 aggregate_results = dict()
 aggregate_metrics = dict()
 for snsr in sensors:
-    results_all, metrics = anomaly_utilities.aggregate_results(
-            sensor_array[snsr],
-            ARIMA[snsr].df,
-            LSTM_univar[snsr].df_anomalies,
-            LSTM_univar_bidir[snsr].df_anomalies,
-            LSTM_multivar.all_data[snsr],
-            LSTM_multivar_bidir.all_data[snsr]
-        )
+    models = dict()
+    models['ARIMA'] = ARIMA[snsr].df
+    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
+    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
+    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
+    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+
+    results_all, metrics = anomaly_utilities.aggregate_results(sensor_array[snsr],models, verbose=True, compare=True)
     print('\nOverall metrics')
     print('Sensor: ' + snsr)
     anomaly_utilities.print_metrics(metrics)
