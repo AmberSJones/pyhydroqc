@@ -18,8 +18,7 @@ pd.options.mode.chained_assignment = None
 
 def get_data(sites, sensors, years, path=""):
     """
-    get_data imports a single year of data based on files named by site, sensor/variable, and year.
-        Includes labeling of data as anomalous.
+    get_data imports a single year of data based on csv files named by site, sensor/variable, and year. File naming s
     site (string): name of the data collection site
     sensor (list): name(s) of the sensor/variable data of interest
     year (list): the year(s) of interest
@@ -46,9 +45,9 @@ def get_data(sites, sensors, years, path=""):
         df = []
         df = pd.DataFrame(index=df_full.index)
         df['raw'] = df_full[snsr]
-        if df_full[snsr + "_cor"]:
+        if snsr + "_cor" in df_full.columns:
             df['cor'] = df_full[snsr + "_cor"]
-        if df_full[snsr + "_qual"]:
+        if snsr + "_qual" in df_full.columns:
             df['labeled_anomaly'] = ~df_full[snsr + "_qual"].isnull()
         sensor_array[snsr] = df
 
@@ -449,26 +448,19 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
     return detected_anomaly
 
 
-def aggregate_results(df, results_ARIMA, results_LSTM_van_uni, results_LSTM_bidir_uni, results_LSTM_van_multi, results_LSTM_bidir_multi, verbose=False, compare=False):
+def aggregate_results(df, models, verbose=False, compare=False):
     """
     Each results input argument is a dataframe with the column 'detected_event'.
     """
-    results_all = pd.DataFrame(index=results_ARIMA.index)
+    results_all = pd.DataFrame(index=df.index)
+    for model in models:
+        results_all[model] = models[model]['detected_event'] > 0
+    results_all['detected_event'] = results_all.any(axis=1)
     results_all['observed'] = df['observed']
-    results_all['ARIMA'] = results_ARIMA['detected_event'] > 0
-    results_all['LSTM_van_uni'] = results_LSTM_van_uni['detected_event'] > 0
-    results_all['LSTM_bidir_uni'] = results_LSTM_bidir_uni['detected_event'] > 0
-    results_all['LSTM_van_multi'] = results_LSTM_van_multi['detected_event'] > 0
-    results_all['LSTM_bidir_multi'] = results_LSTM_bidir_multi['detected_event'] > 0
-
-    results_all['detected_event'] = results_all.eval('ARIMA or LSTM_van_uni or LSTM_bidir_uni or LSTM_van_multi or LSTM_bidir_multi')
 
     if ~verbose:
-        results_all = results_all.drop('ARIMA', 1)
-        results_all = results_all.drop('LSTM_van_uni', 1)
-        results_all = results_all.drop('LSTM_bidir_uni', 1)
-        results_all = results_all.drop('LSTM_van_multi', 1)
-        results_all = results_all.drop('LSTM_bidir_multi', 1)
+        for model in models:
+            results_all = results_all.drop(model, 1)
 
     if compare:
         results_all['labeled_anomaly'] = df['labeled_anomaly']

@@ -1,4 +1,11 @@
-site_name: PyHydroQC Documentation
+site_name: pyhydroqc Documentation
+
+theme:
+  name: 'readthedocs'
 
 plugins:
   - mkdocstrings
+  - search
+
+markdown_extensions:
+  - tables
