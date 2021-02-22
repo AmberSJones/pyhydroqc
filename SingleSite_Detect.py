@@ -114,8 +114,7 @@ for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
             sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, model_type, name,
-            rules=False, plots=False, summary=False,compare=True, model_output=False, model_save=False
-        )
+            rules=False, plots=False, summary=False,compare=True, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: vanilla
 
@@ -145,8 +144,7 @@ for snsr in sensors:
     models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
     models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
     models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
-
-    results_all, metrics = anomaly_utilities.aggregate_results(sensor_array[snsr],models, verbose=True, compare=True)
+    results_all, metrics = anomaly_utilities.aggregate_results(sensor_array[snsr], models, verbose=True, compare=True)
     print('\nOverall metrics')
     print('Sensor: ' + snsr)
     anomaly_utilities.print_metrics(metrics)
@@ -202,4 +200,7 @@ print('Finished saving output.')
 #### Correction
 #########################################
 
-df = ARIMA_correct.generate_corrections(sensor_array['do'])
+corrections = dict()
+for snsr in sensors:
+    df = ARIMA_correct.generate_corrections(aggregate_results[snsr], 'observed', 'detected_event')
+    corrections[snsr] = df

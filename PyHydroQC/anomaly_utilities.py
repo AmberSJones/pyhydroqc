@@ -1,12 +1,12 @@
 ################################
 # ANOMALY UTILITIES #
 ################################
-# This code includes utilities for performing anomaly detection.
+# This file includes utilities for performing anomaly detection.
 # A function is defined for accessing data.
 # Functions are defined for determining events and comparing them to events in labeled data.
 # A windowing function widens the window of anomaly detection.
 # A metrics function compares detection compared to labeled data and outputs performance metrics.
-# Threshold functions dvelop either a constant threshold or a dynamic threshold based on model residuals.
+# Threshold functions develop either a constant threshold or a dynamic threshold based on model residuals.
 
 import os
 import numpy as np
@@ -16,22 +16,24 @@ from scipy.stats import norm
 pd.options.mode.chained_assignment = None
 
 
-def get_data(sites, sensors, years, path=""):
+def get_data(site, sensors, years, path=""):
     """
-    get_data imports a single year of data based on csv files named by site, sensor/variable, and year. File naming s
-    site (string): name of the data collection site
-    sensor (list): name(s) of the sensor/variable data of interest
-    year (list): the year(s) of interest
-    path (string): path to .csv file containing the data of interest
+    TODO: option to specify file name
+    get_data imports time series data from csv files. Files must be named by site and year (e.g. "MainStreet2014.csv").
+    Files should have columns corresponding to each sensor. If technician labels and corrections exist, they may be imported by naming columns sensor_cor and labeled_anomaly.
+    Inputs:
+    : param site (string): name of the data collection site
+    : param sensor (list): name(s) of the sensor/variable data of interest. These must be the column names in data file(s).
+    : param year (list): the year(s) of interest
+    : param path (string): path to .csv files containing the data of interest
     Outputs:
-    sensor_array (array of pandas DataFrames): each data frame has 3 columns for the 
-        variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'.
+    : param sensor_array (array of pandas DataFrames): each data frame has 3 columns for the variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'.
     """
-    if path == "":
-        path = os.getcwd() + "/"
-    df_full = pd.DataFrame()
-    for yr in years:
-        df_year = pd.read_csv(path + sites + str(yr) + ".csv",
+    if path == "":  # use default directory when none is provided
+        path = os.getcwd() + "/"  # default directory is ./
+    df_full = pd.DataFrame()  # start with empty dataframe and concatenate each file
+    for yr in years:  # loop over each file
+        df_year = pd.read_csv(path + site + str(yr) + ".csv",
                          skipinitialspace=True,
                          engine='python',
                          header=0,
@@ -39,16 +41,19 @@ def get_data(sites, sensors, years, path=""):
                          parse_dates=True,
                          infer_datetime_format=True)
         df_full = pd.concat([df_full, df_year], axis=0)
+
     # create data frames with raw, corrected, and labeled data (if the corrected and labeled data exist)
     sensor_array = dict()
     for snsr in sensors:
         df = []
         df = pd.DataFrame(index=df_full.index)
         df['raw'] = df_full[snsr]
-        if snsr + "_cor" in df_full.columns:
-            df['cor'] = df_full[snsr + "_cor"]
+
+        # if corrected data is available in dataset
+        if snsr + '_cor' in df_full.columns:
+            df['cor'] = df_full[snsr + '_cor']
         if snsr + "_qual" in df_full.columns:
-            df['labeled_anomaly'] = ~df_full[snsr + "_qual"].isnull()
+            df['labeled_anomaly'] = ~df_full[snsr + '_qual'].isnull()
         sensor_array[snsr] = df
 
     return sensor_array
@@ -56,16 +61,16 @@ def get_data(sites, sensors, years, path=""):
 
 def anomaly_events(anomaly, wf=1, sf=0.05):
     """
-    anomaly_events searches through data and counts groups of immediately consecutively labeled data points
-        as anomalous events. Input to the windowing function.
-    anomaly (boolean array): labeled or detected anomalies where True (1) = anomalous data point.
+    anomaly_events groups consecutively labeled data points as anomalous events by adding an index. Events may also be widened.
+    Inputs:
+    : param anomaly (boolean series): labeled or detected anomalies where True (1) = anomalous data point.
         e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 1 1 1 1
-    wf (assumed to be a positive integer): a widening factor that is used to determine how much to widen each event
-        before and after the true values. Default =1 adds a single point to be anomalous before/after the labeled point.
-    sf (assumed to be a ratio between 0.0-1.0): a significance factor - used to warn user when an event size is greater
+    : param wf (positive integer): a widening factor that is used to determine how much to widen each event
+        before and after the true values. Default = 1 adds a single anomalous point before/after the labeled point.
+    : param sf (ratio between 0.0-1.0): a significance factor used to warn user when an event size is greater
         than this ratio compared to the entire data set. Default = 0.05 = 5%.
     Outputs:
-    event (integer array): enumerated event labels corresponding to each widened group of consecutive anomalous points.
+    event (integer series): enumerated event labels corresponding to each widened group of consecutive anomalous points.
         e.g., 0 0 0 1 1 1 1 1 1 0 0 0 0 0 2 2 2 2 2 0 3 3 3 0 4 4 4 4 4
     """
     # initialize event variables
@@ -101,13 +106,13 @@ def anomaly_events(anomaly, wf=1, sf=0.05):
 
 def assign_cm(val, len, wf):
     """
-    assign_cm is a small helper function used in compare_events
-    inputs:
-    val is a string value to specify which area of the confusion matrix this point belongs to: 'tp', 'fp', or 'fn'
-    len is how long the total array should be
-    wf determines how many points should be turned into 'tn' on both edges of the array
-    output:
-    cm is an array of length len, with wf 'tn's at the beginning and the end filed with val in between
+    assign_cm is a simple helper function used in compare_events
+    Inputs:
+    : param val (string): value to specify which area of the confusion matrix this point belongs to: 'tp', 'fp', or 'fn'
+    : param len: how long the total array should be
+    : param wf (integer): widening factor that determines how many points should be turned into 'tn' on both edges of the array
+    Output:
+    : param cm: series of length len, with wf 'tn' at the beginning and the end filed with val in between
     """
     cm = ['tn' for i in range(len)]
     for i in range(wf, len-wf):
@@ -119,15 +124,17 @@ def compare_events(df, wf=1):
     """
     compare_events compares anomalous events that are technician labeled and machine detected.
     Labeled and detected data may have been widened to increase the window of overlap.
-    wf is the widening factor used when generating events
-    df is a data frame with required columns:
-    'labeled_anomaly': array of booleans based on expert labeled anomalies.
-    'detected_anomaly': array of machine detected anomaly booleans based on modelling.
-    'labeled_event': array of numbered events based on expert labeled anomalies.
-    'detected_event': array of numbered events based on machine detected anomalies.
+    Inputs:
+    : param wf (integer): widening factor used when generating events
+    : param df: data frame with required columns:
+        'labeled_anomaly': series of booleans based on expert labeled anomalies.
+        'detected_anomaly': series of machine detected anomaly booleans based on modeling.
+        'labeled_event': series of numbered events based on expert labeled anomalies (output of anomaly_events function).
+        'detected_event': series of numbered events based on machine detected anomalies (output of anomaly_events function).
     Outputs:
-    'grp': a new column representing the indices of event groups.
-    'conf_mtx': a new column that gives the confusion matrix value for each data point.
+    : param df: orginal data frame with additional columns:
+        'grp': a new column representing the indices of event groups.
+        'conf_mtx': a new column that gives the confusion matrix value for each data point.
     """
 
     # initialize variables
@@ -180,7 +187,8 @@ def compare_events(df, wf=1):
         prev_gi = grp_idx
 
     df = df.drop(columns='grp')  # delete group index column
-    return
+
+    return df
 
 
 class MetricsContainer:
@@ -189,20 +197,22 @@ class MetricsContainer:
 
 def metrics(df):
     """
-    metrics evaluates detector performance by comparing machine detected anomalies to technician labeled anomalies.
-    df is a data frame with required columns:
-    'conf_mtx': strings representing where in a confusion matrix the data point belongs
+    metrics evaluates the performance of anomaly detection by comparing detected anomalies to technician labeled anomalies.
+    Output is contained in an object of the class MetricsContainer.
+    Inputs:
+    : param df: data frame with required column:
+        'conf_mtx': strings corresponding to confusion matrix categories: tp, tn, fp, fn
     Outputs:
-    true_positives is the count of data points from valid detections.
-    false_negatives is the count of data points from missed events.
-    false_positives is the count of data points from incorrect detections.
-    true_negatives is the count of valid undetected data.
-    prc is the precision of detections.
-    npv is negative predicted value.
-    acc is accuracy of detections.
-    rcl is recall of detections.
-    f1 is a statistic that balances true positives and false negatives.
-    f2 is a statistic that gives more weight to true positives.
+    : param true_positives: count of data points from valid detections.
+    : param false_negatives: count of data points from missed events.
+    : param false_positives: count of data points from incorrect detections.
+    : param true_negatives: count of valid undetected data.
+    : param prc: is the precision of detections.
+    : param npv: negative predicted value.
+    : param acc: accuracy of detections.
+    : param rcl: recall of detections.
+    : param f1: statistic that balances true positives and false negatives.
+    : param f2: statistic that gives more weight to true positives.
     """
     metrics = MetricsContainer()
     metrics.true_positives = len(df['conf_mtx'][df['conf_mtx'] == 'tp'])
@@ -222,20 +232,20 @@ def metrics(df):
 
 def event_metrics(df):
     """
-    event_metrics is used to calculate an alternative set of metrics where every event
-    is treated with equal weight regardless of its size.
-    df is a data frame with required columns:
-    'conf_mtx': strings representing where in a confusion matrix the data point belongs
+    event_metrics calculates an alternative set of metrics where every event is treated with equal weight regardless of its size.
+    Input:
+    : param df: data frame with required columns:
+        'conf_mtx': strings corresponding to confusion matrix categories: tp, tn, fp, fn
     Outputs:
-    true_positives is the count of valid detection events.
-    false_negatives is the count of missed events.
-    false_positives is the count of incorrect detections.
-    prc is the precision of detections.
-    npv is negative predicted value.
-    acc is accuracy of detections.
-    rcl is recall of detections.
-    f1 is a statistic that balances true positives and false negatives.
-    f2 is a statistic that gives more weight to true positives.
+    : param true_positives: count of valid detection events.
+    : param false_negatives: count of missed events.
+    : param false_positives: count of incorrect detections.
+    : param prc: precision of detections.
+    : param npv: negative predicted value.
+    : param acc: accuracy of detections.
+    : param rcl: recall of detections.
+    : param f1: statistic that balances true positives and false negatives.
+    : param f2: statistic that gives more weight to true positives.
     """
     metrics = MetricsContainer()
     tp_events = 0
@@ -284,12 +294,14 @@ def print_metrics(metrics):
 
 def group_bools(df, column_in, column_out):
     """
-    group_bools indexes each grouping of anomalies (1) and normal points (0) as numbered sets.
+    group_bools indexes each grouping of anomalies (1) and valid points (0) as numbered sets.
     Used for anomaly correction.
-    df is a data frame with required column:
-    'detected_event': boolean array of classified data points
+    Inputs:
+    : param df: data frame with required columns:
+        'detected_event': boolean array of classified data points
     Outputs:
-    df with additional column: 'group' of boolean groupings
+    : param df: original data frame with additional column:
+        'group' containing an index of boolean groupings
     """
     # initialize the 'group' column to zeros
     df[column_out] = 0
@@ -316,10 +328,11 @@ def group_bools(df, column_in, column_out):
 def xfade(xfor, xbac):
     """
     xfade ("cross-fade") blends two data sets of matching length with a ramp function (weighted average).
-    xfor is the data to be more weighted at the front
-    xbac is the data to be more weighted at the back
+    Inputs:
+    : param xfor: forecasted data to be more weighted at the front
+    : param xbac: backcasted data to be more weighted at the back
     Outputs:
-    x is the blended data
+    : param x: the blended data
     """
     # if arrays are not matching in length
     if (len(xfor) != len(xbac)):
@@ -350,13 +363,14 @@ def xfade(xfor, xbac):
 def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
     """
     set_dynamic_threshold determines a threshold for each point based on the local confidence interval
-    considering the model residuals looking forward and backward window_sz steps.
-    residuals is a series like object or a data frame.
-    alpha is a scalar between 0 and 1 representing the acceptable uncertainty.
-    window_sz is an integer representing how many data points to use in both directions.
+    considering the model residuals looking forward and backward a specified number of steps.
+    Inputs:
+    : param residuals: series like object or a data frame of model residuals.
+    : param alpha: scalar between 0 and 1 representing the acceptable uncertainty.
+    : param window_sz: integer representing how many data points to use in both directions.
         default = 96 for one day for 15-minute data.
     Outputs:
-    threshold is data frame of pairs of low and high values.
+    : param threshold: data frame of columns of low and high threshold values.
     """
     threshold = []  # initialize empty list to hold thresholds
     z = norm.ppf(1 - alpha / 2)
@@ -394,10 +408,11 @@ def set_dynamic_threshold(residuals, window_sz=96, alpha=0.01, min_range=0.0):
 def set_cons_threshold(model_fit, alpha_in):
     """
     set_cons_threshold determines a threshold based on confidence interval and specified alpha for an ARIMA model.
-    model_fit is a SARIMAX model object.
-    alpha_in is a scalar between 0 and 1 representing the acceptable uncertainty.
+    Inputs:
+    : param model_fit: SARIMAX model object.
+    : param alpha_in: scalar between 0 and 1 representing the acceptable uncertainty.
     Outputs:
-    threshold is a single value.
+    : param threshold: single value.
     """
     predict = model_fit.get_prediction()
     predict_ci = predict.conf_int(alpha=alpha_in)
@@ -412,16 +427,17 @@ def set_cons_threshold(model_fit, alpha_in):
     return threshold
 
 
-def detect_anomalies(observed, predictions, residuals, threshold, summary):
+def detect_anomalies(observed, predictions, residuals, threshold, summary=True):
     """
     detect_anomalies compares model residuals to thresholds to determine which points are anomalous.
-    observed is a data frame or series of the observed data.
-    predictions are a series of model predictions.
-    residuals are a series of model residuals.
-    threshold is a data frame with the columns 'lower' and 'upper' corresponding to the acceptable range of the residual.
+    Inputs:
+    : param observed: data frame or series of observed data.
+    : param predictions: series of model predictions.
+    : param residuals: series of model residuals.
+    : param threshold: data frame with the columns 'lower' and 'upper' corresponding to the acceptable range of the residual.
+    : param summary: if True, will print the ratio of detections.
     Outputs:
-    detections is a data frame with observations, predictions, residuals, anomalies,
-        a boolean where True (1) = anomalous data point
+    : param detections: data frame with columns for observations, predictions, residuals, anomalies (boolean where True (1) = anomalous data point)
     """
     detections = pd.DataFrame(observed)
     detections['prediction'] = np.array(predictions)
@@ -436,9 +452,17 @@ def detect_anomalies(observed, predictions, residuals, threshold, summary):
     return detections
 
 
-def detect_dyn_anomalies(residuals, threshold, summary=True):
-    """Compares residuals to threshold to identify anomalies. Can use set threshold level or threshold
-    determined by set_threshold function."""
+def detect_anomalies_cons(residuals, threshold, summary=True):
+    """Compares residuals to a constant threshold to identify anomalies. Can use set threshold level or threshold
+    determined by set_cons_threshold function.
+    Inputs:
+    : param residuals: series of model residuals.
+    : param threshold: constant threshold value.
+    : param summary: if True, will print the ratio of detections.
+    Outputs:
+    : param detected_anomaly: boolean series where True (1) = anomalous data point
+
+    """
     # DETERMINE ANOMALIES
     detected_anomaly = (residuals[0] < threshold['low']) | (threshold['high'] < residuals[0])  # gives bools
     # output summary
@@ -450,7 +474,17 @@ def detect_dyn_anomalies(residuals, threshold, summary=True):
 
 def aggregate_results(df, models, verbose=False, compare=False):
     """
-    Each results input argument is a dataframe with the column 'detected_event'.
+    aggregate_results combines the assessments of detections from multiple models to give a single output of anomalies.
+    If any model detects an anomaly, the point is labeled as anomalous.
+    Inputs:
+    : param df: data frame with required column 'observed' of observed data values.
+    : param models: dictionary of model outputs consisting of dataframes with the required column 'detected_event' of booleans indicating anomalies.
+    : verbose: if True, includes columns for each model type in the output.
+    : compare: if True, includes columns for technician labeled anomalies and labeled events in the output (as gathered from the input df) for determination of metrics.
+    Outputs:
+    : param results_all: data frame containing columns 'detected_event' of booleans representing anomalies aggregated from all of the models and 'observed' of observed values.
+        Additional columns are added if verbose and compare options are selected.
+    : param: metrics_all: if compare is selected, then metrics are output for the aggregate anomalies.
     """
     results_all = pd.DataFrame(index=df.index)
     for model in models:
