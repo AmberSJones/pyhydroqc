@@ -20,14 +20,16 @@ def get_data(site, sensors, years, path=""):
     """
     TODO: option to specify file name
     get_data imports time series data from csv files. Files must be named by site and year (e.g. "MainStreet2014.csv").
-    Files should have columns corresponding to each sensor. If technician labels and corrections exist, they may be imported by naming columns sensor_cor and labeled_anomaly.
-    Inputs:
-    : param site (string): name of the data collection site
-    : param sensor (list): name(s) of the sensor/variable data of interest. These must be the column names in data file(s).
-    : param year (list): the year(s) of interest
-    : param path (string): path to .csv files containing the data of interest
-    Outputs:
-    : param sensor_array (array of pandas DataFrames): each data frame has 3 columns for the variable/sensor of interest: 'raw', 'cor', 'labeled_anomaly'.
+    Files should have columns corresponding to each sensor. If technician labels and corrections exist, they may be
+    imported by naming columns sensor_cor and labeled_anomaly.
+    Arguments
+        site: string of name of the data collection site
+        sensor: list of name(s) of the sensor/variable data of interest. These must be the column names in data file(s).
+        year: list of the year(s) of interest
+        path: path to .csv files containing the data of interest
+    Returns
+        sensor_array: array of pandas DataFrames, each with 3 columns for the variable/sensor of interest:
+        'raw', 'cor', 'labeled_anomaly'.
     """
     if path == "":  # use default directory when none is provided
         path = os.getcwd() + "/"  # default directory is ./
@@ -61,7 +63,8 @@ def get_data(site, sensors, years, path=""):
 
 def anomaly_events(anomaly, wf=1, sf=0.05):
     """
-    anomaly_events groups consecutively labeled data points as anomalous events by adding an index. Events may also be widened.
+    anomaly_events groups consecutively labeled data points as anomalous events by adding an index.
+    Events may also be widened.
     Inputs:
     : param anomaly (boolean series): labeled or detected anomalies where True (1) = anomalous data point.
         e.g., 0 0 0 0 1 1 1 1 0 0 0 0 0 0 0 1 1 1 0 0 0 1 0 0 0 1 1 1 1
@@ -110,7 +113,7 @@ def assign_cm(val, len, wf):
     Inputs:
     : param val (string): value to specify which area of the confusion matrix this point belongs to: 'tp', 'fp', or 'fn'
     : param len: how long the total array should be
-    : param wf (integer): widening factor that determines how many points should be turned into 'tn' on both edges of the array
+    : param wf (integer): widening factor that determines how many points should be turned into 'tn' on both edges
     Output:
     : param cm: series of length len, with wf 'tn' at the beginning and the end filed with val in between
     """
@@ -129,8 +132,10 @@ def compare_events(df, wf=1):
     : param df: data frame with required columns:
         'labeled_anomaly': series of booleans based on expert labeled anomalies.
         'detected_anomaly': series of machine detected anomaly booleans based on modeling.
-        'labeled_event': series of numbered events based on expert labeled anomalies (output of anomaly_events function).
-        'detected_event': series of numbered events based on machine detected anomalies (output of anomaly_events function).
+        'labeled_event': series of numbered events based on expert labeled anomalies
+        (output of anomaly_events function).
+        'detected_event': series of numbered events based on machine detected anomalies
+        (output of anomaly_events function).
     Outputs:
     : param df: orginal data frame with additional columns:
         'grp': a new column representing the indices of event groups.
@@ -197,7 +202,7 @@ class MetricsContainer:
 
 def metrics(df):
     """
-    metrics evaluates the performance of anomaly detection by comparing detected anomalies to technician labeled anomalies.
+    metrics evaluates the performance of anomaly detection comparing detected anomalies to technician labeled anomalies.
     Output is contained in an object of the class MetricsContainer.
     Inputs:
     : param df: data frame with required column:
@@ -232,7 +237,8 @@ def metrics(df):
 
 def event_metrics(df):
     """
-    event_metrics calculates an alternative set of metrics where every event is treated with equal weight regardless of its size.
+    event_metrics calculates an alternative set of metrics where every event is treated with equal weight
+    regardless of size.
     Input:
     : param df: data frame with required columns:
         'conf_mtx': strings corresponding to confusion matrix categories: tp, tn, fp, fn
@@ -434,10 +440,12 @@ def detect_anomalies(observed, predictions, residuals, threshold, summary=True):
     : param observed: data frame or series of observed data.
     : param predictions: series of model predictions.
     : param residuals: series of model residuals.
-    : param threshold: data frame with the columns 'lower' and 'upper' corresponding to the acceptable range of the residual.
+    : param threshold: data frame with the columns 'lower' and 'upper' corresponding to the acceptable
+    range of the residual.
     : param summary: if True, will print the ratio of detections.
     Outputs:
-    : param detections: data frame with columns for observations, predictions, residuals, anomalies (boolean where True (1) = anomalous data point)
+    : param detections: data frame with columns for observations, predictions, residuals, anomalies
+    (boolean where True (1) = anomalous data point)
     """
     detections = pd.DataFrame(observed)
     detections['prediction'] = np.array(predictions)
@@ -478,11 +486,14 @@ def aggregate_results(df, models, verbose=False, compare=False):
     If any model detects an anomaly, the point is labeled as anomalous.
     Inputs:
     : param df: data frame with required column 'observed' of observed data values.
-    : param models: dictionary of model outputs consisting of dataframes with the required column 'detected_event' of booleans indicating anomalies.
+    : param models: dictionary of model outputs consisting of dataframes with the required column 'detected_event' of
+    booleans indicating anomalies.
     : verbose: if True, includes columns for each model type in the output.
-    : compare: if True, includes columns for technician labeled anomalies and labeled events in the output (as gathered from the input df) for determination of metrics.
+    : compare: if True, includes columns for technician labeled anomalies and labeled events in the output (as gathered
+    from the input df) for determination of metrics.
     Outputs:
-    : param results_all: data frame containing columns 'detected_event' of booleans representing anomalies aggregated from all of the models and 'observed' of observed values.
+    : param results_all: data frame containing columns 'detected_event' of booleans representing anomalies aggregated
+    from all of the models and 'observed' of observed values.
         Additional columns are added if verbose and compare options are selected.
     : param: metrics_all: if compare is selected, then metrics are output for the aggregate anomalies.
     """
@@ -492,7 +503,7 @@ def aggregate_results(df, models, verbose=False, compare=False):
     results_all['detected_event'] = results_all.any(axis=1)
     results_all['observed'] = df['observed']
 
-    if ~verbose:
+    if not verbose:
         for model in models:
             results_all = results_all.drop(model, 1)
 
