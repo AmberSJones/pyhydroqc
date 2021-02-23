@@ -11,14 +11,14 @@ import warnings
 
 def ARIMA_group(df, anomalies, group, min_group_len=20):
     """
-    ARIMA_group examines detected events and performs conditional widening (makes some valid points anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
+    ARIMA_group examines detected events and performs conditional widening (marks some valid points as anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
     Input:
     : param df: data frame with a column for detected events.
     : param anomalies: string of the column name for detected events.
-    : param group: string of name of new column of group
+    : param group: string of column name containing an ascending index for each group of valid or anomolous data points (output of the group_bools function).
     : param min_group_len: the minimum group length.
     Output:
-    : param df: data fram with new columns: 'ARIMA_event' and 'ARIMA_group'
+    : param df: data frame with new columns: 'ARIMA_event' and 'ARIMA_group'
     """
     ARIMA_group = []
     df['ARIMA_event'] = df[anomalies]
@@ -43,7 +43,7 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
             ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
 
             # if not merging last group to current group
-            if ~merging:
+            if not merging:
                 merging = False
                 new_gi += 1
 
@@ -74,7 +74,10 @@ def ARIMA_forecast(x, l):
 def generate_corrections(df, observed, anomalies):
     """
     generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
-    Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by non-anamolous data before and after anomalies.
+    Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by
+    non-anamolous data before and after anomalies. Corrections are generated for anomalies by order of the shortest to
+    longest and those corrected values from the shorter anomalies are used with non-anomalous values to generate
+    corrections for longer anomalies.
     Input:
     : param df: data frame with columns for observations and anomalies as defined by the user.
     : param observed: string that names the column in the data frame containing observed values.
