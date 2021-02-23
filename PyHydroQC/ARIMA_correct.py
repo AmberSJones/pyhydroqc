@@ -10,10 +10,16 @@ import warnings
 
 
 def ARIMA_group(df, anomalies, group, min_group_len=20):
-    """Examines detected events and performs conditional widening to ensure
-    that widened event is sufficient for forecasting/backcasting.
-    df is a data frame with the required columns: 'group' and 'detected_event'
-    and returns with new columns: 'ARIMA_event' and 'ARIMA_group'"""
+    """
+    ARIMA_group examines detected events and performs conditional widening (makes some valid points anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
+    Input:
+    : param df: data frame with a column for detected events.
+    : param anomalies: string of the column name for detected events.
+    : param group: string of name of new column of group
+    : param min_group_len: the minimum group length.
+    Output:
+    : param df: data fram with new columns: 'ARIMA_event' and 'ARIMA_group'
+    """
     ARIMA_group = []
     df['ARIMA_event'] = df[anomalies]
     new_gi = 0
@@ -44,16 +50,18 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
     if (new_gi < (max(df[group])/2)):
         print("WARNING: more than half of the anomaly events have been merged!")
     df['ARIMA_group'] = ARIMA_group
+
     return df
 
 
 def ARIMA_forecast(x, l):
-    """ ARIMA_forecast is used to create predictions of data where anomalies occur.
-    Creates ARIMA model and outputs forecasts of specified length.
-    x is an array of values from which to predict corrections. corresponds to non-anomalous data.
-    l is how many predicted data points are to be forecasted/corrected.
+    """
+    ARIMA_forecast creates predictions of data where anomalies occur. Creates ARIMA model and outputs forecasts of specified length.
+    Input:
+    : param x: array of values from which to predict corrections. corresponds to non-anomalous data.
+    : param l: number of predicted data points to be forecasted/corrected.
     Outputs:
-    y is an array of length l of the corrected values as predicted by the model
+    : param y: array of length l of the corrected values as predicted by the model
     """
     model = pm.auto_arima(x, error_action='ignore', suppress_warnings=True)
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
@@ -65,16 +73,14 @@ def ARIMA_forecast(x, l):
 
 def generate_corrections(df, observed, anomalies):
     """
-    df has columns for observed and anomalies
-
-    generate_corrections uses passes through data with identified anomalies and determines corrections
-    using an ARIMA model. Corrections are determined by combining both a forecast and a backcast in a weighted
-    average to be informed by non-anamolous data before and after anomalies.
-    df is a data frame with required columns:
-    'raw': raw data
-    'detected_event': boolean array corresponding to classified anomalies where True = anomalous
+    generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
+    Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by non-anamolous data before and after anomalies.
+    Input:
+    : param df: data frame with columns for observations and anomalies as defined by the user.
+    : param observed: string that names the column in the data frame containing observed values.
+    : param anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
     Outputs:
-    df with additional columns:
+    : param df with additional columns:
         'det_cor' - determined correction
         'corrected' - boolean indicating whether the data was corrected
     """
