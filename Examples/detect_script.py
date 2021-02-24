@@ -5,12 +5,16 @@
 # The complete workflow for model development and anomaly detection is carried out.
 # Model types include ARIMA and LSTM (univariate/multivariate and vanilla/bidirectional).
 
+
+##### TODO: change i and j loops to dictionary loops
+
+
 import copy
 import pickle
-import anomaly_utilities
-import model_workflow
-import rules_detect
-from parameters import site_params
+from PyHydroQC import anomaly_utilities
+from PyHydroQC import model_workflow
+from PyHydroQC import rules_detect
+from PyHydroQC.parameters import site_params
 
 
 class MethodsOutput:
@@ -36,7 +40,7 @@ for j in range(0, len(sites)):
     if site == 'BlackSmithFork': year.pop(0)
     print("\n\n###########################################\n#Processing data for site: "
           + sites[j] + ".\n###########################################")
-    df_full, sensor_array = anomaly_utilities.get_data(sites[j], sensor, year, path="LRO_data/")
+    df_full, sensor_array = anomaly_utilities.get_data(sites[j], sensor, year, path="../LRO_data/")
 
     # RULES BASED ANOMALY DETECTION #
     #########################################
@@ -83,8 +87,8 @@ for j in range(0, len(sites)):
         methods_output.ARIMA.append(copy.deepcopy(
             model_workflow.ARIMA_detect(
                 df, sensor[i], site_params[j][i],
-                rules=False, plots=False, summary=False, output=True, site=site
-                )))
+                rules=False, plots=False, summary=False, compare=True
+            )))
     print('ARIMA detection complete.\n')
     del df
 
@@ -99,7 +103,7 @@ for j in range(0, len(sites)):
         name = str(site) + '-' + str(sensor[i])
         method_object = model_workflow.LSTM_detect_univar(
             df, sensor[i], site_params[j][i], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+            rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
         methods_output.LSTM_univar.append(copy.deepcopy(method_object))
     del df
@@ -113,7 +117,7 @@ for j in range(0, len(sites)):
         name = str(site) + '-' + str(sensor[i])
         method_object = model_workflow.LSTM_detect_univar(
                 df, sensor[i], site_params[j][i], model_type, name,
-                rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+                rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
         methods_output.LSTM_univar_bidir.append(copy.deepcopy(method_object))
     del df
@@ -125,7 +129,7 @@ for j in range(0, len(sites)):
     methods_output.LSTM_multivar = \
         model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site,  model_output=False, model_save=True
+            rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
 
     # DATA: multivariate,  MODEL: bidirectional #
@@ -134,13 +138,13 @@ for j in range(0, len(sites)):
     methods_output.LSTM_multivar_bidir = \
         model_workflow.LSTM_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
-            rules=False, plots=False, summary=False, output=True, site=site, model_output=False, model_save=True
+            rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
 
     # AGGREGATE DETECTIONS #
     #########################################
-    methods_output.aggregate_results = []
-    methods_output.aggregate_metrics = []
+    methods_output.aggregate_results = dict()
+    methods_output.aggregate_metrics = dict()
     for i in range(0, len(sensor)):
         results_all, metrics = \
             anomaly_utilities.aggregate_results(

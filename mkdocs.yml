@@ -1,0 +1,16 @@
+site_name: pyhydroqc Documentation
+repo_url: https://github.com/AmberSJones/PyHydroQC
+
+theme:
+  name: material
+
+plugins:
+  - mkdocstrings
+  - search
+
+markdown_extensions:
+  - tables
+
+nav:
+  - Home: index.md
+  - About: about.md
