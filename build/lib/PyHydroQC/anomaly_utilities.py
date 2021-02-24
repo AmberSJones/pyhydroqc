@@ -16,7 +16,7 @@ from scipy.stats import norm
 pd.options.mode.chained_assignment = None
 
 
-def get_data(filename="", site="", sensors="", years="", path=""):
+def get_data(site, sensors, years, path=""):
     """
     TODO: option to specify file name
     get_data imports time series data from csv files. Files must be named by site and year (e.g. "MainStreet2014.csv").
@@ -34,25 +34,15 @@ def get_data(filename="", site="", sensors="", years="", path=""):
     if path == "":  # use default directory when none is provided
         path = os.getcwd() + "/"  # default directory is ./
     df_full = pd.DataFrame()  # start with empty dataframe and concatenate each file
-
-    if filename:
-        df_full = pd.read_csv(path + filename,
+    for yr in years:  # loop over each file
+        df_year = pd.read_csv(path + site + str(yr) + ".csv",
                          skipinitialspace=True,
                          engine='python',
                          header=0,
                          index_col=0,
                          parse_dates=True,
                          infer_datetime_format=True)
-    if years:
-        for yr in years:  # loop over each file
-            df_year = pd.read_csv(path + site + str(yr) + ".csv",
-                             skipinitialspace=True,
-                             engine='python',
-                             header=0,
-                             index_col=0,
-                             parse_dates=True,
-                             infer_datetime_format=True)
-            df_full = pd.concat([df_full, df_year], axis=0)
+        df_full = pd.concat([df_full, df_year], axis=0)
 
     # create data frames with raw, corrected, and labeled data (if the corrected and labeled data exist)
     sensor_array = dict()

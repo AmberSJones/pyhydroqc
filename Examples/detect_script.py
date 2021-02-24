@@ -40,7 +40,7 @@ for j in range(0, len(sites)):
     if site == 'BlackSmithFork': year.pop(0)
     print("\n\n###########################################\n#Processing data for site: "
           + sites[j] + ".\n###########################################")
-    df_full, sensor_array = anomaly_utilities.get_data(sites[j], sensor, year, path="LRO_data/")
+    df_full, sensor_array = anomaly_utilities.get_data(sites[j], sensor, year, path="../LRO_data/")
 
     # RULES BASED ANOMALY DETECTION #
     #########################################

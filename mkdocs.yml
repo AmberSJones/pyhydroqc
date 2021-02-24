@@ -1,7 +1,8 @@
 site_name: pyhydroqc Documentation
+repo_url: https://github.com/AmberSJones/PyHydroQC
 
 theme:
-  name: 'readthedocs'
+  name: material
 
 plugins:
   - mkdocstrings
@@ -9,3 +10,7 @@ plugins:
 
 markdown_extensions:
   - tables
+
+nav:
+  - Home: index.md
+  - About: about.md
