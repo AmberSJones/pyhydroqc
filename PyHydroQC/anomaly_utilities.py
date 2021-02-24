@@ -22,12 +22,12 @@ def get_data(filename="", site="", sensors="", years="", path=""):
     get_data imports time series data from csv files. Files must be named by site and year (e.g. "MainStreet2014.csv").
     Files should have columns corresponding to each sensor. If technician labels and corrections exist, they may be
     imported by naming columns sensor_cor and labeled_anomaly.
-    Arguments
+    Arguments:
         site: string of name of the data collection site
         sensor: list of name(s) of the sensor/variable data of interest. These must be the column names in data file(s).
         year: list of the year(s) of interest
         path: path to .csv files containing the data of interest
-    Returns
+    Returns:
         sensor_array: array of pandas DataFrames, each with 3 columns for the variable/sensor of interest:
         'raw', 'cor', 'labeled_anomaly'.
     """

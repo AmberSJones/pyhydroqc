@@ -36,40 +36,6 @@ LSTM_params = {
 # SITE AND SENSOR SPECIFIC PARAMETERS
 #########################################
 
-from dataclasses import dataclass
-
-
-@dataclass
-class Parameters:
-    max_range: int
-    min_range: int
-    persist: int
-    window_sz: int
-    alpha: float
-    threshold_min: float
-    widen: int
-    pdq: list[int]
-
-
-@dataclass
-class Site:
-    name: str
-    temp: Parameters
-    cond: Parameters
-    ph: Parameters
-    do: Parameters
-
-
-site_params = Site(name="FranklinBasin",
-                   temp=Parameters(max_range=13,
-                                   min_range=-2,
-                                   persist=30,
-                                   window_sz=30,
-                                   alpha=0.0001,
-                                   threshold_min=0.25,
-                                   widen=1,
-                                   pdq=[1, 1, 3]))
-
 site_params = {
     'FranklinBasin': {
         'temp': {
