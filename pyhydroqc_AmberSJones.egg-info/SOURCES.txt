@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+PyHydroQC/ARIMA_correct.py
+PyHydroQC/__init__.py
+PyHydroQC/anomaly_utilities.py
+PyHydroQC/model_workflow.py
+PyHydroQC/modeling_utilities.py
+PyHydroQC/parameters.py
+PyHydroQC/rules_detect.py
+pyhydroqc_AmberSJones.egg-info/PKG-INFO
+pyhydroqc_AmberSJones.egg-info/SOURCES.txt
+pyhydroqc_AmberSJones.egg-info/dependency_links.txt
+pyhydroqc_AmberSJones.egg-info/top_level.txt

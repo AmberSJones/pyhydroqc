@@ -9,6 +9,7 @@ from PyHydroQC import model_workflow
 from PyHydroQC import rules_detect
 from PyHydroQC import ARIMA_correct
 from PyHydroQC.parameters import site_params, LSTM_params, calib_params
+from PyHydroQC.model_workflow import ModelType
 import pickle
 import pandas as pd
 
@@ -18,7 +19,7 @@ import pandas as pd
 site = 'MainStreet'
 sensors = ['temp', 'cond', 'ph', 'do']
 years = [2014, 2015, 2016, 2017, 2018, 2019]
-sensor_array = anomaly_utilities.get_data(site, sensors, years, path="LRO_data/")
+sensor_array = anomaly_utilities.get_data(site, sensors, years, path="../LRO_data/")
 
 #### Rules Based Anomaly Detection
 #########################################
@@ -98,38 +99,34 @@ print('ARIMA detection complete.\n')
 #########################################
 ###### DATA: univariate, MODEL: vanilla
 
-model_type = 'vanilla'
 LSTM_univar = dict()
 for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(
-            sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, model_type, name,
+            sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, ModelType.VANILLA, name,
             rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ###### DATA: univariate,  MODEL: bidirectional
 
-model_type = 'bidirectional'
 LSTM_univar_bidir = dict()
 for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
-            sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, model_type, name,
+            sensor_array[snsr], snsr, site_params[site][snsr], LSTM_params, ModelType.BIDIRECTIONAL, name,
             rules=False, plots=False, summary=False,compare=True, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: vanilla
 
-model_type = 'vanilla'
 name = site
 LSTM_multivar = model_workflow.LSTM_detect_multivar(
-        sensor_array, sensors, site_params[site], LSTM_params, model_type, name,
+        sensor_array, sensors, site_params[site], LSTM_params, ModelType.VANILLA, name,
         rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
 
-model_type = 'bidirectional'
 name = site
 LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
-        sensor_array, sensors, site_params[site], LSTM_params, model_type, name,
+        sensor_array, sensors, site_params[site], LSTM_params, ModelType.BIDIRECTIONAL, name,
         rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ##### Aggregate Detections for All Models
