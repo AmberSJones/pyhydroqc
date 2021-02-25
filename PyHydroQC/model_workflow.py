@@ -94,7 +94,7 @@ class ModelType(Enum):
     BIDIRECTIONAL = 'bidirectional'
 
 
-def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
+def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
                 rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
@@ -189,7 +189,7 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name,
     return LSTM_detect_univar
 
 
-def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name,
+def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name='',
                 rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
