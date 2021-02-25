@@ -12,13 +12,13 @@ import warnings
 def ARIMA_group(df, anomalies, group, min_group_len=20):
     """
     ARIMA_group examines detected events and performs conditional widening (marks some valid points as anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
-    Input:
-    : param df: data frame with a column for detected events.
-    : param anomalies: string of the column name for detected events.
-    : param group: string of column name containing an ascending index for each group of valid or anomolous data points (output of the group_bools function).
-    : param min_group_len: the minimum group length.
-    Output:
-    : param df: data frame with new columns: 'ARIMA_event' and 'ARIMA_group'
+    Arguments:
+        df: data frame with a column for detected events.
+        anomalies: string of the column name for detected events.
+        group: string of column name containing an ascending index for each group of valid or anomolous data points (output of the group_bools function).
+        min_group_len: the minimum group length.
+    Returns:
+        df: data frame with new columns: 'ARIMA_event' and 'ARIMA_group'
     """
     ARIMA_group = []
     df['ARIMA_event'] = df[anomalies]
@@ -57,11 +57,11 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
 def ARIMA_forecast(x, l):
     """
     ARIMA_forecast creates predictions of data where anomalies occur. Creates ARIMA model and outputs forecasts of specified length.
-    Input:
-    : param x: array of values from which to predict corrections. corresponds to non-anomalous data.
-    : param l: number of predicted data points to be forecasted/corrected.
-    Outputs:
-    : param y: array of length l of the corrected values as predicted by the model
+    Arguments:
+        x: array of values from which to predict corrections. corresponds to non-anomalous data.
+        l: number of predicted data points to be forecasted/corrected.
+    Returns:
+        y: array of length l of the corrected values as predicted by the model
     """
     model = pm.auto_arima(x, error_action='ignore', suppress_warnings=True)
     warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
@@ -78,14 +78,14 @@ def generate_corrections(df, observed, anomalies):
     non-anamolous data before and after anomalies. Corrections are generated for anomalies by order of the shortest to
     longest and those corrected values from the shorter anomalies are used with non-anomalous values to generate
     corrections for longer anomalies.
-    Input:
-    : param df: data frame with columns for observations and anomalies as defined by the user.
-    : param observed: string that names the column in the data frame containing observed values.
-    : param anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
-    Outputs:
-    : param df with additional columns:
-        'det_cor' - determined correction
-        'corrected' - boolean indicating whether the data was corrected
+    Arguments:
+        df: data frame with columns for observations and anomalies as defined by the user.
+        observed: string that names the column in the data frame containing observed values.
+        anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
+    Returns:
+        df with additional columns:
+            'det_cor' - determined correction
+            'corrected' - boolean indicating whether the data was corrected
     """
 
     # assign group index numbers to each set of consecutiveTrue/False data points
