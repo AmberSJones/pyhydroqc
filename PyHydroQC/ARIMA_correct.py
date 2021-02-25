@@ -71,7 +71,7 @@ def ARIMA_forecast(x, l):
     return y
 
 
-def generate_corrections(df, observed, anomalies):
+def generate_corrections(df, observed, anomalies, savecasts=false):
     """
     generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
     Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by
@@ -82,10 +82,13 @@ def generate_corrections(df, observed, anomalies):
         df: data frame with columns for observations and anomalies as defined by the user.
         observed: string that names the column in the data frame containing observed values.
         anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
+        savecasts: boolean used for saving the forecast as backcast data which can be used for analysis or plotting.
     Returns:
         df with additional columns:
             'det_cor' - determined correction
             'corrected' - boolean indicating whether the data was corrected
+            'forecasts' - forecasted values used in correction (only created if savecasts=true)
+            'backcasts' - backcasted values used in correction (only created if savecasts=true)
     """
 
     # assign group index numbers to each set of consecutiveTrue/False data points
@@ -95,6 +98,9 @@ def generate_corrections(df, observed, anomalies):
     # create new output columns
     df['det_cor'] = df[observed]
     df['corrected'] = df['ARIMA_event']
+    if (savecasts):
+        df['forcasts'] = np.nan
+        df['backcasts'] = np.nan
 
     # while there are anomalous groups of points left to correct
     while len(df[df['ARIMA_event'] != 0]) > 0:
@@ -114,6 +120,9 @@ def generate_corrections(df, observed, anomalies):
             yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)][observed]),
                                        len(df.loc[df['ARIMA_group'] == i]))
             forecasted = True
+            if (savecasts):
+                df.loc[df['ARIMA_group'] == i, 'forecasts'] = yfor
+
         # perform backcasting to generate corrected data points
         if (i != max(df['ARIMA_group'])): # if not at the end
             # forecast in reverse direction
@@ -123,6 +132,8 @@ def generate_corrections(df, observed, anomalies):
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
             backcasted = True
+            if (savecasts):
+                df.loc[df['ARIMA_group'] == i, 'backcasts'] = ybac
 
         # fill the det_cor column using forecasted and backcasted conditionals
         if ((not forecasted) and (not backcasted)):
