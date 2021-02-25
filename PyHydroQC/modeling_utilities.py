@@ -13,24 +13,42 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 import statsmodels.api as api
+import pmdarima as pd
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Bidirectional
 import warnings
 
 
+def pdq(data):
+    """
+    pdq is an automated function for finding the order (hyperparameters) of an ARIMA model.
+    Arguments:
+        data: series of observations
+    Returns:
+        pdq: list of (p,d,q) ARIMA hyperparameters
+    """
+    model = pm.auto_arima(np.array(data), seasonal=False, suppress_warnings=True, error_action="ignore")
+    (p, d, q) = model.order
+    pdq = [p, d, q]
+
+    return pdq
+
+
 def build_arima_model(data, p, d, q, summary=True, suppress_warnings=True):
     """
     build_arima_model constructs and trains an ARIMA model.
-    Inputs:
-    : param data: series or data frame of time series inputs.
-    : param p, d, q: ARIMA hyperparameters that can be determined by manual assessment or by automated means.
-    : param summary: indicates if the model summary should be printed.
-    : param suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
-    Outputs:
-    : param model_fit: SARIMAX model object.
-    : param residuals: series of model errors.
-    : param predictions: model predictions determine as the in sample, one step ahead model forecasted values.
+    Arguments:
+        data: series or data frame of time series inputs.
+        p: ARIMA hyperparameter that can be determined by manual assessment or by automated means.
+        d: ARIMA hyperparameter that can be determined by manual assessment or by automated means.
+        q: ARIMA hyperparameter that can be determined by manual assessment or by automated means.
+        summary: indicates if the model summary should be printed.
+        suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
+    Returns:
+        model_fit: SARIMAX model object.
+        residuals: series of model errors.
+        predictions: model predictions determine as the in sample, one step ahead model forecasted values.
     """
 
     if suppress_warnings:
@@ -68,39 +86,39 @@ class LSTMModelContainer:
     pass
     """
     Objects of the class LSTMModelContainer are results of wrappers that call functions to build, train, and evaluate LSTM models.
-    Input:
+    Arguments:
     For univariate: 
-        : param df: data frame with columns:
+        df: data frame with columns:
             'raw': observed, uncorrected data
             'observed': observed data, corrected with preprocessing
             'anomaly': a boolean where True (1) = anomalous data point corresponding to the results of preprocessing.
     For multivariate: 
-        : param df_raw: data frame of uncorrected raw observed data with one column for each variable.
-        : param df_observed: data frame containing preprocessed observed data with one column for each variable.
-        : param df_anomaly: data frame of booleans where True (1) = anomalous data point corresponding 
-                to the results of preprocessing with one column for each variable.
-    : param LSTM_params: dictionary object of parameters including:
-        samples: number of points to use for model training.
-        time_steps: number of past data points for LSTM to consider.
-        cells: number of cells for the LSTM model.
-        dropout: ratio of cells to ignore for model training.
-        patience: indicates how long to wait for model training. 
-    : param summary: if True, prints details of the model training.
-    : param name: specified for saving models for future reuse.
-    : param model_output: if True, the model and training history are output by the function.
-    : param model_save: if True, the model is saved to disc for future reuse.
+        df_raw: data frame of uncorrected raw observed data with one column for each variable.
+        df_observed: data frame containing preprocessed observed data with one column for each variable.
+        df_anomaly: data frame of booleans where True (1) = anomalous data point corresponding to the results of 
+        preprocessing with one column for each variable.
+        LSTM_params: dictionary object of parameters including:
+            samples: number of points to use for model training.
+            time_steps: number of past data points for LSTM to consider.
+            cells: number of cells for the LSTM model.
+            dropout: ratio of cells to ignore for model training.
+            patience: indicates how long to wait for model training. 
+        summary: if True, prints details of the model training.
+        name: specified for saving models for future reuse.
+        model_output: if True, the model and training history are output by the function.
+        model_save: if True, the model is saved to disc for future reuse.
      
-    Output:
-    : param X_train: reshaped array of input data used to train the model.
-    : param y_train: output data used to train the model.
-    : param model: keras model object.
-    : param history: results of model training.
-    : param X_test: reshaped array of input data used to test the model. For this work, we use the full dataset.
-    : param y_test: output data used to test the model. For this work, we use the full dataset.
-    : param model_eval: an evaluation of the model with test data.
-    : param predictions: model predictions for the full dataset.
-    : param train_residuals: residuals for the data used for training.
-    : param test_residuals: residuals for the data used for testing.
+    Returns:
+        X_train: reshaped array of input data used to train the model.
+        y_train: output data used to train the model.
+        model: keras model object.
+        history: results of model training.
+        X_test: reshaped array of input data used to test the model. For this work, we use the full dataset.
+        y_test: output data used to test the model. For this work, we use the full dataset.
+        model_eval: an evaluation of the model with test data.
+        predictions: model predictions for the full dataset.
+        train_residuals: residuals for the data used for training.
+        test_residuals: residuals for the data used for testing.
     """
 
 
@@ -336,10 +354,10 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, n
 def create_scaler(data):
     """
     create_scaler creates a scaler object based on input data that removes mean and scales to unit vectors.
-    Input:
-    : param data: a series of values to be scaled.
-    Output:
-    : param scaler: a StandardScaler fit to the input data
+    Arguments:
+        data: a series of values to be scaled.
+    Returns:
+        scaler: a StandardScaler fit to the input data
     """
     scaler = StandardScaler()
     scaler = scaler.fit(data)
@@ -351,14 +369,14 @@ def create_training_dataset(X, anomalies, training_samples="", time_steps=10):
     """
     create_training_dataset creates a training dataset based on random selection of a specified number of points within the dataset.
     Reshapes data to temporalize it into (samples, timestamps, features). Ensures that no data that has been corrected as part of preprocessing will be used for training the model.
-    Input:
-    : param X: series of data to be reshaped.
-    : param: anomalies: series of booleans where True (1) = anomalous data point corresponding to the results of preprocessing.
-    : param training_samples: number of observations used for training.
-    : param time_steps: number of past time steps to consider for each sample/row.
-    Outputs:
-    : param Xs: array of data reshaped for input into an LSTM model.
-    : param ys: array of data output corresponding to each Xs input.
+    Arguments:
+        X: series of data to be reshaped.
+        anomalies: series of booleans where True (1) = anomalous data point corresponding to the results of preprocessing.
+        training_samples: number of observations used for training.
+        time_steps: number of past time steps to consider for each sample/row.
+    Returns:
+        Xs: array of data reshaped for input into an LSTM model.
+        ys: array of data output corresponding to each Xs input.
     """
     Xs, ys = [], []  # start empty list
     if training_samples == "":
@@ -380,12 +398,12 @@ def create_training_dataset(X, anomalies, training_samples="", time_steps=10):
 def create_sequenced_dataset(X, time_steps=10):
     """
     create_sequenced_dataset reshapes data to temporalize it into (samples, timestamps, features).
-    Input:
-    : param X: series of data to be reshaped.
-    : param time_steps: number of past time steps to consider for each sample/row.
-    Outputs:
-    : param Xs: array of data reshaped for input into an LSTM model.
-    : param ys: array of data outputs corresponding to each Xs input.
+    Arguments:
+        X: series of data to be reshaped.
+        time_steps: number of past time steps to consider for each sample/row.
+    Returns:
+        Xs: array of data reshaped for input into an LSTM model.
+        ys: array of data outputs corresponding to each Xs input.
     """
     Xs, ys = [], []  # start empty list
     for i in range(len(X) - time_steps):  # loop within range of data frame minus the time steps
@@ -400,14 +418,14 @@ def create_bidir_training_dataset(X, anomalies, training_samples="", time_steps=
     """
     create_bidir_training_dataset creates a training dataset based on random selection of a specified number of points within the dataset. Uses data before and after the point of interest (bidirectional).
     Reshapes data to temporalize it into (samples, timestamps, features). Ensures that no data that has been corrected as part of preprocessing will be used for training the model.
-    Input:
-    : param X: data to be reshaped.
-    : param anomalies: series of booleans where True (1) = anomalous data point corresponding to the results of preprocessing.
-    : param training_samples: number of observations used for training.
-    : param time_steps: number of past time steps to consider for each sample/row.
-    Output:
-    : param Xs: array of data reshaped for input into an LSTM model.
-    : param ys: array of data outputs corresponding to each Xs input.
+    Arguments:
+        X: data to be reshaped.
+        anomalies: series of booleans where True (1) = anomalous data point corresponding to the results of preprocessing.
+        training_samples: number of observations used for training.
+        time_steps: number of past time steps to consider for each sample/row.
+    Returns:
+        Xs: array of data reshaped for input into an LSTM model.
+        ys: array of data outputs corresponding to each Xs input.
     """
     Xs, ys = [], []  # start empty list
     if training_samples == "":
@@ -429,12 +447,12 @@ def create_bidir_training_dataset(X, anomalies, training_samples="", time_steps=
 def create_bidir_sequenced_dataset(X, time_steps=10):
     """
     create_bidir_sequenced_dataset reshapes data to temporalize it into (samples, timestamps, features). Uses data before and after the point of interest (bidirectional).
-    Input:
-    : param X: series of data to be reshaped.
-    : param time_steps: number of past time steps to consider for each sample/row.
-    Outputs:
-    : param Xs: array of data reshaped for input into an LSTM model.
-    : param ys: array of data outputs corresponding to each Xs input.
+    Arguments:
+        X: series of data to be reshaped.
+        time_steps: number of past time steps to consider for each sample/row.
+    Returns:
+        Xs: array of data reshaped for input into an LSTM model.
+        ys: array of data outputs corresponding to each Xs input.
     """
     Xs, ys = [], []  # start empty list
     for i in range(time_steps, len(X) - time_steps):  # loop within range of data frame minus the time steps
@@ -448,15 +466,15 @@ def create_bidir_sequenced_dataset(X, time_steps=10):
 def create_vanilla_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
     """
     Uses sequential model class from keras. Adds LSTM vanilla layer.
-    Input:
-    : param time_steps: number of steps to consider for each point.
-    : param num_features: number of variables being considered
-    : param cells: number of cells or nodes to be used to construct the model.
-    : param dropout: ratio of cells to ignore for model training.
-    : param input_loss: metric to be minimized for training. Default is mean average error ('mae').
-    : param input_optimizer: algorithm for training model. Default is 'adam'.
-    Output:
-    : param model: keras model structure
+    Arguments:
+        time_steps: number of steps to consider for each point.
+        num_features: number of variables being considered
+        cells: number of cells or nodes to be used to construct the model.
+        dropout: ratio of cells to ignore for model training.
+        input_loss: metric to be minimized for training. Default is mean average error ('mae').
+        input_optimizer: algorithm for training model. Default is 'adam'.
+    Returns:
+        model: keras model structure
     """
     model = Sequential()
     model.add(LSTM(cells, input_shape=(time_steps, num_features), dropout=dropout)),  # one LSTM layer with dropout regularization
@@ -469,15 +487,15 @@ def create_vanilla_model(cells, time_steps, num_features, dropout, input_loss='m
 def create_bidir_model(cells, time_steps, num_features, dropout, input_loss='mae', input_optimizer='adam'):
     """
     Uses sequential model class from keras. Adds bidirectional layer. Adds LSTM vanilla layer.
-    Input:
-    : param time_steps: number of steps to consider for each point.
-    : param num_features: number of variables being considered
-    : param cells: number of cells or nodes to be used to construct the model.
-    : param dropout: ratio of cells to ignore for model training.
-    : param input_loss: metric to be minimized for training. Default is mean average error ('mae').
-    : param input_optimizer: algorithm for training model. Default is 'adam'.
-    Output:
-    : param model: keras model structure
+    Arguments:
+        time_steps: number of steps to consider for each point.
+        num_features: number of variables being considered
+        cells: number of cells or nodes to be used to construct the model.
+        dropout: ratio of cells to ignore for model training.
+        input_loss: metric to be minimized for training. Default is mean average error ('mae').
+        input_optimizer: algorithm for training model. Default is 'adam'.
+    Returns:
+        model: keras model structure
     """
     model = Sequential()
     model.add(Bidirectional(LSTM(cells, dropout=dropout), input_shape=(time_steps*2, num_features)))
@@ -492,15 +510,17 @@ def train_model(X_train, y_train, model, patience, monitor='val_loss', mode='min
     """
     train_model fits the model to training data. Early stopping ensures that too many epochs of training are not used.
     Monitors the validation loss for improvements and stops training when improvement stops.
-    Input:
-    : param X_train: training input data (output of one of the create_training_data functions)
-    : param y_train: training output data (output of one of the create_training_data functions)
-    : param model: existing LSTM model structure (output of one of the create_model functions)
-    : param patience: how many epochs to wait for early stopping.
-    : param epochs: how many training epochs to use.
-    : param verbose: what type of output to show. 0 is silent. 1 is progress bar. 2 is one line per epoch.
-    : param batch_size: hyperparameter.
-    : param validation_split indicates how much data to use for internal training.
+    Arguments:
+        X_train: training input data (output of one of the create_training_data functions)
+        y_train: training output data (output of one of the create_training_data functions)
+        model: existing LSTM model structure (output of one of the create_model functions)
+        patience: how many epochs to wait for early stopping.
+        epochs: how many training epochs to use.
+        verbose: what type of output to show. 0 is silent. 1 is progress bar. 2 is one line per epoch.
+        batch_size: hyperparameter.
+        validation_split: indicates how much data to use for internal training.
+    Returns:
+        history: keras model.fit object
     """
     es = tf.keras.callbacks.EarlyStopping(monitor=monitor, patience=patience, mode=mode)
     history = model.fit(
