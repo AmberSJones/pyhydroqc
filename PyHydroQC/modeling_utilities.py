@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 import statsmodels.api as api
-import pmdarima as pd
+import pmdarima as pm
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Bidirectional
