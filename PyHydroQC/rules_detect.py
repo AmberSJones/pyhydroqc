@@ -82,14 +82,14 @@ def interpolate(df, limit=10000):
         df: data frame with added column 'observed' for interpolated data.
     """
     df['observed'] = np.where(df['anomaly'], np.nan, df['raw'])
-    df['observed'].interpolate(method='linear', inplace=True, limit=limit)
+    df['observed'].interpolate(method='linear', inplace=True, limit=limit, limit_direction='both')
 
     return df
 
 
 def add_labels(df, value=-9999):
     """
-    add_labels adds an indicator that there is an anomalous value that should have been labeled by the expert but was not. Considers a specified 'no data value' (default is -9999) as well as nan values. Only relevant if comparing to technician/expert labeled data.
+    add_labels adds an indicator that there is an anomalous value that should have been labeled by the expert but was not. Considers a specified 'no data value' (default is -9999) as well as null values. Only relevant if comparing to technician/expert labeled data.
     Arguments:
         df: data frame with columns:
             'raw' of raw data
