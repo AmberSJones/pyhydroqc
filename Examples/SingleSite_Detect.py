@@ -17,9 +17,9 @@ import pandas as pd
 #########################################
 
 site = 'MainStreet'
-sensors = ['temp', 'cond', 'ph', 'do']
-years = [2014, 2015, 2016, 2017, 2018, 2019]
-sensor_array = anomaly_utilities.get_data(site, sensors, years, path="../LRO_data/")
+sensors = ['ph']
+years = [2018]
+sensor_array = anomaly_utilities.get_data(sensors, site=site, years=years, path="./LRO_data/")
 
 #### Rules Based Anomaly Detection
 #########################################
@@ -65,6 +65,7 @@ all_calib, all_calib_dates, df_all_calib, calib_dates_overlap = \
 #### Perform Linear Drift Correction
 #########################################
 
+calib_sensors = sensors
 calib_dates = dict()
 for cal_snsr in calib_sensors:
     calib_dates[cal_snsr] = \
@@ -137,10 +138,10 @@ aggregate_metrics = dict()
 for snsr in sensors:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
-    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
-    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
-    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
-    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+    # models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
+    # models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
+    # models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
+    # models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
     results_all, metrics = anomaly_utilities.aggregate_results(sensor_array[snsr], models, verbose=True, compare=True)
     print('\nOverall metrics')
     print('Sensor: ' + snsr)
@@ -199,5 +200,21 @@ print('Finished saving output.')
 
 corrections = dict()
 for snsr in sensors:
-    df = ARIMA_correct.generate_corrections(aggregate_results[snsr], 'observed', 'detected_event')
+    df = ARIMA_correct.generate_corrections(aggregate_results[snsr], 'observed', 'detected_event', savecasts=True)
     corrections[snsr] = df
+
+
+
+df = results_all.loc['2018-06-15':]
+observed = 'observed'
+anomalies = 'detected_event'
+
+import matplotlib.pyplot as plt
+
+plt.plot(df['observed'], 'b', label='original data')
+plt.plot(df['det_cor'], 'c', label='predicted values')
+plt.plot(df['forecasts'], 'g', label='forecasted')
+plt.plot(df['backcasts'], 'r', label='backcasted')
+plt.legend()
+plt.ylabel('pH')
+plt.show()

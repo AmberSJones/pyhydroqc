@@ -9,10 +9,10 @@ from PyHydroQC import model_workflow
 from PyHydroQC import rules_detect
 from PyHydroQC import ARIMA_correct
 from PyHydroQC import modeling_utilities
-from Examples.FB_parameters import site_params, LSTM_params, calib_params
 from PyHydroQC.model_workflow import ModelType
 
-# could specify parameters here in the file
+# Parameters may be specified in a parameters file or in the same script
+from Examples.FB_parameters import site_params, LSTM_params, calib_params
 
 #### Retrieve data
 #########################################
@@ -52,7 +52,6 @@ for snsr in sensors:
     all_pdq[snsr] = modeling_utilities.pdq(sensor_array[snsr]['observed'])
     print(snsr + ' (p, d, q) = ' + str(all_pdq[snsr]))
     site_params[site][snsr]['pdq'] = all_pdq[snsr]
-# TODO: write pdq to the file?
 
 ARIMA = dict()
 for snsr in sensors:
