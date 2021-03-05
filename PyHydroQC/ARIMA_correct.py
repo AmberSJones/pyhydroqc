@@ -114,6 +114,8 @@ def generate_corrections(df, observed, anomalies, savecasts=False):
             forecasted = True
             if (savecasts):
                 df.loc[df['ARIMA_group'] == i, 'forecasts'] = yfor
+                df.loc[df[df['ARIMA_group'] == i - 1].index[-1], 'forecasts'] = \
+                    df.loc[df[df['ARIMA_group'] == i - 1].index[-1], 'observed']
 
         # perform backcasting to generate corrected data points
         if (i != max(df['ARIMA_group'])): # if not at the end
@@ -126,6 +128,8 @@ def generate_corrections(df, observed, anomalies, savecasts=False):
             backcasted = True
             if (savecasts):
                 df.loc[df['ARIMA_group'] == i, 'backcasts'] = ybac
+                df.loc[df[df['ARIMA_group'] == i + 1].index[0], 'backcasts'] = \
+                    df.loc[df[df['ARIMA_group'] == i + 1].index[0], 'observed']
 
         # fill the det_cor column using forecasted and backcasted conditionals
         if ((not forecasted) and (not backcasted)):
