@@ -23,29 +23,21 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
     ARIMA_group = []
     df['ARIMA_event'] = df[anomalies]
     new_gi = 0
-    merging = False
     # for each group
     for i in range(0, (max(df[group]) + 1)):
         # determine the length of this group
         group_len = len(df.loc[df[group] == i][group])
         # if this group is not an anomaly event and is too small to support an ARIMA model
-        if ((df.loc[df[group] == i][anomalies][0] == 0) and
-            (group_len < min_group_len)):
+        if ((df.loc[df[group] == i][anomalies][0] == 0) and (group_len < min_group_len)):
             # this group needs to be added to previous group
-            df.loc[df[group] == i, 'ARIMA_event'] = 1
+            df.loc[df[group] == i, 'ARIMA_event'] = True
             if (new_gi > 0):
                 new_gi -= 1
             ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
-            merging = True
 
         else:  # this group does not need to be altered
-
             ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
-
-            # if not merging last group to current group
-            if not merging:
-                merging = False
-                new_gi += 1
+            new_gi += 1
 
     if (new_gi < (max(df[group])/2)):
         print("WARNING: more than half of the anomaly events have been merged!")
