@@ -55,8 +55,9 @@ for snsr in sensors:
 
 ARIMA = dict()
 for snsr in sensors:
-    ARIMA[snsr] = model_workflow.ARIMA_detect(df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
-                                              rules=False, plots=False, summary=False, compare=False)
+    ARIMA[snsr] = model_workflow.ARIMA_detect(
+        df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
+        rules=False, plots=False, summary=False, compare=False)
 print('ARIMA detection complete.\n')
 
 ##### LSTM Detection
@@ -92,7 +93,7 @@ LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
 ##### Aggregate Detections for All Models
 #########################################
 
-aggregate_results = dict()
+results_all = dict()
 for snsr in sensors:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
@@ -100,9 +101,8 @@ for snsr in sensors:
     models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
     models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
     models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
-    results_all = anomaly_utilities.aggregate_results(
-        df=sensor_array[snsr], models=models, verbose=True, compare=True)
-    aggregate_results[snsr] = results_all
+    results_all[snsr] = anomaly_utilities.aggregate_results(
+        df=sensor_array[snsr], models=models, verbose=True, compare=False)
 
 #### Correction
 #########################################
@@ -110,17 +110,16 @@ for snsr in sensors:
 corrections = dict()
 for snsr in sensors:
     corrections[snsr] = ARIMA_correct.generate_corrections(
-        df=aggregate_results[snsr], observed='observed', anomalies='detected_event')
+        df=results_all[snsr], observed='observed', anomalies='detected_event', savecasts=True)
 
 ############ PLOTTING ##############
 
 import matplotlib.pyplot as plt
+df = corrections[snsr]
 plt.figure()
 plt.plot(df['observed'], 'b', label='original data')
-# plt.plot(df['cor'], 'c', label='technician corrected')
-plt.plot(df['observed'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.plot(df['observed'][df['detected_event']], 'r+', mfc='none', label='machine detected anomalies')
 plt.plot(df['det_cor'], 'm', label='determined_corrected')
 plt.legend()
-plt.ylabel('do')
+plt.ylabel(snsr)
 plt.show()
