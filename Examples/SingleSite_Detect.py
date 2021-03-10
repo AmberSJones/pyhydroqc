@@ -17,8 +17,8 @@ import pandas as pd
 #########################################
 
 site = 'MainStreet'
-sensors = ['ph']
-years = [2018]
+sensors = ['temp', 'cond', 'ph', 'do']
+years = [2015, 2016, 2017, 2018, 2019]
 sensor_array = anomaly_utilities.get_data(sensors=sensors, site=site, years=years, path="./LRO_data/")
 
 #### Rules Based Anomaly Detection
@@ -65,23 +65,23 @@ all_calib, all_calib_dates, df_all_calib, calib_dates_overlap = rules_detect.cal
 #### Perform Linear Drift Correction
 #########################################
 
-calib_sensors = sensors
+calib_sensors = sensors[1:4]
 calib_dates = dict()
 for cal_snsr in calib_sensors:
     calib_dates[cal_snsr] = pd.read_csv(
-        'LRO_data/' + site + '_' + cal_snsr + '_calib_dates.csv', header=1, parse_dates=True, infer_datetime_format=True)
+        './LRO_data/' + site + '_' + cal_snsr + '_calib_dates.csv', header=1, parse_dates=True, infer_datetime_format=True)
     calib_dates[cal_snsr]['start'] = pd.to_datetime(calib_dates[cal_snsr]['start'])
     calib_dates[cal_snsr]['end'] = pd.to_datetime(calib_dates[cal_snsr]['end'])
     calib_dates[cal_snsr] = calib_dates[cal_snsr].loc[(calib_dates[cal_snsr]['start'] > min(sensor_array[cal_snsr].index)) &
                                                       (calib_dates[cal_snsr]['start'] < max(sensor_array[cal_snsr].index))]
-
-    for i in range(min(calib_dates[cal_snsr].index), max(calib_dates[cal_snsr].index)):
-        result, sensor_array[cal_snsr]['observed'] = rules_detect.lin_drift_cor(
-                                                        observed=sensor_array[cal_snsr]['observed'],
-                                                        start=calib_dates[cal_snsr]['start'][i],
-                                                        end=calib_dates[cal_snsr]['end'][i],
-                                                        gap=calib_dates[cal_snsr]['gap'][i],
-                                                        replace=True)
+    if len(calib_dates[cal_snsr]) > 0:
+        for i in range(min(calib_dates[cal_snsr].index), max(calib_dates[cal_snsr].index)):
+            result, sensor_array[cal_snsr]['observed'] = rules_detect.lin_drift_cor(
+                                                            observed=sensor_array[cal_snsr]['observed'],
+                                                            start=calib_dates[cal_snsr]['start'][i],
+                                                            end=calib_dates[cal_snsr]['end'][i],
+                                                            gap=calib_dates[cal_snsr]['gap'][i],
+                                                            replace=True)
 
 #### Model Based Anomaly Detection
 #########################################
@@ -120,7 +120,7 @@ for snsr in sensors:
 
 name = site
 LSTM_multivar = model_workflow.LSTM_detect_multivar(
-        sensor_array, sensors, site_params[site], LSTM_params, ModelType.VANILLA, name,
+        sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.VANILLA, name=name,
         rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
@@ -133,22 +133,20 @@ LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
 ##### Aggregate Detections for All Models
 #########################################
 
-aggregate_results = dict()
-aggregate_metrics = dict()
-for snsr in sensors:
+results_all = dict()
+metrics_all = dict()
+for snsr in ['temp','do']:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
-    # models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
-    # models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
-    # models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
-    # models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
-    results_all, metrics = anomaly_utilities.aggregate_results(
+    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
+    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
+    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
+    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+    results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(
         df=sensor_array[snsr], models=models, verbose=True, compare=True)
     print('\nOverall metrics')
     print('Sensor: ' + snsr)
-    anomaly_utilities.print_metrics(metrics)
-    aggregate_results[snsr] = results_all
-    aggregate_metrics[snsr] = metrics
+    anomaly_utilities.print_metrics(metrics_all[snsr])
 
 #### Saving Output
 #########################################
@@ -169,7 +167,7 @@ for snsr in sensors:
     LSTM_multivar_bidir.threshold[snsr].to_csv(r'saved/LSTM_multivar_bidir_threshold_' + site + '_' + snsr + '.csv')
     LSTM_multivar_bidir.detections[snsr].to_csv(r'saved/LSTM_multivar_bidir_detections_' + site + '_' + snsr + '.csv')
     LSTM_multivar_bidir.all_data[snsr].to_csv(r'saved/LSTM_multivar_bidir_df_' + site + '_' + snsr + '.csv')
-    aggregate_results[snsr].to_csv(r'saved/aggregate_results_' + site + '_' + snsr + '.csv')
+    results_all[snsr].to_csv(r'saved/aggregate_results_' + site + '_' + snsr + '.csv')
 
 for snsr in sensors:
     pickle_out = open('saved/metrics_ARIMA_' + site + '_' + snsr, "wb")
@@ -188,7 +186,7 @@ for snsr in sensors:
     pickle.dump(LSTM_multivar_bidir.metrics[snsr], pickle_out)
     pickle_out.close()
     pickle_out = open('saved/metrics_aggregate' + site + '_' + snsr, "wb")
-    pickle.dump(aggregate_metrics[snsr], pickle_out)
+    pickle.dump(results_all[snsr], pickle_out)
     pickle_out.close()
     pickle_out = open('saved/metrics_rules' + site + '_' + snsr, "wb")
     pickle.dump(rules_metrics[snsr], pickle_out)
@@ -201,22 +199,26 @@ print('Finished saving output.')
 
 corrections = dict()
 for snsr in sensors:
-    df = ARIMA_correct.generate_corrections(
-        df=aggregate_results[snsr], observed='observed', anomalies='detected_event', savecasts=True)
-    corrections[snsr] = df
+    corrections[snsr] = ARIMA_correct.generate_corrections(
+        df=results_all[snsr], observed='observed', anomalies='detected_event', savecasts=True)
+
+# Saving corrections
+for snsr in sensors:
+    corrections[snsr].to_csv(r'Examples/' + site + '_' + snsr + '_corrections.csv')
 
 
-
-df = results_all.loc['2018-06-15':]
-observed = 'observed'
-anomalies = 'detected_event'
+# Plotting corrections
 
 import matplotlib.pyplot as plt
 
+df = corrections[snsr]
+plt.figure()
 plt.plot(df['observed'], 'b', label='original data')
+# plt.plot(df['cor'], 'c', label='technician corrected')
 plt.plot(df['det_cor'], 'c', label='predicted values')
 plt.plot(df['forecasts'], 'g', label='forecasted')
 plt.plot(df['backcasts'], 'r', label='backcasted')
+# plt.plot(df['observed'][df['labeled_anomaly']], 'mo', mfc='none', label='technician labeled anomalies')
 plt.legend()
-plt.ylabel('pH')
+plt.ylabel(snsr)
 plt.show()

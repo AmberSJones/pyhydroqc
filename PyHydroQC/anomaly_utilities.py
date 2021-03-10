@@ -521,8 +521,9 @@ def aggregate_results(df, models, verbose=False, compare=False):
         results_all['labeled_event'] = anomaly_events(results_all['labeled_anomaly'], wf=1)
         compare_events(results_all, wf=1)
         metrics_all = metrics(results_all)
-
-    return results_all, metrics_all
+        return results_all, metrics_all
+    else:
+        return results_all
 
 
 def plt_threshold(residuals, threshold, sensor):
