@@ -73,9 +73,9 @@ for cal_snsr in calib_sensors:
     calib_dates[cal_snsr]['start'] = pd.to_datetime(calib_dates[cal_snsr]['start'])
     calib_dates[cal_snsr]['end'] = pd.to_datetime(calib_dates[cal_snsr]['end'])
     calib_dates[cal_snsr] = calib_dates[cal_snsr].loc[(calib_dates[cal_snsr]['start'] > min(sensor_array[cal_snsr].index)) &
-                                                      (calib_dates[cal_snsr]['start'] < max(sensor_array[cal_snsr].index))]
+                                                      (calib_dates[cal_snsr]['end'] < max(sensor_array[cal_snsr].index))]
     if len(calib_dates[cal_snsr]) > 0:
-        for i in range(min(calib_dates[cal_snsr].index), max(calib_dates[cal_snsr].index)):
+        for i in range(min(calib_dates[cal_snsr].index), max(calib_dates[cal_snsr].index) + 1):
             result, sensor_array[cal_snsr]['observed'] = rules_detect.lin_drift_cor(
                                                             observed=sensor_array[cal_snsr]['observed'],
                                                             start=calib_dates[cal_snsr]['start'][i],
