@@ -194,9 +194,52 @@ def calib_overlap(sensor_names, input_array, calib_params):
     return all_calib, all_calib_dates, df_all_calib, calib_dates_overlap
 
 
+def find_gap(observed, calib_date, hours=2, show_shift=False):
+    """
+    find_gap determines the gap value of a calibration event based on the largest single difference.
+    Uses a given time stamp and searches within a designated window. Accounts for large spikes
+    immediately following the difference.
+    Args:
+        observed: time series of observations.
+        calib_date: datetime for performing the correction.
+        hours: window on each side of the calib_date to consider for finding the greatest difference. To use the exact
+        datetime and not consider a window, use hours=0.
+        show_shift: boolean indicating if subset used to determine the gap value should be output.
+    Returns:
+        gap: the resulting value of the gap
+        end: the ending timestamp corresponding to applying the gap. Used as input to linear drift correction.
+        shifted: the subset of data used to determine the gap value with the gap applied.
+
+    """
+    # time window to consider
+    subset = observed.loc[
+             pd.to_datetime(calib_date) - pd.Timedelta(hours=hours):
+             pd.to_datetime(calib_date) + pd.Timedelta(hours=hours)
+             ]
+    # shift index by 1
+    shifted = subset.shift(-1)
+    # timestamp of greatest difference
+    maxtime = abs(subset.diff()).idxmax()
+    # if the two subsequent signs are different, then add them together for the gap. This should address/eliminate
+    #   spikes following the calibration.
+    if subset.diff().loc[maxtime] * shifted.diff().loc[maxtime] < 0:
+        gap = subset.diff().loc[maxtime] + shifted.diff().loc[maxtime]
+    else:
+        gap = subset.diff().loc[maxtime]
+    # the last timestamp for the shift to occur
+    end = abs(shifted.diff()).idxmax()
+
+    if show_shift:
+        # shift subset to compare
+        shifted = subset.loc[subset.index[0]:end] + gap
+        return gap, end, shifted
+    else:
+        return gap, end
+
+
 def lin_drift_cor(observed, start, end, gap, replace=True):
     """
-   lin_drift_cor performs linear drift correction on data. Typical correction for calibration events. this function operates on the basis of a single event
+   lin_drift_cor performs linear drift correction on data. Typical correction for calibration events. This function operates on the basis of a single event
    Arguments:
        observed: time series of observations.
        start: datetime for the beginning of the correction
