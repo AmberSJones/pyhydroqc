@@ -17,7 +17,7 @@ def range_check(df, maximum, minimum):
         maximum: maximum acceptable value - above this value, data are anomalous
         minimum: minimum acceptable value - below this value, data are anomalous
     Returns:
-        df: data frame with an added column 'anomoly' with boolean where 1 = True for anomalous
+        df: data frame with an added column 'anomaly' with boolean where 1 = True for anomalous
         range_count: total number of anomalies from this check
     """
     # could do some sort of look up table with the values for each sensor
@@ -30,7 +30,7 @@ def range_check(df, maximum, minimum):
 
 def persistence(df, length, output_grp=False):
     """
-    persistence adds an anomoulous label in the data frame if data repeat for specified length.
+    persistence adds an anomalous label in the data frame if data repeat for specified length.
     Arguments:
         df: data frame with a column 'raw' of raw data and a boolean column 'anomaly' (typically output of range_check)
         length: duration of persistent/repeated values to be flagged
@@ -74,7 +74,7 @@ def group_size(df):
 
 def interpolate(df, limit=10000):
     """
-    interpolate performs linear interpolation on points identified as anomolous (typically by rules based approaches).
+    interpolate performs linear interpolation on points identified as anomalous (typically by rules based approaches).
     Arguments:
         df: data frame with a column 'raw' of raw data and a boolean column 'anomaly'.
         limit: maximum length/number of points of acceptable interpolation. If an event is exceeds this length, it will not be interpolated.
@@ -200,15 +200,15 @@ def find_gap(observed, calib_date, hours=2, show_shift=False):
     Uses a given time stamp and searches within a designated window. Accounts for large spikes
     immediately following the difference.
     Args:
-        observed: time series of observations.
-        calib_date: datetime for performing the correction.
+        observed: time series of observations
+        calib_date: datetime for performing the correction
         hours: window on each side of the calib_date to consider for finding the greatest difference. To use the exact
         datetime and not consider a window, use hours=0.
-        show_shift: boolean indicating if subset used to determine the gap value should be output.
+        show_shift: boolean indicating if subset used to determine the gap value should be output
     Returns:
         gap: the resulting value of the gap
         end: the ending timestamp corresponding to applying the gap. Used as input to linear drift correction.
-        shifted: the subset of data used to determine the gap value with the gap applied.
+        shifted: the subset of data used to determine the gap value with the gap applied
 
     """
     # time window to consider
@@ -239,16 +239,16 @@ def find_gap(observed, calib_date, hours=2, show_shift=False):
 
 def lin_drift_cor(observed, start, end, gap, replace=True):
     """
-   lin_drift_cor performs linear drift correction on data. Typical correction for calibration events. This function operates on the basis of a single event
+   lin_drift_cor performs linear drift correction on data. Typical correction for calibration events. This function operates on the basis of a single event.
    Arguments:
-       observed: time series of observations.
+       observed: time series of observations
        start: datetime for the beginning of the correction
        end: datetime for the end of the correction
        gap: gap value that determines the degree of the shift, which occurs at the end date.
-       replace: indicates whether the values of the correction should replace the associated values in the data frame.
+       replace: indicates whether the values of the correction should replace the associated values in the data frame
    Returns:
        result: data frame of corrected values
-       observed: time series of observations with corrected values if replace was selected.
+       observed: time series of observations with corrected values if replace was selected
     """
     # todo: ignore - 9999 values
 
@@ -263,3 +263,31 @@ def lin_drift_cor(observed, start, end, gap, replace=True):
 
     return result, observed
 
+def calib_edge_detect(observed, width, num_events=1, alpha=float("nan"), threshold=float("nan")):
+    """
+   calib_edge_detect seeks to find likely calibration event candidates by using edge filtering
+   Arguments:
+       observed: time series of observations
+       width: the width of the edge detection filter
+       num_events: the number of calibration event candidates to return
+       alpha: used for determining a threshold from the data
+       threshold: used for determining candidates from edge filter results
+   Returns:
+       candidates: datetimes of the most likely calibration event candidates
+    """
+    # TODO: add functionality for num_events and alpha
+    candidates = []
+    y = pd.DataFrame(index=observed.index)  # y['val'] is the filter output
+    y['val'] = 0
+    for i in range(width, len(observed) - width):  # loop over every possible difference calculation
+        # implement the edge detection filter - difference of the sums of before and after data
+        y.iloc[i] = (sum(observed[i - width:i]) - sum(observed[i:i + width])) / width
+
+    if not np.isnan(threshold):  # if the function is being called with a threshold
+
+        # iterate over each day, this assumes that a sensor will not be calibrated twice in one day
+        for idx, day in y.groupby(y.index.date):
+            if max(day['val']) > threshold:  # if any value is above the threshold in that day
+                candidates.append(pd.to_datetime(day.idxmax()['val']))  # add it to the list of calibration candidates
+
+    return candidates
