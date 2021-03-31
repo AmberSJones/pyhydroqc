@@ -83,7 +83,7 @@ for cal_snsr in calib_sensors:
     l = len(calib_dates[cal_snsr])
     ncol = math.ceil(math.sqrt(l))
     nrow = ncol
-    hours = 12
+    hours = 6
 
     fig, ax = plt.subplots(nrows=nrow, ncols=ncol, figsize=(nrow, ncol+1), facecolor='w')
     for i, axi in enumerate(ax.flat):
@@ -95,6 +95,17 @@ for cal_snsr in calib_sensors:
             axi.plot(shifts[cal_snsr][i], 'c')
             axi.plot(tech_shifts[cal_snsr][i], 'r')
 
+# Review gaps and make adjustments as needed before performing drift correction
+
+gaps['cond'].loc[3, 'gap'] = 4
+gaps['cond'].loc[4, 'gap'] = 10
+gaps['cond'].loc[21, 'gap'] = 0
+gaps['cond'].loc[39, 'gap'] = -5
+gaps['cond'].loc[41, 'gap'] = 4
+
+gaps['ph'].loc[33, 'gap'] = -0.04
+gaps['ph'].loc[43, 'gap'] = 0.12
+gaps['ph'].loc[43, 'end'] = '2019-08-15 15:00'
 
 #### Perform Linear Drift Correction
 #########################################

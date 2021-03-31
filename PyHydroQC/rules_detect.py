@@ -202,8 +202,7 @@ def find_gap(observed, calib_date, hours=2, show_shift=False):
     Args:
         observed: time series of observations
         calib_date: datetime for performing the correction
-        hours: window on each side of the calib_date to consider for finding the greatest difference. To use the exact
-        datetime and not consider a window, use hours=0.
+        hours: window on each side of the calib_date to consider for finding the greatest difference. To use the exact datetime and not consider a window, use hours=0.
         show_shift: boolean indicating if subset used to determine the gap value should be output
     Returns:
         gap: the resulting value of the gap
@@ -263,7 +262,8 @@ def lin_drift_cor(observed, start, end, gap, replace=True):
 
     return result, observed
 
-def calib_edge_detect(observed, width, num_events=1, alpha=float("nan"), threshold=float("nan")):
+
+def calib_edge_detect(observed, width, calib_params, threshold=float("nan"), num_events=1, alpha=float("nan")):
     """
    calib_edge_detect seeks to find likely calibration event candidates by using edge filtering
    Arguments:
@@ -274,20 +274,28 @@ def calib_edge_detect(observed, width, num_events=1, alpha=float("nan"), thresho
        threshold: used for determining candidates from edge filter results
    Returns:
        candidates: datetimes of the most likely calibration event candidates
+       edge_diff: differences indicating degree of edges
     """
     # TODO: add functionality for num_events and alpha
+
     candidates = []
-    y = pd.DataFrame(index=observed.index)  # y['val'] is the filter output
-    y['val'] = 0
+    edge_diff = pd.DataFrame(index=observed.index)  # diff['val'] is the filter output
+    edge_diff['val'] = 0
     for i in range(width, len(observed) - width):  # loop over every possible difference calculation
         # implement the edge detection filter - difference of the sums of before and after data
-        y.iloc[i] = (sum(observed[i - width:i]) - sum(observed[i:i + width])) / width
+        edge_diff.iloc[i] = (sum(observed[i - width:i]) - sum(observed[i:i + width])) / width
 
     if not np.isnan(threshold):  # if the function is being called with a threshold
 
         # iterate over each day, this assumes that a sensor will not be calibrated twice in one day
-        for idx, day in y.groupby(y.index.date):
-            if max(day['val']) > threshold:  # if any value is above the threshold in that day
+        for idx, day in edge_diff.groupby(edge_diff.index.date):
+            if max(abs((day['val']))) > threshold:  # if any value is above the threshold in that day
                 candidates.append(pd.to_datetime(day.idxmax()['val']))  # add it to the list of calibration candidates
 
-    return candidates
+    # specify that calibrations would only occur on work days and between specified hours of the day
+    candidates = np.array(candidates)
+    candidates = candidates[(pd.to_datetime(candidates).dayofweek <= 4) &
+                            (pd.to_datetime(candidates).hour >= calib_params['hour_low']) &
+                            (pd.to_datetime(candidates).hour <= calib_params['hour_high'])]
+
+    return candidates, edge_diff
