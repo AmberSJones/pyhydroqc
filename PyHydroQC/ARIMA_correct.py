@@ -7,7 +7,7 @@ import numpy as np
 from PyHydroQC import anomaly_utilities
 import pmdarima as pm
 import warnings
-from datetime import timedelta
+import pandas as pd
 
 
 def ARIMA_group(df, anomalies, group, min_group_len=20):
@@ -66,7 +66,7 @@ def ARIMA_forecast(x, l, suppress_warnings=True):
     return y
 
 
-def generate_corrections(df, observed, anomalies, model_limit=4, savecasts=False, suppress_warnings=True):
+def generate_corrections(df, observed, anomalies, model_limit=6, savecasts=False, suppress_warnings=True):
     """
     generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
     Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by
@@ -112,13 +112,13 @@ def generate_corrections(df, observed, anomalies, model_limit=4, savecasts=False
             # forecast in forward direction
             # create an array of corrected data for current anomalous group
             # i-1 is the index of the previous group being used to forecast
-
-            # generate the forecast data
             pre_data = df.loc[df['ARIMA_group'] == (i - 1)][observed]  # save off data for modeling
-            pre_data = pre_data[pre_data.index[-1] - timedelta(days=model_limit):pre_data.index[-1]]  # limit data
+            pre_data = pre_data[pre_data.index[-1] - pd.Timedelta(days=model_limit):pre_data.index[-1]]  # limit data
+            # generate the forecast data
             yfor = ARIMA_forecast(np.array(pre_data),
                                   len(df.loc[df['ARIMA_group'] == i]),
                                   suppress_warnings)
+
             forecasted = True
             if (savecasts):
                 df.loc[df['ARIMA_group'] == i, 'forecasts'] = yfor
@@ -130,12 +130,11 @@ def generate_corrections(df, observed, anomalies, model_limit=4, savecasts=False
             # forecast in reverse direction
             # data associated with group i+1 gets flipped for making a forecast
             post_data = df.loc[df['ARIMA_group'] == (i + 1)][observed]  # save off data for modeling
-            post_data = post_data[post_data.index[0]:post_data.index[0] + timedelta(days=model_limit)]  # limit data
+            post_data = post_data[post_data.index[0]:post_data.index[0] + pd.Timedelta(days=model_limit)]  # limit data
             # create backcast
             yrev = ARIMA_forecast(np.flip(np.array(post_data)),
                                   len(df.loc[df['ARIMA_group'] == i]),
                                   suppress_warnings)
-
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
             backcasted = True
