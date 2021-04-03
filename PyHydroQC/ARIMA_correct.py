@@ -7,6 +7,7 @@ import numpy as np
 from PyHydroQC import anomaly_utilities
 import pmdarima as pm
 import warnings
+from datetime import timedelta
 
 
 def ARIMA_group(df, anomalies, group, min_group_len=20):
@@ -65,7 +66,7 @@ def ARIMA_forecast(x, l, suppress_warnings=True):
     return y
 
 
-def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warnings=True):
+def generate_corrections(df, observed, anomalies, model_limit=4, savecasts=False, suppress_warnings=True):
     """
     generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
     Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by
@@ -76,6 +77,7 @@ def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warn
         df: data frame with columns for observations and anomalies as defined by the user.
         observed: string that names the column in the data frame containing observed values.
         anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
+        model_limit: int used to limit the amount of data from which to generate forecasts and backcasts
         savecasts: boolean used for saving the forecast as backcast data which can be used for analysis or plotting.
         suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
     Returns:
@@ -102,8 +104,6 @@ def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warn
         # find an index for an anomalous ARIMA_group having the smallest number of points
         i = df[df['ARIMA_event'] != 0]['ARIMA_group'].value_counts().index.values[-1]
 
-        # # if this is an anomalous group of points (event index not equal to 0)
-        # if(df.loc[df['ARIMA_group'] == i]['detected_event'][0] != 0):
         # reset the conditionals
         forecasted = False
         backcasted = False
@@ -112,7 +112,11 @@ def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warn
             # forecast in forward direction
             # create an array of corrected data for current anomalous group
             # i-1 is the index of the previous group being used to forecast
-            yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)][observed]),
+
+            # generate the forecast data
+            pre_data = df.loc[df['ARIMA_group'] == (i - 1)][observed]  # save off data for modeling
+            pre_data = pre_data[pre_data.index[-1] - timedelta(days=model_limit):pre_data.index[-1]]  # limit data
+            yfor = ARIMA_forecast(np.array(pre_data),
                                   len(df.loc[df['ARIMA_group'] == i]),
                                   suppress_warnings)
             forecasted = True
@@ -125,9 +129,13 @@ def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warn
         if (i != max(df['ARIMA_group'])): # if not at the end
             # forecast in reverse direction
             # data associated with group i+1 gets flipped for making a forecast
-            yrev = ARIMA_forecast(np.flip(np.array(df.loc[df['ARIMA_group'] == (i + 1)][observed])),
+            post_data = df.loc[df['ARIMA_group'] == (i + 1)][observed]  # save off data for modeling
+            post_data = post_data[post_data.index[0]:post_data.index[0] + timedelta(days=model_limit)]  # limit data
+            # create backcast
+            yrev = ARIMA_forecast(np.flip(np.array(post_data)),
                                   len(df.loc[df['ARIMA_group'] == i]),
                                   suppress_warnings)
+
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
             backcasted = True
