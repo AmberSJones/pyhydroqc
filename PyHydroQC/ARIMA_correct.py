@@ -46,24 +46,26 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
     return df
 
 
-def ARIMA_forecast(x, l):
+def ARIMA_forecast(x, l, suppress_warnings=True):
     """
     ARIMA_forecast creates predictions of data where anomalies occur. Creates ARIMA model and outputs forecasts of specified length.
     Arguments:
         x: array of values from which to predict corrections. corresponds to non-anomalous data.
         l: number of predicted data points to be forecasted/corrected.
+        suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
     Returns:
         y: array of length l of the corrected values as predicted by the model
     """
     model = pm.auto_arima(x, error_action='ignore', suppress_warnings=True)
-    warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
-    warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
-    warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
+    if suppress_warnings:
+        warnings.filterwarnings('ignore', message='Non-stationary starting autoregressive parameters')
+        warnings.filterwarnings('ignore', message='Non-invertible starting MA parameters found.')
+        warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
     y = model.predict(l)
     return y
 
 
-def generate_corrections(df, observed, anomalies, savecasts=False):
+def generate_corrections(df, observed, anomalies, savecasts=False, suppress_warnings=True):
     """
     generate_corrections passes through data with identified anomalies and determines corrections using ARIMA models.
     Corrections are determined by combining both a forecast and a backcast in a weighted average that is informed by
@@ -75,6 +77,7 @@ def generate_corrections(df, observed, anomalies, savecasts=False):
         observed: string that names the column in the data frame containing observed values.
         anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
         savecasts: boolean used for saving the forecast as backcast data which can be used for analysis or plotting.
+        suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
     Returns:
         df with additional columns:
             'det_cor' - determined correction
@@ -110,7 +113,8 @@ def generate_corrections(df, observed, anomalies, savecasts=False):
             # create an array of corrected data for current anomalous group
             # i-1 is the index of the previous group being used to forecast
             yfor = ARIMA_forecast(np.array(df.loc[df['ARIMA_group'] == (i - 1)][observed]),
-                                       len(df.loc[df['ARIMA_group'] == i]))
+                                  len(df.loc[df['ARIMA_group'] == i]),
+                                  suppress_warnings)
             forecasted = True
             if (savecasts):
                 df.loc[df['ARIMA_group'] == i, 'forecasts'] = yfor
@@ -122,7 +126,8 @@ def generate_corrections(df, observed, anomalies, savecasts=False):
             # forecast in reverse direction
             # data associated with group i+1 gets flipped for making a forecast
             yrev = ARIMA_forecast(np.flip(np.array(df.loc[df['ARIMA_group'] == (i + 1)][observed])),
-                                       len(df.loc[df['ARIMA_group'] == i]))
+                                  len(df.loc[df['ARIMA_group'] == i]),
+                                  suppress_warnings)
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
             backcasted = True
