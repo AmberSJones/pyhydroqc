@@ -77,7 +77,7 @@ def generate_corrections(df, observed, anomalies, model_limit=6, savecasts=False
         df: data frame with columns for observations and anomalies as defined by the user.
         observed: string that names the column in the data frame containing observed values.
         anomalies: string that names the column in the data frame containing booleans corresponding to anomalies where True = anomalous.
-        model_limit: int used to limit the amount of data from which to generate forecasts and backcasts
+        model_limit: int for number of days used to limit the amount of data from which to generate forecasts and backcasts
         savecasts: boolean used for saving the forecast as backcast data which can be used for analysis or plotting.
         suppress_warnings: indicates whether warnings associated with ARIMA model development and fitting should be suppressed.
     Returns:
