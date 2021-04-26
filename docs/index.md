@@ -1,27 +1,35 @@
 # PyHydroQC Functions
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+The PyHydroQC Python package contains functions for anomaly detection and correction of aquatic sensor data.
 
-## Commands
+The package may be installed from the [Test Python Package Index](https://test.pypi.org/project/pyhydroqc-AmberSJones/).
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+Also see the [GitHub repository](https://github.com/AmberSJones/PyHydroQC).
 
-## Project layout
+All functions available in the PyHydroQC package are documented here. See the example notebooks and scripts for implementation of the steps and workflow for anomaly detection and correction.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
-        
+## Rules Based Detection and Correction Functions (module: rules_detect)     
 
+:::PyHydroQC.rules_detect
+
+## Calibration Detection and Correction Functions (module: calibration)     
+
+:::PyHydroQC.calibration
+
+## Utilities Functions (module: anomaly_utilities)    
 
 :::PyHydroQC.anomaly_utilities
-:::PyHydroQC.rules_detect
+
+## Model Development and Training Functions (module: modeling_utilities)    
+
 :::PyHydroQC.modeling_utilities
+
+## Workflow Functions for Model Based Anomaly Detection (model_workflow)
+
 :::PyHydroQC.model_workflow
+
+## Model Based Correction Functions (ARIMA_correct)
+
 :::PyHydroQC.ARIMA_correct
 
 

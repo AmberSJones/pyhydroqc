@@ -104,18 +104,19 @@ print('Linear drift correction complete.\n')
 
 ## FIGURE 3 ##
 #########################################
-# Compare calibration and drift correction to original data and to technician corrected.
+# Compare calibration and drift correction to Observed data and to technician corrected.
 
 cal_snsr = 'ph'
 df = sensor_array[cal_snsr]
 plt.figure(figsize=(10, 4))
-plt.plot(df['raw'], colors[0], label='Original data')
+plt.plot(df['raw'], colors[0], label='Observed data')
 plt.plot(df['cor'], colors[1], label='Technician corrected')
 plt.plot(df['observed'], colors[3], label='Algorithm corrected')
 plt.xlim(datetime.datetime(2014, 7, 24), datetime.datetime(2014, 8, 1))  # Specify date range of plot
 plt.ylim(7.6, 8.4)
 plt.legend()
 plt.ylabel('pH')
+plt.xlabel('Date')
 plt.show()
 plt.savefig('Figures/Figure3.png', bbox_inches='tight')
 
@@ -124,7 +125,7 @@ plt.savefig('Figures/Figure3.png', bbox_inches='tight')
 # Examine thresholds and model residuals
 
 # set working directory for importing model results.
-os.chdir('./Examples/Plotting')
+os.chdir('Examples/Plotting')
 
 ARIMA_detections = pd.read_csv('ARIMA_detections_MainStreet_cond.csv',
                                header=0,
@@ -145,6 +146,7 @@ plt.ylim(-200, 150)
 plt.xticks(pd.date_range(start='7/9/2015', end='8/14/2015', freq='5D'))  # Specify xticks at 5-day intervals
 plt.legend()
 plt.ylabel('Specific conductance, μS/cm')
+plt.xlabel('Date')
 plt.show()
 plt.savefig('Figures/Figure4.png', bbox_inches='tight')
 
@@ -169,7 +171,7 @@ labels = LSTM_multivar_bidir_df['labeled_event']
 detections = LSTM_multivar_bidir_df['detected_event']
 
 plt.figure(figsize=(10, 4))
-plt.plot(raw, color=colors[0], label='Original data')
+plt.plot(raw, color=colors[0], label='Observed data')
 plt.plot(predictions, color=colors[2], label='Model prediction')
 plt.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
 plt.plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
@@ -178,6 +180,7 @@ plt.ylim(-20, 1220)
 plt.yticks(range(0, 1200, 200))
 plt.xticks(pd.date_range(start='12/18/2017', end='12/27/2017', freq='2D'))  # Specify xticks at 2-day intervals
 plt.ylabel('Specific conductance, μS/cm')
+plt.xlabel('Date')
 plt.legend(labelspacing=0.2, loc='upper left', ncol=2, fontsize=9, handletextpad=0.2, columnspacing=0.25)
 
 plt.annotate('true\npositive\nevent', xy=(datetime.datetime(2017, 12, 18, 16, 0), 415), xycoords='data',
@@ -229,7 +232,7 @@ labels = LSTM_multivar_bidir_df['labeled_event']
 detections = LSTM_multivar_bidir_df['detected_event']
 
 plt.figure(figsize=(12, 4))
-plt.plot(raw, color=colors[0], label='Original data')
+plt.plot(raw, color=colors[0], label='Observed data')
 plt.plot(predictions, color=colors[2], label='Model prediction')
 plt.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
 plt.plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
@@ -238,6 +241,7 @@ plt.ylim(8.25, 10.5)
 plt.xticks(pd.date_range(start='6/1/2018', end='10/30/2018', freq='15D'))  # Specify xticks at 15-day intervals
 plt.legend()
 plt.ylabel('pH')
+plt.xlabel('Date')
 plt.show()
 plt.savefig('Figures/Figure7.png', bbox_inches='tight')
 
@@ -247,18 +251,18 @@ plt.savefig('Figures/Figure7.png', bbox_inches='tight')
 
 fig8 = plt.figure(figsize=(10, 6))
 ax = fig8.add_subplot(2, 1, 1)
-ax.plot(raw, color=colors[0], label='Original data')
+ax.plot(raw, color=colors[0], label='Observed data')
 ax.plot(predictions, color=colors[2], label='Model prediction')
 ax.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
 ax.plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
 ax.set_xlim(datetime.datetime(2017, 10, 2), datetime.datetime(2017, 10, 5))  # Specify date range of plot
 ax.set_ylim(8.35, 8.7)
 ax.set_xticks(pd.date_range(start='10/2/2017', end='10/5/2017', freq='1D'))  # Specify xticks at 1-day intervals
-ax.set_yticks(np.arange(8.4,8.75,0.1))
+ax.set_yticks(np.arange(8.4, 8.75, 0.1))
 ax.legend()
 ax.set_ylabel('pH')
 ax = fig8.add_subplot(2, 1, 2)
-ax.plot(raw, color=colors[0], label='Original data')
+ax.plot(raw, color=colors[0], label='Observed data')
 ax.plot(predictions, color=colors[2], label='Model prediction')
 ax.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
 ax.plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
@@ -266,6 +270,7 @@ ax.set_xlim(datetime.datetime(2019, 8, 27), datetime.datetime(2019, 8, 30))  # S
 ax.set_ylim(8.1, 9.0)
 ax.set_xticks(pd.date_range(start='8/27/2019', end='8/30/2019', freq='1D'))  # Specify xticks at 1-day intervals
 ax.set_ylabel('pH')
+plt.xlabel('Date')
 plt.savefig('Figures/Figure8.png', bbox_inches='tight')
 
 
@@ -274,57 +279,61 @@ plt.savefig('Figures/Figure8.png', bbox_inches='tight')
 
 #### Retrieve data
 #########################################
+os.chdir('..')
+os.chdir('..')
 site = 'TonyGrove'
 sensors = ['temp', 'cond', 'ph', 'do']
 years = [2014, 2015, 2016, 2017, 2018, 2019]
 sensor_array = anomaly_utilities.get_data(sensors=sensors, site=site, years=years, path="./LRO_data/")
 
-ARIMA_detections = pd.read_csv('./Examples/ARIMA_detections_TonyGrove_cond.csv',
+os.chdir('Examples/Plotting/')
+
+ARIMA_detections = pd.read_csv('ARIMA_detections_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-ARIMA_df = pd.read_csv('./Examples/ARIMA_df_TonyGrove_cond.csv',
+ARIMA_df = pd.read_csv('ARIMA_df_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_univar_detections = pd.read_csv('./Examples/LSTM_univar_detections_TonyGrove_cond.csv',
+LSTM_univar_detections = pd.read_csv('LSTM_univar_detections_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_univar_df = pd.read_csv('./Examples/LSTM_univar_df_anomalies_TonyGrove_cond.csv',
+LSTM_univar_df = pd.read_csv('LSTM_univar_df_anomalies_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_univar_bidir_detections = pd.read_csv('./Examples/LSTM_univar_bidir_detections_TonyGrove_cond.csv',
+LSTM_univar_bidir_detections = pd.read_csv('LSTM_univar_bidir_detections_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_univar_bidir_df = pd.read_csv('./Examples/LSTM_univar_bidir_df_anomalies_TonyGrove_cond.csv',
+LSTM_univar_bidir_df = pd.read_csv('LSTM_univar_bidir_df_anomalies_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_multivar_detections = pd.read_csv('./Examples/LSTM_multivar_detections_TonyGrove_cond.csv',
+LSTM_multivar_detections = pd.read_csv('LSTM_multivar_detections_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_multivar_df = pd.read_csv('./Examples/LSTM_multivar_df_TonyGrove_cond.csv',
+LSTM_multivar_df = pd.read_csv('LSTM_multivar_df_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_multivar_bidir_detections = pd.read_csv('./Examples/LSTM_multivar_bidir_detections_TonyGrove_cond.csv',
+LSTM_multivar_bidir_detections = pd.read_csv('LSTM_multivar_bidir_detections_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
                                infer_datetime_format=True)
-LSTM_multivar_bidir_df = pd.read_csv('./Examples/LSTM_multivar_bidir_df_TonyGrove_cond.csv',
+LSTM_multivar_bidir_df = pd.read_csv('LSTM_multivar_bidir_df_TonyGrove_cond.csv',
                                header=0,
                                index_col=0,
                                parse_dates=True,
@@ -340,7 +349,7 @@ predictions = ARIMA_detections['prediction']
 detections = ARIMA_df['detected_event']
 
 plt.figure(figsize=(10, 4))
-plt.plot(raw, color=colors[0], label='Original data')
+plt.plot(raw, color=colors[0], label='Observed data')
 plt.plot(predictions, color=colors[2], label='Model prediction')
 plt.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
 plt.plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
@@ -349,6 +358,7 @@ plt.ylim(330, 425)
 plt.xticks(pd.date_range(start='11/9/2018', end='11/16/2018', freq='1D'))  # Specify xticks at 1-day intervals
 plt.legend()
 plt.ylabel('Specific conductance, μS/cm')
+plt.xlabel('Date')
 plt.annotate('false\npositive\nevent', xy=(datetime.datetime(2018, 11, 11, 11, 0), 359),  xycoords='data',
              xytext=(datetime.datetime(2018, 11, 11, 0, 0), 345), textcoords='data',
              arrowprops=dict(facecolor='black', width=1.5, headwidth=7),
@@ -395,38 +405,42 @@ model_type = ['ARIMA', 'LSTM_univar', 'LSTM_univar_bidir', 'LSTM_multivar', 'LST
 model_text = ['ARIMA', 'LSTM univariate', 'LSTM univariate bidirectional', 'LSTM multivariate', 'LSTM multivariate bidirectional']
 
 fig, ax = plt.subplots(nrows=5, ncols=3, figsize=(15, 8), sharex='col', sharey='col',
-                    gridspec_kw={'width_ratios': [1, 1, 3], 'height_ratios': [1, 1, 1, 1, 1], 'hspace': 0, 'wspace': 0.11})
+                    gridspec_kw={'width_ratios': [3, 1, 1], 'height_ratios': [1, 1, 1, 1, 1], 'hspace': 0, 'wspace': 0.11})
 fig.text(0.08, 0.5, 'Specific conductance, μS/cm', va='center', rotation='vertical', fontsize=14)
+fig.text(0.5, 0.05, 'Date', va='center', fontsize=14)
 for i, mdl in enumerate(model_type):
-    ax[i][0].plot(raw, color=colors[0], label='Original data')
-    ax[i][0].plot(predictions, color=colors[2], label='Model prediction')
+    ax[i][0].plot(raw, color=colors[0], label='Observed data')
+    ax[i][0].plot(predictions[mdl], color=colors[2], label='Model prediction')
     ax[i][0].plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
-    ax[i][0].plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
-    ax[i][0].set_xlim(datetime.datetime(2014, 9, 19, 6), datetime.datetime(2014, 9, 19, 18))
+    ax[i][0].plot(predictions[mdl][detections[mdl] > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
+    ax[i][0].set_xlim(datetime.datetime(2014, 9, 18, 18), datetime.datetime(2014, 9, 20, 6))
     ax[i][0].set_ylim(295, 375)
     ax[i][0].set_yticks(ticks=[300, 320, 340, 360])
-    ax[i][0].set_xticks(pd.date_range(start='9/19/2014 8:00', end='9/19/2014 18:00', freq='6H'))
-    ax[i][1].plot(raw, color=colors[0], label='Original data')
-    ax[i][1].plot(predictions, color=colors[2], label='Model prediction')
+    ax[i][0].set_xticks(pd.date_range(start='9/18/2014 18:00', end='9/20/2014 6:00', freq='8H'))
+    ax[i][1].plot(raw, color=colors[0], label='Observed data')
+    ax[i][1].plot(predictions[mdl], color=colors[2], label='Model prediction')
     ax[i][1].plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
-    ax[i][1].plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
+    ax[i][1].plot(predictions[mdl][detections[mdl] > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
     ax[i][1].set_xlim(datetime.datetime(2015, 2, 5, 6, 0), datetime.datetime(2015, 2, 5, 18))
     ax[i][1].set_ylim(350, 440)
     ax[i][1].set_yticks(ticks=[350, 375, 400, 425])
     ax[i][1].set_xticks(pd.date_range(start='2/5/2015 8:00', end='2/5/2015 18:00', freq='6H'))
-    ax[i][2].plot(raw, color=colors[0], label='Original data')
-    ax[i][2].plot(predictions, color=colors[2], label='Model prediction')
+    ax[i][2].plot(raw, color=colors[0], label='Observed data')
+    ax[i][2].plot(predictions[mdl], color=colors[2], label='Model prediction')
     ax[i][2].plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
-    ax[i][2].plot(predictions[detections > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
+    ax[i][2].plot(predictions[mdl][detections[mdl] > 0], 'x', color=colors[3], markersize=6, markeredgewidth=2, label='Algorithm detected anomalies')
     ax[i][2].set_xlim(datetime.datetime(2015, 7, 6), datetime.datetime(2015, 7, 30))
     ax[i][2].set_ylim(310, 385)
     ax[i][2].set_yticks(ticks=[325, 350, 375])
     ax[i][2].set_xticks(pd.date_range(start='7/8/2015', end='7/30/2015', freq='5D'))
 
     ax[i][0].annotate(model_text[i],
-                      xy=(datetime.datetime(2014, 9, 19, 6, 30), 365),
-                      xytext=(datetime.datetime(2014, 9, 19, 6, 30), 365),
+                      xy=(datetime.datetime(2014, 9, 18, 20), 365),
+                      xytext=(datetime.datetime(2014, 9, 18, 20), 365),
                       annotation_clip=False, rotation=0,
                       ha='left', va='center', fontname='Arial Narrow',
                       horizontalalignment='right', verticalalignment='top')
-    ax[0][2].legend(ncol=2)
+    ax[4][0].legend(ncol=1, labelspacing=0.2, fontsize=9, handletextpad=0.2, columnspacing=0.25, loc='lower right')
+plt.savefig('Figures/Figure9.png', bbox_inches='tight')
+
+###################################################

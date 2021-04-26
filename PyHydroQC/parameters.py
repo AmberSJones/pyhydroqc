@@ -247,7 +247,7 @@ site_params = {
             'pdq': [10, 1, 3],
         },
     },
-    'BlacksmithFork': {
+    'BlackSmithFork': {
         'temp': {
             'max_range': 28,
             'min_range': -2,
