@@ -139,13 +139,13 @@
     
       <div class="md-header__source">
         
-<a href="https://github.com/AmberSJones/PyHydroQC/" title="Go to repository" class="md-source" data-md-component="source">
+<a href="https://github.com/AmberSJones/pyhydroqc/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    AmberSJones/pyhydroqc
   </div>
 </a>
       </div>
@@ -184,13 +184,13 @@
   
     <div class="md-nav__source">
       
-<a href="https://github.com/AmberSJones/PyHydroQC/" title="Go to repository" class="md-source" data-md-component="source">
+<a href="https://github.com/AmberSJones/pyhydroqc/" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
   </div>
   <div class="md-source__repository">
-    GitHub
+    AmberSJones/pyhydroqc
   </div>
 </a>
     </div>
@@ -206,7 +206,7 @@
   
     <li class="md-nav__item">
       <a href=".." class="md-nav__link">
-        Home
+        Functions
       </a>
     </li>
   
@@ -581,7 +581,7 @@
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/AmberSJones/PyHydroQC/edit/master/docs/SingleSiteExample.ipynb" title="Edit this page" class="md-content__button md-icon">
+                  <a href="https://github.com/AmberSJones/pyhydroqc/edit/master/docs/SingleSiteExample.ipynb" title="Edit this page" class="md-content__button md-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
                   </a>
                 
@@ -613,6 +613,13 @@
 }());
 </script>
 
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><a href="https://mybinder.org/v2/gh/AmberSJones/pyhydroqc/master?urlpath=lab%2Ftree%2Fdocs%2FSingleSiteExample.ipynb"><img alt="Binder" src="https://mybinder.org/badge_logo.svg" /></a></p>
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
@@ -658,8 +665,10 @@ from PyHydroQC.model_workflow import ModelType
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="retrieve-data">Retrieve data</h2>
 <p>Creates an object with a data frame specific to each sensor.</p>
-<p>Functions called: 
-- get_data</p>
+<p>Functions called:</p>
+<ul>
+<li>get_data</li>
+</ul>
 </div>
 </div>
 </div>
@@ -796,10 +805,12 @@ calib{&#39;persist_low&#39;: 3, &#39;persist_high&#39;: 7, &#39;hour_low&#39;: 7
 <p>Performs checks for range and persistence. Min/max range and duration are defined in the parameters.
 Data outside a range or persisting longer than a duration are detected as anomalous, corrected by linear interpolation.
 The output is a column 'observed' of intermediate results that are used for subsequent modeling.</p>
-<p>Functions called: 
-- range_check
-- persistence
-- interpolate</p>
+<p>Functions called: </p>
+<ul>
+<li>range_check</li>
+<li>persistence</li>
+<li>interpolate</li>
+</ul>
 </div>
 </div>
 </div>
@@ -845,17 +856,27 @@ print('Rules based detection complete.\n')
 Calibration events detected here should be reviewed, compared to field records, and organized as input to the
 following step: drift correction.
 A subset of sensors are selected (1:4) because temperature is not calibrated.
-Calibration Approaches:
-1. Concurrent persistence: where persistence is within a certain window (e.g., after a sensor is returned to the water, 
+Calibration Approaches:</p>
+<ol>
+<li>
+<p>Concurrent persistence: where persistence is within a certain window (e.g., after a sensor is returned to the water, 
 it is 'stuck' and reports the same values for several time steps), the time of day within a certain window, and where 
-these overlap for all sensors, the points are identified as an event. Hours and durations are defined in the parameters.<br />
-2. Edge detection: Edges are determined using the differences in data before and after each point. The width 
+these overlap for all sensors, the points are identified as an event. Hours and durations are defined in the parameters.</p>
+</li>
+<li>
+<p>Edge detection: Edges are determined using the differences in data before and after each point. The width 
 may be a single point (width = 1) or greater. If the difference exceeds a threshold (a parameter setting), then it is 
 identified as an event. </p>
-<p>Functions called: 
-- calib_overlap
-    - calib_detect
-- edge detect</p>
+</li>
+</ol>
+<p>Functions called: </p>
+<ul>
+<li>calib_overlap<ul>
+<li>calib_detect</li>
+</ul>
+</li>
+<li>edge detect</li>
+</ul>
 </div>
 </div>
 </div>
@@ -984,9 +1005,11 @@ correction, the routine requires a start date, an end date, and a gap value to s
 function determines the gap value for each calibration. To do so requires dates of calibration determined either by the 
 above  calibration detection functions (after review) or compiled from field records. The determined gap values should
 be reviewed and adjusted.</p>
-<p>Functions called: 
-- find_gap
-- lin_drift_cor</p>
+<p>Functions called: </p>
+<ul>
+<li>find_gap</li>
+<li>lin_drift_cor</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1140,13 +1163,17 @@ aggregated so that a detection by any model results in an anomaly.</p>
 <h3 id="arima-detection">ARIMA Detection</h3>
 <p>ARIMA models use a combination of past data in a linear form to predict the next value. These models are univariate.
 Each ARIMA model requires the parameters p, d, q, which can be defined automatically as shown here.</p>
-<p>Functions called: 
-- pdq 
-- ARIMA_detect: 
-    - build_ARIMA_model
-    - set_dynamic_threshold
-    - detect_anomalies
-    - anomaly_events</p>
+<p>Functions called: </p>
+<ul>
+<li>pdq </li>
+<li>ARIMA_detect: <ul>
+<li>build_ARIMA_model</li>
+<li>set_dynamic_threshold</li>
+<li>detect_anomalies</li>
+<li>anomaly_events</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1222,17 +1249,23 @@ are defined in the parameters.</p>
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="data-univariate-model-vanilla">DATA: univariate, MODEL: vanilla</h4>
 <p>Uses a single sensor and data prior to predict the next point.</p>
-<p>Functions called: 
-- LSTM_detect_univar:
-    - LSTM_univar:
-        - create_scaler
-        - create_sequenced_dataset
-        - create_training_dataset
-        - create_vanilla_model
-        - train_model
-    - set_dynamic_threshold
-    - detect_anomalies
-    - anomaly_events</p>
+<p>Functions called: </p>
+<ul>
+<li>LSTM_detect_univar:<ul>
+<li>LSTM_univar:<ul>
+<li>create_scaler</li>
+<li>create_sequenced_dataset</li>
+<li>create_training_dataset</li>
+<li>create_vanilla_model</li>
+<li>train_model</li>
+</ul>
+</li>
+<li>set_dynamic_threshold</li>
+<li>detect_anomalies</li>
+<li>anomaly_events</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1296,17 +1329,23 @@ LSTM univariate detection complete.
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="data-univariate-model-bidirectional">DATA: univariate,  MODEL: bidirectional</h4>
 <p>Uses a single sensor and data before and after to predict a point.</p>
-<p>Functions called: 
-- LSTM_detect_univar:
-    - LSTM_univar_bidir:
-        - create_scaler
-        - create_bidir_sequenced_dataset
-        - create_bidir_training_dataset
-        - create_bidir_model
-        - train_model
-    - set_dynamic_threshold
-    - detect_anomalies
-    - anomaly_events</p>
+<p>Functions called: </p>
+<ul>
+<li>LSTM_detect_univar:<ul>
+<li>LSTM_univar_bidir:<ul>
+<li>create_scaler</li>
+<li>create_bidir_sequenced_dataset</li>
+<li>create_bidir_training_dataset</li>
+<li>create_bidir_model</li>
+<li>train_model</li>
+</ul>
+</li>
+<li>set_dynamic_threshold</li>
+<li>detect_anomalies</li>
+<li>anomaly_events</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1370,17 +1409,23 @@ LSTM univariate bidirectional detection complete.
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="data-multivariate-model-vanilla">DATA: multivariate,  MODEL: vanilla</h4>
 <p>Uses multiple sensors as inputs and outputs and data prior to predict the next point.</p>
-<p>Functions called: 
-- LSTM_detect_multivar:
-    - LSTM_multivar:
-        - create_scaler
-        - create_sequenced_dataset
-        - create_training_dataset
-        - create_vanilla_model
-        - train_model
-    - set_dynamic_threshold
-    - detect_anomalies
-    - anomaly_events</p>
+<p>Functions called: </p>
+<ul>
+<li>LSTM_detect_multivar:<ul>
+<li>LSTM_multivar:<ul>
+<li>create_scaler</li>
+<li>create_sequenced_dataset</li>
+<li>create_training_dataset</li>
+<li>create_vanilla_model</li>
+<li>train_model</li>
+</ul>
+</li>
+<li>set_dynamic_threshold</li>
+<li>detect_anomalies</li>
+<li>anomaly_events</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1430,17 +1475,23 @@ LSTM mutivariate detection complete.
 <div class="text_cell_render border-box-sizing rendered_html">
 <h4 id="data-multivariate-model-bidirectional">DATA: multivariate,  MODEL: bidirectional</h4>
 <p>Uses multiple sensors as inputs and outputs and data before and after to predict a point.</p>
-<p>Functions called: 
-- LSTM_detect_multivar:
-    - LSTM_multivar_bidir:
-        - create_scaler
-        - create_bidir_sequenced_dataset
-        - create_bidir_training_dataset
-        - create_bidir_model
-        - train_model
-    - set_dynamic_threshold
-    - detect_anomalies
-    - anomaly_events</p>
+<p>Functions called: </p>
+<ul>
+<li>LSTM_detect_multivar:<ul>
+<li>LSTM_multivar_bidir:<ul>
+<li>create_scaler</li>
+<li>create_bidir_sequenced_dataset</li>
+<li>create_bidir_training_dataset</li>
+<li>create_bidir_model</li>
+<li>train_model</li>
+</ul>
+</li>
+<li>set_dynamic_threshold</li>
+<li>detect_anomalies</li>
+<li>anomaly_events</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1500,8 +1551,10 @@ LSTM multivariate bidirectional detection complete.
 <div class="text_cell_render border-box-sizing rendered_html">
 <h3 id="aggregate-detections-for-all-models">Aggregate Detections for All Models</h3>
 <p>Aggregates the results from all models.</p>
-<p>Functions called: 
-- aggregate_results</p>
+<p>Functions called: </p>
+<ul>
+<li>aggregate_results</li>
+</ul>
 </div>
 </div>
 </div>
@@ -1546,11 +1599,15 @@ for snsr in sensors:
 <p>Correction is performed using piecewise ARIMA- small models determined for each period of anomalous data, along with
 forecast and backcast, which consider data before and after a period of anomalous data and are merged together to 
 ensure there are no discontinuities.</p>
-<p>Functions called: 
-- generate_corrections
-    - group_bools
-    - ARIMA_group
-    - xfade</p>
+<p>Functions called: </p>
+<ul>
+<li>generate_corrections<ul>
+<li>group_bools</li>
+<li>ARIMA_group</li>
+<li>xfade</li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 </div>
