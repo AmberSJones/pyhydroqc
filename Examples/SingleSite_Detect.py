@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 #########################################
 site = 'MainStreet'
 sensors = ['temp', 'cond', 'ph', 'do']
-years = [2015, 2016, 2017, 2018, 2019]
+years = [2014, 2015, 2016, 2017, 2018, 2019]
 sensor_array = anomaly_utilities.get_data(sensors=sensors, site=site, years=years, path="./LRO_data/")
 
 #### Rules Based Anomaly Detection
@@ -35,7 +35,6 @@ for snsr in sensor_array:
                                                                        length=site_params[site][snsr]['persist'],
                                                                        output_grp=True)
     sensor_array[snsr] = rules_detect.interpolate(df=sensor_array[snsr])
-print('Rules based detection complete.\n')
 
 # metrics for rules based detection #
 for snsr in sensor_array:
@@ -72,14 +71,14 @@ threshold = dict()
 threshold['cond'] = 60
 threshold['ph'] = 0.1
 threshold['do'] = 0.4
-for cal_snsr in calib_sensors:
+for snsr in calib_sensors:
     # Width is the window of time to consider in the edge detect difference.
     # 1 determines the difference between each point independently.
     # Higher numbers use the difference over a longer window.
-    calib_candidates[cal_snsr], edge_diff[cal_snsr] = calibration.calib_edge_detect(observed=sensor_array[cal_snsr]['observed'],
-                                                                                    width=1,
-                                                                                    calib_params=calib_params,
-                                                                                    threshold=threshold[cal_snsr])
+    calib_candidates[snsr], edge_diff[snsr] = calibration.calib_edge_detect(observed=sensor_array[snsr]['observed'],
+                                                                            width=1,
+                                                                            calib_params=calib_params,
+                                                                            threshold=threshold[snsr])
 ### Find Gap Values
 #########################################
 # Subset of sensors that are calibrated
@@ -129,15 +128,15 @@ for cal_snsr in calib_sensors:
     # Plotting to examine when calibrations occur and compare algorithm and technician gap values
     l = len(calib_dates[cal_snsr])
     ncol = math.ceil(math.sqrt(l))
-    nrow = ncol
+    nrow = math.ceil(l/ncol)
     hours = 6
 
     fig, ax = plt.subplots(nrows=nrow, ncols=ncol, figsize=(nrow, ncol+1), facecolor='w')
     for i, axi in enumerate(ax.flat):
         if i < l:
             axi.plot(sensor_array[cal_snsr]['observed'].loc[
-                    pd.to_datetime(calib_dates[cal_snsr]['end'].loc[i]) - pd.Timedelta(hours=hours):
-                    pd.to_datetime(calib_dates[cal_snsr]['end'].loc[i]) + pd.Timedelta(hours=hours)
+                    pd.to_datetime(calib_dates[cal_snsr]['end'].iloc[i]) - pd.Timedelta(hours=hours):
+                    pd.to_datetime(calib_dates[cal_snsr]['end'].iloc[i]) + pd.Timedelta(hours=hours)
                     ])
             axi.plot(shifts[cal_snsr][i], 'c')
             axi.plot(tech_shifts[cal_snsr][i], 'r')
@@ -155,16 +154,18 @@ gaps['ph'].loc[43, 'end'] = '2019-08-15 15:00'
 #### Perform Linear Drift Correction
 #########################################
 calib_sensors = sensors[1:4]
-for cal_snsr in calib_sensors:
-    # Set start dates for drift correction at the previously identified calibration (one month back for the first calibration.)
-    gaps[cal_snsr]['start'] = gaps[cal_snsr]['end'].shift(1)
-    gaps[cal_snsr]['start'][0] = gaps[cal_snsr]['end'][0] - pd.Timedelta(days=30)
-    if len(gaps[cal_snsr]) > 0:
-        for i in range(min(gaps[cal_snsr].index), max(gaps[cal_snsr].index) + 1):
-            result, sensor_array[cal_snsr]['observed'] = calibration.lin_drift_cor(observed=sensor_array[cal_snsr]['observed'],
-                                                                                   start=gaps[cal_snsr]['start'][i],
-                                                                                   end=gaps[cal_snsr]['end'][i],
-                                                                                   gap=gaps[cal_snsr]['gap'][i],
+for snsr in calib_sensors:
+    # Set start dates for drift correction at the previously identified calibration 
+    # For the first calibration - use one month back or go to the first date in the series.
+    gaps[snsr]['start'] = gaps[snsr]['end'].shift(1)
+    # gaps[snsr]['start'].iloc[0] = sensor_array[snsr].index[0]
+    gaps[snsr]['start'].iloc[0] = gaps[snsr]['end'].iloc[0] - pd.Timedelta(days=30)
+    if len(gaps[snsr]) > 0:
+        for i in range(min(gaps[snsr].index), max(gaps[snsr].index) + 1):
+            result, sensor_array[snsr]['observed'] = calibration.lin_drift_cor(observed=sensor_array[snsr]['observed'],
+                                                                                   start=gaps[snsr]['start'][i],
+                                                                                   end=gaps[snsr]['end'][i],
+                                                                                   gap=gaps[snsr]['gap'][i],
                                                                                    replace=True)
 
 #### Model Based Anomaly Detection
@@ -216,16 +217,14 @@ metrics_all = dict()
 for snsr in sensors:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
-    results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
-                                                                               models=models, verbose=True,
-                                                                               compare=True)
-
     models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
     models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
     models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
     models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
-    results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(
-        df=sensor_array[snsr], models=models, verbose=True, compare=True)
+    results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
+                                                                               models=models,
+                                                                               verbose=True,
+                                                                               compare=True)
     print('\nOverall metrics')
     print('Sensor: ' + snsr)
     anomaly_utilities.print_metrics(metrics_all[snsr])
