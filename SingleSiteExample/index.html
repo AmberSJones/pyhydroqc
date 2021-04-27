@@ -1,0 +1,1652 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.0">
+    
+    
+      
+        <title>Example - pyhydroqc Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.a3f8f96a.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.7fa14f5b.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../css/ansi-colours.css">
+    
+      <link rel="stylesheet" href="../css/jupyter-cells.css">
+    
+      <link rel="stylesheet" href="../css/pandas-dataframe.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#single-site-anomaly-detection-and-correction" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="pyhydroqc Documentation" class="md-header__button md-logo" aria-label="pyhydroqc Documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            pyhydroqc Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Example
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="md-header__options">
+      
+    </div>
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        
+<a href="https://github.com/AmberSJones/PyHydroQC/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="pyhydroqc Documentation" class="md-nav__button md-logo" aria-label="pyhydroqc Documentation">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    pyhydroqc Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      
+<a href="https://github.com/AmberSJones/PyHydroQC/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../about/" class="md-nav__link">
+        About
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Example
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Example
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-libraries-and-functions" class="md-nav__link">
+    Import Libraries and Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retrieve-data" class="md-nav__link">
+    Retrieve data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-parameters" class="md-nav__link">
+    Import Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-based-anomaly-detection" class="md-nav__link">
+    Rules Based Anomaly Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="Rules Based Anomaly Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect-calibration-events" class="md-nav__link">
+    Detect Calibration Events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-gap-values-and-perform-linear-drift-correction" class="md-nav__link">
+    Find Gap Values and Perform Linear Drift Correction
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-based-anomaly-detection" class="md-nav__link">
+    Model Based Anomaly Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Based Anomaly Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arima-detection" class="md-nav__link">
+    ARIMA Detection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lstm-detection" class="md-nav__link">
+    LSTM Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="LSTM Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-univariate-model-vanilla" class="md-nav__link">
+    DATA: univariate, MODEL: vanilla
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-univariate-model-bidirectional" class="md-nav__link">
+    DATA: univariate,  MODEL: bidirectional
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-multivariate-model-vanilla" class="md-nav__link">
+    DATA: multivariate,  MODEL: vanilla
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-multivariate-model-bidirectional" class="md-nav__link">
+    DATA: multivariate,  MODEL: bidirectional
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregate-detections-for-all-models" class="md-nav__link">
+    Aggregate Detections for All Models
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correction" class="md-nav__link">
+    Correction
+  </a>
+  
+    <nav class="md-nav" aria-label="Correction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#import-libraries-and-functions" class="md-nav__link">
+    Import Libraries and Functions
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#retrieve-data" class="md-nav__link">
+    Retrieve data
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#import-parameters" class="md-nav__link">
+    Import Parameters
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rules-based-anomaly-detection" class="md-nav__link">
+    Rules Based Anomaly Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="Rules Based Anomaly Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#detect-calibration-events" class="md-nav__link">
+    Detect Calibration Events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find-gap-values-and-perform-linear-drift-correction" class="md-nav__link">
+    Find Gap Values and Perform Linear Drift Correction
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-based-anomaly-detection" class="md-nav__link">
+    Model Based Anomaly Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="Model Based Anomaly Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#arima-detection" class="md-nav__link">
+    ARIMA Detection
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lstm-detection" class="md-nav__link">
+    LSTM Detection
+  </a>
+  
+    <nav class="md-nav" aria-label="LSTM Detection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-univariate-model-vanilla" class="md-nav__link">
+    DATA: univariate, MODEL: vanilla
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-univariate-model-bidirectional" class="md-nav__link">
+    DATA: univariate,  MODEL: bidirectional
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-multivariate-model-vanilla" class="md-nav__link">
+    DATA: multivariate,  MODEL: vanilla
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-multivariate-model-bidirectional" class="md-nav__link">
+    DATA: multivariate,  MODEL: bidirectional
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aggregate-detections-for-all-models" class="md-nav__link">
+    Aggregate Detections for All Models
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correction" class="md-nav__link">
+    Correction
+  </a>
+  
+    <nav class="md-nav" aria-label="Correction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/AmberSJones/PyHydroQC/edit/master/docs/SingleSiteExample.ipynb" title="Edit this page" class="md-content__button md-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
+                  </a>
+                
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+(function() {
+  function addWidgetsRenderer() {
+    var mimeElement = document.querySelector('script[type="application/vnd.jupyter.widget-view+json"]');
+    var scriptElement = document.createElement('script');
+    var widgetRendererSrc = 'https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js';
+    var widgetState;
+
+    // Fallback for older version:
+    try {
+      widgetState = mimeElement && JSON.parse(mimeElement.innerHTML);
+
+      if (widgetState && (widgetState.version_major < 2 || !widgetState.version_major)) {
+        widgetRendererSrc = 'jupyter-js-widgets@*/dist/embed.js';
+      }
+    } catch(e) {}
+
+    scriptElement.src = widgetRendererSrc;
+    document.body.appendChild(scriptElement);
+  }
+
+  document.addEventListener('DOMContentLoaded', addWidgetsRenderer);
+}());
+</script>
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="single-site-anomaly-detection-and-correction">SINGLE SITE ANOMALY DETECTION AND CORRECTION</h1>
+<p>This script performs anomaly detection and correction for multiple sensors at a single monitoring site.
+The script imports data, performs initial anomaly detection based on rules, uses models (ARIMA and 4 flavors of LSTM)
+and associated thresholds to detect anomalies, aggregates for overall anomaly detection, and performs correction
+based on ARIMA.</p>
+<p>Site: Logan River at Main Street</p>
+<p>Sensors: temperature, specific conductance, pH, dissolved oxygen</p>
+<p>Created: Amber Jones, March 2021</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="import-libraries-and-functions">Import Libraries and Functions</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">import pandas as pd
+import matplotlib.pyplot as plt
+import math
+from PyHydroQC import anomaly_utilities
+from PyHydroQC import calibration
+from PyHydroQC import model_workflow
+from PyHydroQC import rules_detect
+from PyHydroQC import ARIMA_correct
+from PyHydroQC import modeling_utilities
+from PyHydroQC.model_workflow import ModelType
+</code></pre>
+
+
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="retrieve-data">Retrieve data</h2>
+<p>Creates an object with a data frame specific to each sensor.</p>
+<p>Functions called: 
+- get_data</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">site = 'MainStreet'
+sensors = ['temp', 'cond', 'ph', 'do']
+sensor_array = anomaly_utilities.get_data(sensors=sensors, filename='MS2017.csv', path='../LRO_data/')
+for snsr in sensor_array:
+    print(snsr + str(sensor_array[snsr]))
+
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>temp                      raw
+datetime                 
+2017-01-01 00:00:00  2.02
+2017-01-01 00:15:00  2.01
+2017-01-01 00:30:00  2.00
+2017-01-01 00:45:00  1.99
+2017-01-01 01:00:00  1.96
+...                   ...
+2017-12-31 22:45:00  2.34
+2017-12-31 23:00:00  2.31
+2017-12-31 23:15:00  2.28
+2017-12-31 23:30:00  2.26
+2017-12-31 23:45:00  2.23
+
+[35019 rows x 1 columns]
+cond                       raw
+datetime                  
+2017-01-01 00:00:00  410.8
+2017-01-01 00:15:00  410.8
+2017-01-01 00:30:00  410.9
+2017-01-01 00:45:00  410.8
+2017-01-01 01:00:00  410.9
+...                    ...
+2017-12-31 22:45:00  382.2
+2017-12-31 23:00:00  382.0
+2017-12-31 23:15:00  382.0
+2017-12-31 23:30:00  381.9
+2017-12-31 23:45:00  381.9
+
+[35019 rows x 1 columns]
+ph                      raw
+datetime                 
+2017-01-01 00:00:00  8.54
+2017-01-01 00:15:00  8.54
+2017-01-01 00:30:00  8.54
+2017-01-01 00:45:00  8.54
+2017-01-01 01:00:00  8.54
+...                   ...
+2017-12-31 22:45:00  8.47
+2017-12-31 23:00:00  8.47
+2017-12-31 23:15:00  8.47
+2017-12-31 23:30:00  8.47
+2017-12-31 23:45:00  8.47
+
+[35019 rows x 1 columns]
+do                       raw
+datetime                  
+2017-01-01 00:00:00  11.78
+2017-01-01 00:15:00  11.78
+2017-01-01 00:30:00  11.78
+2017-01-01 00:45:00  11.78
+2017-01-01 01:00:00  11.79
+...                    ...
+2017-12-31 22:45:00  11.77
+2017-12-31 23:00:00  11.78
+2017-12-31 23:15:00  11.79
+2017-12-31 23:30:00  11.80
+2017-12-31 23:45:00  11.80
+
+[35019 rows x 1 columns]
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="import-parameters">Import Parameters</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python"># Parameters may be specified in a parameters file or in this script
+from PyHydroQC.parameters import site_params, LSTM_params, calib_params
+for snsr in sensors:
+    print(snsr + str(site_params[site][snsr]))
+print('LSTM' + str(LSTM_params))
+print('calib' + str(calib_params))
+
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>temp{&#39;max_range&#39;: 20, &#39;min_range&#39;: -2, &#39;persist&#39;: 30, &#39;window_sz&#39;: 30, &#39;alpha&#39;: 1e-05, &#39;threshold_min&#39;: 0.4, &#39;widen&#39;: 1, &#39;pdq&#39;: [0, 0, 0]}
+cond{&#39;max_range&#39;: 2700, &#39;min_range&#39;: 150, &#39;persist&#39;: 30, &#39;window_sz&#39;: 40, &#39;alpha&#39;: 1e-06, &#39;threshold_min&#39;: 5.0, &#39;widen&#39;: 1, &#39;pdq&#39;: [1, 1, 5]}
+ph{&#39;max_range&#39;: 9.5, &#39;min_range&#39;: 7.5, &#39;persist&#39;: 45, &#39;window_sz&#39;: 20, &#39;alpha&#39;: 0.0001, &#39;threshold_min&#39;: 0.03, &#39;widen&#39;: 1, &#39;pdq&#39;: [3, 1, 1]}
+do{&#39;max_range&#39;: 15, &#39;min_range&#39;: 5, &#39;persist&#39;: 45, &#39;window_sz&#39;: 30, &#39;alpha&#39;: 1e-05, &#39;threshold_min&#39;: 0.25, &#39;widen&#39;: 1, &#39;pdq&#39;: [1, 1, 1]}
+LSTM{&#39;time_steps&#39;: 5, &#39;samples&#39;: 20000, &#39;cells&#39;: 128, &#39;dropout&#39;: 0.2, &#39;patience&#39;: 6}
+calib{&#39;persist_low&#39;: 3, &#39;persist_high&#39;: 7, &#39;hour_low&#39;: 7, &#39;hour_high&#39;: 17}
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="rules-based-anomaly-detection">Rules Based Anomaly Detection</h2>
+<p>Performs checks for range and persistence. Min/max range and duration are defined in the parameters.
+Data outside a range or persisting longer than a duration are detected as anomalous, corrected by linear interpolation.
+The output is a column 'observed' of intermediate results that are used for subsequent modeling.</p>
+<p>Functions called: 
+- range_check
+- persistence
+- interpolate</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">range_count = dict()
+persist_count = dict()
+rules_metrics = dict()
+for snsr in sensor_array:
+    sensor_array[snsr], range_count[snsr] = rules_detect.range_check(df=sensor_array[snsr],
+                                                                     maximum=site_params[site][snsr]['max_range'],
+                                                                     minimum=site_params[site][snsr]['min_range'])
+    sensor_array[snsr], persist_count[snsr] = rules_detect.persistence(df=sensor_array[snsr],
+                                                                       length=site_params[site][snsr]['persist'],
+                                                                       output_grp=True)
+    sensor_array[snsr] = rules_detect.interpolate(df=sensor_array[snsr])
+print('Rules based detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Rules based detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="detect-calibration-events">Detect Calibration Events</h3>
+<p>Two separate rules based approaches attempt to identify calibration events. 
+Calibration events detected here should be reviewed, compared to field records, and organized as input to the
+following step: drift correction.
+A subset of sensors are selected (1:4) because temperature is not calibrated.
+Calibration Approaches:
+1. Concurrent persistence: where persistence is within a certain window (e.g., after a sensor is returned to the water, 
+it is 'stuck' and reports the same values for several time steps), the time of day within a certain window, and where 
+these overlap for all sensors, the points are identified as an event. Hours and durations are defined in the parameters.<br />
+2. Edge detection: Edges are determined using the differences in data before and after each point. The width 
+may be a single point (width = 1) or greater. If the difference exceeds a threshold (a parameter setting), then it is 
+identified as an event. </p>
+<p>Functions called: 
+- calib_overlap
+    - calib_detect
+- edge detect</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python"># Concurrent persistence
+calib_sensors = sensors[1:4]
+input_array = dict()
+for snsr in calib_sensors:
+    input_array[snsr] = sensor_array[snsr]
+all_calib, all_calib_dates, df_all_calib, calib_dates_overlap = calibration.calib_overlap(sensor_names=calib_sensors,
+                                                                                          input_array=input_array,
+                                                                                          calib_params=calib_params)
+print('Possible calibration events identified by concurrent persistence.')
+print(calib_dates_overlap)
+
+# Edge detection
+calib_candidates = dict()
+edge_diff = dict()
+threshold = dict()
+# Set threshold for each variable - the level of change for a difference to be identified as a calibration event.
+# This can be an iterative process.
+threshold['cond'] = 60
+threshold['ph'] = 0.1
+threshold['do'] = 0.4
+print('Possible calibration events identified by edge detection.')
+for snsr in calib_sensors:
+    # Width is the window of time to consider in the edge detect difference.
+    # 1 determines the difference between each point independently.
+    # Higher numbers use the difference over a longer window.
+    calib_candidates[snsr], edge_diff[snsr] = calibration.calib_edge_detect(observed=sensor_array[snsr]['observed'],
+                                                                            width=1,
+                                                                            calib_params=calib_params,
+                                                                            threshold=threshold[snsr])
+    print(snsr)
+    print(calib_candidates[snsr])
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Possible calibration events identified by concurrent persistence.
+DatetimeIndex([&#39;2017-01-31 06:45:00&#39;, &#39;2017-01-31 07:00:00&#39;,
+               &#39;2017-01-31 07:15:00&#39;, &#39;2017-01-31 07:30:00&#39;,
+               &#39;2017-01-31 07:45:00&#39;, &#39;2017-02-17 12:30:00&#39;,
+               &#39;2017-03-16 15:30:00&#39;, &#39;2017-03-16 15:45:00&#39;,
+               &#39;2017-03-16 16:00:00&#39;, &#39;2017-03-22 13:15:00&#39;,
+               &#39;2017-03-22 13:30:00&#39;, &#39;2017-04-07 11:00:00&#39;,
+               &#39;2017-04-10 11:00:00&#39;, &#39;2017-04-14 17:30:00&#39;,
+               &#39;2017-04-14 17:45:00&#39;, &#39;2017-04-14 18:00:00&#39;,
+               &#39;2017-05-18 08:30:00&#39;, &#39;2017-05-18 08:45:00&#39;,
+               &#39;2017-05-18 09:00:00&#39;, &#39;2017-05-18 09:15:00&#39;,
+               &#39;2017-05-18 09:30:00&#39;, &#39;2017-05-19 08:15:00&#39;,
+               &#39;2017-05-19 08:30:00&#39;, &#39;2017-05-19 08:45:00&#39;,
+               &#39;2017-05-19 09:00:00&#39;, &#39;2017-05-19 09:15:00&#39;,
+               &#39;2017-05-19 09:30:00&#39;, &#39;2017-05-19 09:45:00&#39;,
+               &#39;2017-05-19 10:00:00&#39;, &#39;2017-05-19 10:15:00&#39;,
+               &#39;2017-05-25 08:45:00&#39;, &#39;2017-05-25 09:00:00&#39;,
+               &#39;2017-05-25 09:15:00&#39;, &#39;2017-05-26 15:30:00&#39;,
+               &#39;2017-05-26 15:45:00&#39;, &#39;2017-06-12 13:15:00&#39;,
+               &#39;2017-06-12 13:30:00&#39;, &#39;2017-06-12 13:45:00&#39;,
+               &#39;2017-06-12 14:00:00&#39;, &#39;2017-06-12 14:15:00&#39;,
+               &#39;2017-06-12 14:30:00&#39;, &#39;2017-06-12 14:45:00&#39;,
+               &#39;2017-06-13 13:15:00&#39;, &#39;2017-06-13 13:30:00&#39;,
+               &#39;2017-06-13 13:45:00&#39;, &#39;2017-06-13 14:00:00&#39;,
+               &#39;2017-06-13 14:15:00&#39;, &#39;2017-06-13 14:30:00&#39;,
+               &#39;2017-06-13 14:45:00&#39;, &#39;2017-06-13 15:00:00&#39;,
+               &#39;2017-06-13 15:15:00&#39;, &#39;2017-06-21 08:45:00&#39;,
+               &#39;2017-06-21 09:00:00&#39;, &#39;2017-06-21 09:15:00&#39;,
+               &#39;2017-06-21 09:30:00&#39;, &#39;2017-07-17 10:15:00&#39;,
+               &#39;2017-07-17 10:30:00&#39;, &#39;2017-07-17 10:45:00&#39;,
+               &#39;2017-08-02 10:30:00&#39;, &#39;2017-08-10 11:30:00&#39;,
+               &#39;2017-08-10 11:45:00&#39;, &#39;2017-08-10 12:00:00&#39;,
+               &#39;2017-08-10 12:15:00&#39;, &#39;2017-08-10 12:30:00&#39;,
+               &#39;2017-08-10 12:45:00&#39;, &#39;2017-10-03 10:15:00&#39;,
+               &#39;2017-10-11 10:45:00&#39;, &#39;2017-10-11 11:00:00&#39;,
+               &#39;2017-10-11 11:15:00&#39;, &#39;2017-10-11 11:30:00&#39;,
+               &#39;2017-10-11 11:45:00&#39;, &#39;2017-10-12 12:45:00&#39;,
+               &#39;2017-10-12 13:00:00&#39;, &#39;2017-10-18 12:30:00&#39;,
+               &#39;2017-10-18 12:45:00&#39;, &#39;2017-10-19 12:45:00&#39;,
+               &#39;2017-10-20 11:45:00&#39;, &#39;2017-11-10 13:45:00&#39;,
+               &#39;2017-11-10 14:00:00&#39;, &#39;2017-11-10 14:15:00&#39;,
+               &#39;2017-11-10 14:30:00&#39;, &#39;2017-11-10 14:45:00&#39;,
+               &#39;2017-11-23 13:15:00&#39;, &#39;2017-11-23 13:30:00&#39;,
+               &#39;2017-11-23 13:45:00&#39;, &#39;2017-11-23 14:00:00&#39;,
+               &#39;2017-11-23 14:15:00&#39;, &#39;2017-11-29 14:00:00&#39;,
+               &#39;2017-11-29 14:15:00&#39;, &#39;2017-11-29 14:30:00&#39;,
+               &#39;2017-12-01 06:45:00&#39;, &#39;2017-12-01 07:00:00&#39;,
+               &#39;2017-12-01 07:15:00&#39;, &#39;2017-12-01 07:30:00&#39;,
+               &#39;2017-12-19 08:00:00&#39;, &#39;2017-12-29 07:00:00&#39;,
+               &#39;2017-12-29 07:15:00&#39;, &#39;2017-12-29 07:30:00&#39;],
+              dtype=&#39;datetime64[ns]&#39;, name=&#39;datetime&#39;, freq=None)
+Possible calibration events identified by edge detection.
+cond
+[Timestamp(&#39;2017-01-02 14:30:00&#39;) Timestamp(&#39;2017-01-09 10:30:00&#39;)
+ Timestamp(&#39;2017-01-20 12:30:00&#39;) Timestamp(&#39;2017-01-23 16:00:00&#39;)
+ Timestamp(&#39;2017-01-24 13:30:00&#39;) Timestamp(&#39;2017-01-25 16:30:00&#39;)
+ Timestamp(&#39;2017-02-07 11:45:00&#39;) Timestamp(&#39;2017-02-24 13:30:00&#39;)
+ Timestamp(&#39;2017-02-27 15:15:00&#39;) Timestamp(&#39;2017-03-07 15:45:00&#39;)
+ Timestamp(&#39;2017-12-20 16:45:00&#39;) Timestamp(&#39;2017-12-25 14:30:00&#39;)]
+ph
+[Timestamp(&#39;2017-01-09 10:00:00&#39;) Timestamp(&#39;2017-06-23 10:45:00&#39;)
+ Timestamp(&#39;2017-10-03 15:00:00&#39;) Timestamp(&#39;2017-11-14 16:45:00&#39;)
+ Timestamp(&#39;2017-12-18 14:45:00&#39;)]
+do
+[Timestamp(&#39;2017-06-23 10:45:00&#39;)]
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="find-gap-values-and-perform-linear-drift-correction">Find Gap Values and Perform Linear Drift Correction</h3>
+<p>Drift correction is used when data are shifted due to calibration or cleaning of a sensor. To perform drift
+correction, the routine requires a start date, an end date, and a gap value to shift the data for each event. A separate 
+function determines the gap value for each calibration. To do so requires dates of calibration determined either by the 
+above  calibration detection functions (after review) or compiled from field records. The determined gap values should
+be reviewed and adjusted.</p>
+<p>Functions called: 
+- find_gap
+- lin_drift_cor</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python"># Subset of sensors that are calibrated
+calib_sensors = sensors[1:4]
+# Initialize data structures
+calib_dates = dict()
+gaps = dict()
+shifts = dict()
+tech_shifts = dict()
+
+for snsr in calib_sensors:
+    # Import calibration dates
+    calib_dates[snsr] = pd.read_csv('../LRO_data/' + site + '_' + snsr + '_calib_dates.csv',
+                                        header=1, parse_dates=True, infer_datetime_format=True)
+    calib_dates[snsr]['start'] = pd.to_datetime(calib_dates[snsr]['start'])
+    calib_dates[snsr]['end'] = pd.to_datetime(calib_dates[snsr]['end'])
+    # Ensure date range of calibrations correspond to imported data
+    calib_dates[snsr] = calib_dates[snsr].loc[(calib_dates[snsr]['start'] &gt; min(sensor_array[snsr].index)) &amp;
+                                                      (calib_dates[snsr]['end'] &lt; max(sensor_array[snsr].index))]
+    # Initialize dataframe to store determined gap values and associated dates
+    gaps[snsr] = pd.DataFrame(columns=['end', 'gap'],
+                              index=range(min(calib_dates[snsr].index), max(calib_dates[snsr].index)+1))
+    if len(calib_dates[snsr]) &gt; 0:
+        # Initialize data structures
+        shifts[snsr] = []
+        tech_shifts[snsr] = []
+        # Loop through each calibration event date.
+        for i in range(min(calib_dates[snsr].index), max(calib_dates[snsr].index)+1):
+            # Apply find_gap routine, add to dataframe, add output of shifts to list.
+            gap, end, shifted = calibration.find_gap(observed=sensor_array[snsr]['observed'],
+                                                     calib_date=calib_dates[snsr]['end'][i],
+                                                     hours=2,
+                                                     show_shift=True)
+            gaps[snsr].loc[i]['end'] = end
+            gaps[snsr].loc[i]['gap'] = gap
+            shifts[snsr].append(shifted)
+
+    # Plotting to examine gap values
+    l = len(calib_dates[snsr])
+    ncol = math.ceil(math.sqrt(l))
+    nrow = math.ceil(l/ncol)
+    hours = 6
+
+    fig, ax = plt.subplots(nrows=nrow, ncols=ncol, figsize=(nrow, ncol+1), facecolor='w')
+    for i, axi in enumerate(ax.flat):
+        if i &lt; l:
+            axi.plot(sensor_array[snsr]['observed'].loc[
+                    pd.to_datetime(calib_dates[snsr]['end'].iloc[i]) - pd.Timedelta(hours=hours):
+                    pd.to_datetime(calib_dates[snsr]['end'].iloc[i]) + pd.Timedelta(hours=hours)
+                    ])
+            axi.plot(shifts[snsr][i], 'c')
+print('Gap value determination complete.')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Gap value determination complete.
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+</div>
+<div class="output_area">
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+</div>
+<div class="output_area">
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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
+"
+>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python"># Review gaps and make adjustments as needed before performing drift correction
+# For example:
+gaps['cond'].iloc[5]['gap'] = -5
+
+# Perform Linear Drift Correction
+calib_sensors = sensors[1:4]
+for snsr in calib_sensors:
+    # Set start dates for drift correction at the previously identified calibration.
+    gaps[snsr]['start'] = gaps[snsr]['end'].shift(1)
+    gaps[snsr]['start'].iloc[0] = sensor_array[snsr].index[0]
+
+    snsr = 'cond'
+    if len(gaps[snsr]) &gt; 0:
+        for i in range(min(gaps[snsr].index), max(gaps[snsr].index) + 1):
+            result, sensor_array[snsr]['observed'] = calibration.lin_drift_cor(observed=sensor_array[snsr]['observed'],
+                                                                               start=gaps[snsr]['start'][i],
+                                                                               end=gaps[snsr]['end'][i],
+                                                                               gap=gaps[snsr]['gap'][i],
+                                                                               replace=True)
+print('Linear drift correction complete.')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>Linear drift correction complete.
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="model-based-anomaly-detection">Model Based Anomaly Detection</h2>
+<p>Generates 5 models. Each model predicts one step ahead using immediately adjacent data. Anomalies are detected by 
+comparing the model residual (predictions - observations) to a threshold. Dynamic thresholds are based on model 
+variability. Settings for ARIMA, LSTM, and threshold determination are in the parameters. Results from all models are 
+aggregated so that a detection by any model results in an anomaly.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="arima-detection">ARIMA Detection</h3>
+<p>ARIMA models use a combination of past data in a linear form to predict the next value. These models are univariate.
+Each ARIMA model requires the parameters p, d, q, which can be defined automatically as shown here.</p>
+<p>Functions called: 
+- pdq 
+- ARIMA_detect: 
+    - build_ARIMA_model
+    - set_dynamic_threshold
+    - detect_anomalies
+    - anomaly_events</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">all_pdq = dict()
+for snsr in sensors:
+    all_pdq[snsr] = modeling_utilities.pdq(data=sensor_array[snsr]['observed'])
+    print(snsr + ' (p, d, q) = ' + str(all_pdq[snsr]))
+    site_params[site][snsr]['pdq'] = all_pdq[snsr]
+
+ARIMA = dict()
+for snsr in sensors:
+    ARIMA[snsr] = model_workflow.ARIMA_detect(df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
+                                              rules=False, plots=False, summary=False, compare=False)
+print('\nARIMA detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>temp (p, d, q) = [3, 1, 1]
+cond (p, d, q) = [5, 1, 4]
+ph (p, d, q) = [5, 1, 3]
+do (p, d, q) = [4, 1, 4]
+
+Processing ARIMA detections.
+temp ARIMA model complete.
+Threshold determination complete.
+ratio of detections: 0.034257 %
+
+Processing ARIMA detections.
+cond ARIMA model complete.
+Threshold determination complete.
+ratio of detections: 0.151303 %
+
+Processing ARIMA detections.
+ph ARIMA model complete.
+Threshold determination complete.
+ratio of detections: 0.054241 %
+
+Processing ARIMA detections.
+do ARIMA model complete.
+Threshold determination complete.
+ratio of detections: 0.085643 %
+
+ARIMA detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="lstm-detection">LSTM Detection</h3>
+<p>LSTM models create a neural network that uses a sequence of values to make a prediction. Settings and hyperparameters 
+are defined in the parameters.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="data-univariate-model-vanilla">DATA: univariate, MODEL: vanilla</h4>
+<p>Uses a single sensor and data prior to predict the next point.</p>
+<p>Functions called: 
+- LSTM_detect_univar:
+    - LSTM_univar:
+        - create_scaler
+        - create_sequenced_dataset
+        - create_training_dataset
+        - create_vanilla_model
+        - train_model
+    - set_dynamic_threshold
+    - detect_anomalies
+    - anomaly_events</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">LSTM_univar = dict()
+for snsr in sensors:
+    LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(df=sensor_array[snsr], sensor=snsr, 
+                                                          params=site_params[site][snsr], LSTM_params=LSTM_params, 
+                                                          model_type=ModelType.VANILLA, rules=False, plots=False, 
+                                                          summary=False, compare=False, model_output=False, 
+                                                          model_save=False)
+print('\nLSTM univariate detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>
+Processing LSTM univariate ModelType.VANILLA detections.
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.7659
+temp ModelType.VANILLA LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.011421 %
+
+Processing LSTM univariate ModelType.VANILLA detections.
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.0778
+cond ModelType.VANILLA LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.128483 %
+
+Processing LSTM univariate ModelType.VANILLA detections.
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.1307
+ph ModelType.VANILLA LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.011421 %
+
+Processing LSTM univariate ModelType.VANILLA detections.
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.1821
+do ModelType.VANILLA LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.008566 %
+
+LSTM univariate detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="data-univariate-model-bidirectional">DATA: univariate,  MODEL: bidirectional</h4>
+<p>Uses a single sensor and data before and after to predict a point.</p>
+<p>Functions called: 
+- LSTM_detect_univar:
+    - LSTM_univar_bidir:
+        - create_scaler
+        - create_bidir_sequenced_dataset
+        - create_bidir_training_dataset
+        - create_bidir_model
+        - train_model
+    - set_dynamic_threshold
+    - detect_anomalies
+    - anomaly_events</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">LSTM_univar_bidir = dict()
+for snsr in sensors:
+    LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(df=sensor_array[snsr], sensor=snsr, 
+                                                                params=site_params[site][snsr], LSTM_params=LSTM_params,
+                                                                model_type=ModelType.BIDIRECTIONAL,rules=False, 
+                                                                plots=False, summary=False, compare=False, 
+                                                                model_output=False, model_save=False)
+print('\nLSTM univariate bidirectional detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>
+Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
+1095/1095 [==============================] - 5s 4ms/step - loss: 0.7628
+temp ModelType.BIDIRECTIONAL LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.011422 %
+
+Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
+1095/1095 [==============================] - 3s 3ms/step - loss: 0.0660
+cond ModelType.BIDIRECTIONAL LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.131357 %
+
+Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
+1095/1095 [==============================] - 4s 3ms/step - loss: 0.1527
+ph ModelType.BIDIRECTIONAL LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.019989 %
+
+Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
+1095/1095 [==============================] - 4s 3ms/step - loss: 0.1706
+do ModelType.BIDIRECTIONAL LSTM model complete.
+Threshold determination complete.
+ratio of detections: 0.008567 %
+
+LSTM univariate bidirectional detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="data-multivariate-model-vanilla">DATA: multivariate,  MODEL: vanilla</h4>
+<p>Uses multiple sensors as inputs and outputs and data prior to predict the next point.</p>
+<p>Functions called: 
+- LSTM_detect_multivar:
+    - LSTM_multivar:
+        - create_scaler
+        - create_sequenced_dataset
+        - create_training_dataset
+        - create_vanilla_model
+        - train_model
+    - set_dynamic_threshold
+    - detect_anomalies
+    - anomaly_events</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">LSTM_multivar = model_workflow.LSTM_detect_multivar(sensor_array=sensor_array, sensors=sensors, 
+                                                    params=site_params[site], LSTM_params=LSTM_params, 
+                                                    model_type=ModelType.VANILLA, rules=False, plots=False, 
+                                                    summary=False, compare=False, model_output=False, model_save=False)
+print('\nLSTM mutivariate detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>
+Processing LSTM multivariate ModelType.VANILLA detections.
+Raw data shape: (35029, 4)
+Observed data shape: (35029, 4)
+Initial anomalies data shape: (35029, 4)
+1095/1095 [==============================] - 3s 2ms/step - loss: 0.2916
+multivariate ModelType.VANILLA LSTM model complete.
+
+ratio of detections: 0.011421 %
+ratio of detections: 0.122773 %
+ratio of detections: 0.019986 %
+ratio of detections: 0.005710 %
+Threshold determination complete.
+
+LSTM mutivariate detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="data-multivariate-model-bidirectional">DATA: multivariate,  MODEL: bidirectional</h4>
+<p>Uses multiple sensors as inputs and outputs and data before and after to predict a point.</p>
+<p>Functions called: 
+- LSTM_detect_multivar:
+    - LSTM_multivar_bidir:
+        - create_scaler
+        - create_bidir_sequenced_dataset
+        - create_bidir_training_dataset
+        - create_bidir_model
+        - train_model
+    - set_dynamic_threshold
+    - detect_anomalies
+    - anomaly_events</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(sensor_array=sensor_array, sensors=sensors, 
+                                                          params=site_params[site], LSTM_params=LSTM_params, 
+                                                          model_type=ModelType.BIDIRECTIONAL, rules=False, plots=False, 
+                                                          summary=False, compare=False, model_output=False, 
+                                                          model_save=False)
+print('\nLSTM multivariate bidirectional detection complete.\n')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>
+Processing LSTM multivariate ModelType.BIDIRECTIONAL detections.
+Raw data shape: (35029, 4)
+Observed data shape: (35029, 4)
+Initial anomalies data shape: (35029, 4)
+1095/1095 [==============================] - 4s 3ms/step - loss: 0.2659
+multivariate ModelType.BIDIRECTIONAL LSTM model complete.
+
+ratio of detections: 0.014278 %
+ratio of detections: 0.114224 %
+ratio of detections: 0.008567 %
+ratio of detections: 0.022845 %
+Threshold determination complete.
+
+LSTM multivariate bidirectional detection complete.
+
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="aggregate-detections-for-all-models">Aggregate Detections for All Models</h3>
+<p>Aggregates the results from all models.</p>
+<p>Functions called: 
+- aggregate_results</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">results_all = dict()
+for snsr in sensors:
+    models = dict()
+    models['ARIMA'] = ARIMA[snsr].df
+    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
+    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
+    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
+    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+    results_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr], 
+                                                            models=models, 
+                                                            verbose=True, 
+                                                            compare=False)
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="correction">Correction</h2>
+<p>Correction is performed using piecewise ARIMA- small models determined for each period of anomalous data, along with
+forecast and backcast, which consider data before and after a period of anomalous data and are merged together to 
+ensure there are no discontinuities.</p>
+<p>Functions called: 
+- generate_corrections
+    - group_bools
+    - ARIMA_group
+    - xfade</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+
+<pre><code class="language-python">corrections = dict()
+for snsr in sensors:
+    corrections[snsr] = ARIMA_correct.generate_corrections(df=results_all[snsr], 
+                                                           observed='observed', 
+                                                           anomalies='detected_event', 
+                                                           savecasts=True)
+    print(snsr + ' correction complete.')
+</code></pre>
+
+
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h6 id="_1"></h6>
+</div>
+</div>
+</div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        <a href="../about/" class="md-footer__link md-footer__link--prev" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              About
+            </div>
+          </div>
+        </a>
+      
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.217ffd95.min.js", "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.926459b3.min.js"></script>
+      
+    
+  </body>
+</html>
