@@ -1,0 +1,8 @@
+pandas
+matplotlib
+scipy
+pmdarima
+enum
+tensorflow
+statsmodels
+sklearn
