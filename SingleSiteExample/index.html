@@ -1,591 +1,146 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Example - pyhydroqc Documentation</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-      
-      
-      
-      <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-7.0.0">
-    
-    
-      
-        <title>Example - pyhydroqc Documentation</title>
-      
-    
-    
-      <link rel="stylesheet" href="../assets/stylesheets/main.a3f8f96a.min.css">
-      
-        
-        <link rel="stylesheet" href="../assets/stylesheets/palette.7fa14f5b.min.css">
-        
-      
-    
-    
-    
-      
-        
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
-      
-    
-    
-    
-      <link rel="stylesheet" href="../css/ansi-colours.css">
-    
-      <link rel="stylesheet" href="../css/jupyter-cells.css">
-    
-      <link rel="stylesheet" href="../css/pandas-dataframe.css">
-    
-    
-      
-    
-    
-  </head>
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" />
+  <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+  <link href="../css/ansi-colours.css" rel="stylesheet" />
+  <link href="../css/jupyter-cells.css" rel="stylesheet" />
+  <link href="../css/pandas-dataframe.css" rel="stylesheet" />
   
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Example";
+    var mkdocs_page_input_path = "SingleSiteExample.ipynb";
+    var mkdocs_page_url = null;
+  </script>
   
-    
-    
-    
-    
-    
-    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
-      
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
   
-    
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#single-site-anomaly-detection-and-correction" class="md-skip">
-          Skip to content
-        </a>
-      
-    </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-      
+</head>
 
-<header class="md-header" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="pyhydroqc Documentation" class="md-header__button md-logo" aria-label="pyhydroqc Documentation">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+<body class="wy-body-for-nav" role="document">
 
-    </a>
-    <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
-    </label>
-    <div class="md-header__title" data-md-component="header-title">
-      <div class="md-header__ellipsis">
-        <div class="md-header__topic">
-          <span class="md-ellipsis">
-            pyhydroqc Documentation
-          </span>
-        </div>
-        <div class="md-header__topic" data-md-component="header-topic">
-          <span class="md-ellipsis">
-            
-              Example
-            
-          </span>
-        </div>
-      </div>
-    </div>
-    <div class="md-header__options">
-      
-    </div>
+  <div class="wy-grid-for-nav">
+
     
-      <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-      </label>
-      
-<div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
-      <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-      </button>
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
-            Initializing search
-          </div>
-          <ol class="md-search-result__list"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> pyhydroqc Documentation</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
 </div>
-    
-    
-      <div class="md-header__source">
-        
-<a href="https://github.com/AmberSJones/pyhydroqc/" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
-  </div>
-  <div class="md-source__repository">
-    AmberSJones/pyhydroqc
-  </div>
-</a>
       </div>
-    
-  </nav>
-</header>
-    
-    <div class="md-container" data-md-component="container">
-      
-      
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              
-              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
 
-
-
-
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href=".." title="pyhydroqc Documentation" class="md-nav__button md-logo" aria-label="pyhydroqc Documentation">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
-
-    </a>
-    pyhydroqc Documentation
-  </label>
-  
-    <div class="md-nav__source">
-      
-<a href="https://github.com/AmberSJones/pyhydroqc/" title="Go to repository" class="md-source" data-md-component="source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
-  </div>
-  <div class="md-source__repository">
-    AmberSJones/pyhydroqc
-  </div>
-</a>
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../about/">About</a>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Example</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#import-libraries-and-functions">Import Libraries and Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#retrieve-data">Retrieve data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#import-parameters">Import Parameters</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#rules-based-anomaly-detection">Rules Based Anomaly Detection</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#calibration-and-drift-correction">Calibration and Drift Correction</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#detect-calibration-events">Detect Calibration Events</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#find-gap-values-and-perform-linear-drift-correction">Find Gap Values and Perform Linear Drift Correction</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#model-based-anomaly-detection">Model Based Anomaly Detection</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#arima-detection">ARIMA Detection</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lstm-detection">LSTM Detection</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#data-univariate-model-vanilla">DATA: univariate, MODEL: vanilla</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#data-univariate-model-bidirectional">DATA: univariate,  MODEL: bidirectional</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#data-multivariate-model-vanilla">DATA: multivariate,  MODEL: vanilla</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#data-multivariate-model-bidirectional">DATA: multivariate,  MODEL: bidirectional</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#aggregate-detections-for-all-models">Aggregate Detections for All Models</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#correction">Correction</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#_1"></a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Functions</a>
+                    </li>
+                </ul>
+      </div>
     </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
-        Functions
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../about/" class="md-nav__link">
-        About
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-    
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          Example
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        Example
-      </a>
-      
-        
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#import-libraries-and-functions" class="md-nav__link">
-    Import Libraries and Functions
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#retrieve-data" class="md-nav__link">
-    Retrieve data
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#import-parameters" class="md-nav__link">
-    Import Parameters
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rules-based-anomaly-detection" class="md-nav__link">
-    Rules Based Anomaly Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="Rules Based Anomaly Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#detect-calibration-events" class="md-nav__link">
-    Detect Calibration Events
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#find-gap-values-and-perform-linear-drift-correction" class="md-nav__link">
-    Find Gap Values and Perform Linear Drift Correction
-  </a>
-  
-</li>
-        
-      </ul>
     </nav>
-  
-</li>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-        <li class="md-nav__item">
-  <a href="#model-based-anomaly-detection" class="md-nav__link">
-    Model Based Anomaly Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="Model Based Anomaly Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#arima-detection" class="md-nav__link">
-    ARIMA Detection
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lstm-detection" class="md-nav__link">
-    LSTM Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="LSTM Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data-univariate-model-vanilla" class="md-nav__link">
-    DATA: univariate, MODEL: vanilla
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-univariate-model-bidirectional" class="md-nav__link">
-    DATA: univariate,  MODEL: bidirectional
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-multivariate-model-vanilla" class="md-nav__link">
-    DATA: multivariate,  MODEL: vanilla
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-multivariate-model-bidirectional" class="md-nav__link">
-    DATA: multivariate,  MODEL: bidirectional
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#aggregate-detections-for-all-models" class="md-nav__link">
-    Aggregate Detections for All Models
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">pyhydroqc Documentation</a>
+      </nav>
+
       
-        <li class="md-nav__item">
-  <a href="#correction" class="md-nav__link">
-    Correction
-  </a>
-  
-    <nav class="md-nav" aria-label="Correction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
     
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
-    </ul>
-  
-</nav>
+    
+    <li>Example</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/AmberSJones/pyhydroqc/edit/master/docs/SingleSiteExample.ipynb"> Edit on AmberSJones/pyhydroqc</a>
       
     </li>
-  
-
-    
   </ul>
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-            
+  
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
               
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#import-libraries-and-functions" class="md-nav__link">
-    Import Libraries and Functions
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#retrieve-data" class="md-nav__link">
-    Retrieve data
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#import-parameters" class="md-nav__link">
-    Import Parameters
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rules-based-anomaly-detection" class="md-nav__link">
-    Rules Based Anomaly Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="Rules Based Anomaly Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#detect-calibration-events" class="md-nav__link">
-    Detect Calibration Events
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#find-gap-values-and-perform-linear-drift-correction" class="md-nav__link">
-    Find Gap Values and Perform Linear Drift Correction
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#model-based-anomaly-detection" class="md-nav__link">
-    Model Based Anomaly Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="Model Based Anomaly Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#arima-detection" class="md-nav__link">
-    ARIMA Detection
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#lstm-detection" class="md-nav__link">
-    LSTM Detection
-  </a>
-  
-    <nav class="md-nav" aria-label="LSTM Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#data-univariate-model-vanilla" class="md-nav__link">
-    DATA: univariate, MODEL: vanilla
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-univariate-model-bidirectional" class="md-nav__link">
-    DATA: univariate,  MODEL: bidirectional
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-multivariate-model-vanilla" class="md-nav__link">
-    DATA: multivariate,  MODEL: vanilla
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#data-multivariate-model-bidirectional" class="md-nav__link">
-    DATA: multivariate,  MODEL: bidirectional
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#aggregate-detections-for-all-models" class="md-nav__link">
-    Aggregate Detections for All Models
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#correction" class="md-nav__link">
-    Correction
-  </a>
-  
-    <nav class="md-nav" aria-label="Correction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          <div class="md-content" data-md-component="content">
-            <article class="md-content__inner md-typeset">
-              
-                
-                  <a href="https://github.com/AmberSJones/pyhydroqc/edit/master/docs/SingleSiteExample.ipynb" title="Edit this page" class="md-content__button md-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"/></svg>
-                  </a>
-                
-                
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 <script>
@@ -624,12 +179,13 @@
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="single-site-anomaly-detection-and-correction">SINGLE SITE ANOMALY DETECTION AND CORRECTION</h1>
-<p>This script performs anomaly detection and correction for multiple sensors at a single monitoring site.
+<p>This script performs anomaly detection and correction for multiple sensors at a single monitoring site for one year.
 The script imports data, performs initial anomaly detection based on rules, uses models (ARIMA and 4 flavors of LSTM)
 and associated thresholds to detect anomalies, aggregates for overall anomaly detection, and performs correction
 based on ARIMA.</p>
 <p>Site: Logan River at Main Street</p>
 <p>Sensors: temperature, specific conductance, pH, dissolved oxygen</p>
+<p>Year: 2017</p>
 <p>Created: Amber Jones, March 2021</p>
 </div>
 </div>
@@ -845,6 +401,13 @@ print('Rules based detection complete.\n')
 </pre>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="calibration-and-drift-correction">Calibration and Drift Correction</h2>
 </div>
 </div>
 </div>
@@ -1201,30 +764,30 @@ print('\nARIMA detection complete.\n')
 <div class="output_area">
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
-<code>temp (p, d, q) = [3, 1, 1]
-cond (p, d, q) = [5, 1, 4]
-ph (p, d, q) = [5, 1, 3]
-do (p, d, q) = [4, 1, 4]
+<code>temp (p, d, q) = [1, 1, 1]
+cond (p, d, q) = [3, 1, 3]
+ph (p, d, q) = [3, 1, 4]
+do (p, d, q) = [4, 1, 2]
 
 Processing ARIMA detections.
 temp ARIMA model complete.
 Threshold determination complete.
-ratio of detections: 0.034257 %
+ratio of detections: 0.028556 %
 
 Processing ARIMA detections.
 cond ARIMA model complete.
 Threshold determination complete.
-ratio of detections: 0.151303 %
+ratio of detections: 0.177047 %
 
 Processing ARIMA detections.
 ph ARIMA model complete.
 Threshold determination complete.
-ratio of detections: 0.054241 %
+ratio of detections: 0.045689 %
 
 Processing ARIMA detections.
 do ARIMA model complete.
 Threshold determination complete.
-ratio of detections: 0.085643 %
+ratio of detections: 0.017134 %
 
 ARIMA detection complete.
 
@@ -1288,32 +851,41 @@ print('\nLSTM univariate detection complete.\n')
 <div class="output_wrapper">
 <div class="output">
 <div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
 <code>
 Processing LSTM univariate ModelType.VANILLA detections.
-1095/1095 [==============================] - 2s 2ms/step - loss: 0.7659
+1095/1095 [==============================] - 2s 2ms/step - loss: 1.3198
 temp ModelType.VANILLA LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.011421 %
+ratio of detections: 0.031416 %
 
 Processing LSTM univariate ModelType.VANILLA detections.
-1095/1095 [==============================] - 2s 2ms/step - loss: 0.0778
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.1020
 cond ModelType.VANILLA LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.128483 %
+ratio of detections: 0.139944 %
 
 Processing LSTM univariate ModelType.VANILLA detections.
-1095/1095 [==============================] - 2s 2ms/step - loss: 0.1307
+1095/1095 [==============================] - 2s 1ms/step - loss: 0.1891
 ph ModelType.VANILLA LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.011421 %
+ratio of detections: 0.014280 %
 
 Processing LSTM univariate ModelType.VANILLA detections.
-1095/1095 [==============================] - 2s 2ms/step - loss: 0.1821
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.1516
 do ModelType.VANILLA LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.008566 %
+ratio of detections: 0.002856 %
 
 LSTM univariate detection complete.
 
@@ -1368,32 +940,41 @@ print('\nLSTM univariate bidirectional detection complete.\n')
 <div class="output_wrapper">
 <div class="output">
 <div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
 <code>
 Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
-1095/1095 [==============================] - 5s 4ms/step - loss: 0.7628
+1095/1095 [==============================] - 4s 4ms/step - loss: 1.2945
 temp ModelType.BIDIRECTIONAL LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.011422 %
+ratio of detections: 0.039990 %
 
 Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
-1095/1095 [==============================] - 3s 3ms/step - loss: 0.0660
+1095/1095 [==============================] - 5s 4ms/step - loss: 0.0739
 cond ModelType.BIDIRECTIONAL LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.131357 %
+ratio of detections: 0.128538 %
 
 Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
-1095/1095 [==============================] - 4s 3ms/step - loss: 0.1527
+1095/1095 [==============================] - 4s 4ms/step - loss: 0.1575
 ph ModelType.BIDIRECTIONAL LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.019989 %
+ratio of detections: 0.022851 %
 
 Processing LSTM univariate ModelType.BIDIRECTIONAL detections.
-1095/1095 [==============================] - 4s 3ms/step - loss: 0.1706
+1095/1095 [==============================] - 6s 6ms/step - loss: 0.1609 - ETA: 4s - loss: 0.3184
 do ModelType.BIDIRECTIONAL LSTM model complete.
 Threshold determination complete.
-ratio of detections: 0.008567 %
+ratio of detections: 0.005713 %
 
 LSTM univariate bidirectional detection complete.
 
@@ -1445,20 +1026,29 @@ print('\nLSTM mutivariate detection complete.\n')
 <div class="output_wrapper">
 <div class="output">
 <div class="output_area">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>
+<code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
+  and should_run_async(code)
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>
 <code>
 Processing LSTM multivariate ModelType.VANILLA detections.
-Raw data shape: (35029, 4)
-Observed data shape: (35029, 4)
-Initial anomalies data shape: (35029, 4)
-1095/1095 [==============================] - 3s 2ms/step - loss: 0.2916
+Raw data shape: (35019, 4)
+Observed data shape: (35019, 4)
+Initial anomalies data shape: (35019, 4)
+1095/1095 [==============================] - 2s 2ms/step - loss: 0.4319
 multivariate ModelType.VANILLA LSTM model complete.
 
-ratio of detections: 0.011421 %
-ratio of detections: 0.122773 %
-ratio of detections: 0.019986 %
-ratio of detections: 0.005710 %
+ratio of detections: 0.039984 %
+ratio of detections: 0.165648 %
+ratio of detections: 0.014280 %
+ratio of detections: 0.002856 %
 Threshold determination complete.
 
 LSTM mutivariate detection complete.
@@ -1525,16 +1115,16 @@ print('\nLSTM multivariate bidirectional detection complete.\n')
 <pre>
 <code>
 Processing LSTM multivariate ModelType.BIDIRECTIONAL detections.
-Raw data shape: (35029, 4)
-Observed data shape: (35029, 4)
-Initial anomalies data shape: (35029, 4)
-1095/1095 [==============================] - 4s 3ms/step - loss: 0.2659
+Raw data shape: (35019, 4)
+Observed data shape: (35019, 4)
+Initial anomalies data shape: (35019, 4)
+1095/1095 [==============================] - 6s 5ms/step - loss: 0.4033 - ETA: 0s - loss: 0.4226
 multivariate ModelType.BIDIRECTIONAL LSTM model complete.
 
-ratio of detections: 0.014278 %
-ratio of detections: 0.114224 %
-ratio of detections: 0.008567 %
-ratio of detections: 0.022845 %
+ratio of detections: 0.034277 %
+ratio of detections: 0.145677 %
+ratio of detections: 0.014282 %
+ratio of detections: 0.002856 %
 Threshold determination complete.
 
 LSTM multivariate bidirectional detection complete.
@@ -1633,6 +1223,19 @@ for snsr in sensors:
 <pre>
 <code>/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/ipykernel/ipkernel.py:283: DeprecationWarning: `should_run_async` will not call `transform_cell` automatically in the future. Please pass the result to `transformed_cell` argument and any exception that happen during thetransform in `preprocessing_exc_tuple` in IPython 7.17 and above.
   and should_run_async(code)
+/Users/amber/.virtualenvs/LRO-anomaly-detection/lib/python3.7/site-packages/pmdarima/arima/auto.py:460: UserWarning: Input time-series is completely constant; returning a (0, 0, 0) ARMA.
+  warnings.warn(&#39;Input time-series is completely constant; &#39;
+</code>
+</pre>
+</div>
+</div>
+<div class="output_area">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>
+<code>temp correction complete.
+cond correction complete.
+ph correction complete.
+do correction complete.
 </code>
 </pre>
 </div>
@@ -1647,63 +1250,57 @@ for snsr in sensors:
 </div>
 </div>
 </div>
-                
               
-              
-                
-
-
-              
-            </article>
-          </div>
-        </div>
-      </main>
-      
-        
-<footer class="md-footer">
-  
-    <nav class="md-footer__inner md-grid" aria-label="Footer">
-      
-        <a href="../about/" class="md-footer__link md-footer__link--prev" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              About
             </div>
           </div>
-        </a>
-      
-      
-    </nav>
+          <footer>
   
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-        Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs
-        </a>
-      </div>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href=".." class="btn btn-neutral float-right" title="Functions">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../about/" class="btn btn-neutral" title="About"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
   </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
-    </div>
-    <div class="md-dialog" data-md-component="dialog">
-      <div class="md-dialog__inner md-typeset"></div>
-    </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "translations": {"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}, "search": "../assets/javascripts/workers/search.217ffd95.min.js", "version": null}</script>
-    
-    
-      <script src="../assets/javascripts/bundle.926459b3.min.js"></script>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
       
-    
-  </body>
+      
+        <span><a href="../about/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href=".." style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
 </html>
