@@ -18,9 +18,9 @@ markdown_extensions:
   - tables
 
 nav:
-  - About: about.md
+  - About: index.md
   - Example: SingleSiteExample.ipynb
-  - Functions: index.md
+  - Functions: functions.md
 
 extra_css:
     - css/extra.css
