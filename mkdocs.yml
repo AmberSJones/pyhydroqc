@@ -21,3 +21,6 @@ nav:
   - About: about.md
   - Example: SingleSiteExample.ipynb
   - Functions: index.md
+
+extra_css:
+    - css/extra.css
