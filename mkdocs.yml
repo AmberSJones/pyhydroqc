@@ -3,7 +3,7 @@ repo_name: AmberSJones/pyhydroqc
 repo_url: https://github.com/AmberSJones/pyhydroqc
 
 theme:
-  name: material
+  name: readthedocs
 
 plugins:
   - mkdocstrings
@@ -18,6 +18,6 @@ markdown_extensions:
   - tables
 
 nav:
-  - Functions: index.md
   - About: about.md
   - Example: SingleSiteExample.ipynb
+  - Functions: index.md
