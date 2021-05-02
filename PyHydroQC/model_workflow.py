@@ -23,19 +23,19 @@ def ARIMA_detect(df, sensor, params,
     print('\nProcessing ARIMA detections.')
     # RULES BASED DETECTION #
     if rules:
-        df = rules_detect.range_check(df, params['max_range'], params['min_range'])
-        df = rules_detect.persistence(df, params['persist'])
+        df = rules_detect.range_check(df, params.max_range, params.min_range)
+        df = rules_detect.persistence(df, params.persist)
         size = rules_detect.group_size(df)
         df = rules_detect.interpolate(df)
         print(sensor + ' rules based detection complete. Longest detected group = ' + str(size))
 
     # MODEL CREATION #
-    [p, d, q] = params['pdq']
+    [p, d, q] = params.pdq
     model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary, suppress_warnings)
     print(sensor + ' ARIMA model complete.')
 
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
-    threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], params['window_sz'], params['alpha'], params['threshold_min'])
+    threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], params.window_sz, params.alpha, params.threshold_min)
     threshold.index = residuals.index
     if plots:
         plt.figure()
@@ -47,12 +47,12 @@ def ARIMA_detect(df, sensor, params,
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
     df['detected_anomaly'] = detections['anomaly']
     df['all_anomalies'] = df.eval('detected_anomaly or anomaly')
-    df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], params['widen'])
+    df['detected_event'] = anomaly_utilities.anomaly_events(df['all_anomalies'], params.widen)
 
     if compare:
-        df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], params['widen'])
+        df['labeled_event'] = anomaly_utilities.anomaly_events(df['labeled_anomaly'], params.widen)
         # DETERMINE METRICS #
-        anomaly_utilities.compare_events(df, params['widen'])
+        anomaly_utilities.compare_events(df, params.widen)
         metrics = anomaly_utilities.metrics(df)
         e_metrics = anomaly_utilities.event_metrics(df)
         # OUTPUT RESULTS #
@@ -101,8 +101,8 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
     print('\nProcessing LSTM univariate ' + str(model_type) + ' detections.')
     # RULES BASED DETECTION #
     if rules:
-        df = rules_detect.range_check(df, params['max_range'], params['min_range'])
-        df = rules_detect.persistence(df, params['persist'])
+        df = rules_detect.range_check(df, params.max_range, params.min_range)
+        df = rules_detect.persistence(df, params.persist)
         size = rules_detect.group_size(df)
         df = rules_detect.interpolate(df)
         print(sensor + ' rules based detection complete. Maximum detected group length = '+str(size))
@@ -121,8 +121,8 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         plt.show()
 
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
-    ts = LSTM_params['time_steps']
-    threshold = anomaly_utilities.set_dynamic_threshold(model.test_residuals[0], params['window_sz'], params['alpha'], params['threshold_min'])
+    ts = LSTM_params.time_steps
+    threshold = anomaly_utilities.set_dynamic_threshold(model.test_residuals[0], params.window_sz, params.alpha, params.threshold_min)
     if model_type == ModelType.VANILLA:
         threshold.index = df[ts:].index
     elif model_type == ModelType.BIDIRECTIONAL:
@@ -148,12 +148,12 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         df_anomalies = df.iloc[ts:-ts]
     df_anomalies['detected_anomaly'] = detections['anomaly']
     df_anomalies['all_anomalies'] = df_anomalies.eval('detected_anomaly or anomaly')
-    df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], params['widen'])
+    df_anomalies['detected_event'] = anomaly_utilities.anomaly_events(df_anomalies['all_anomalies'], params.widen)
 
     if compare:
-        df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'], params['widen'])
+        df_anomalies['labeled_event'] = anomaly_utilities.anomaly_events(df_anomalies['labeled_anomaly'], params.widen)
         # DETERMINE METRICS #
-        anomaly_utilities.compare_events(df_anomalies, params['widen'])
+        anomaly_utilities.compare_events(df_anomalies, params.widen)
         metrics = anomaly_utilities.metrics(df_anomalies)
         e_metrics = anomaly_utilities.event_metrics(df_anomalies)
         # OUTPUT RESULTS #
@@ -232,7 +232,7 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
         plt.show()
 
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
-    ts = LSTM_params['time_steps']
+    ts = LSTM_params.time_steps
     residuals = pd.DataFrame(model.test_residuals)
     residuals.columns = sensors
     predictions = pd.DataFrame(model.predictions)
@@ -250,7 +250,7 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
     detections = dict()
     for snsr in sensors:
         threshold[snsr] = anomaly_utilities.set_dynamic_threshold(
-            residuals[snsr], params[snsr]['window_sz'], params[snsr]['alpha'], params[snsr]['threshold_min'])
+            residuals[snsr], params[snsr].window_sz, params[snsr].alpha, params[snsr].threshold_min)
         threshold[snsr].index = residuals.index
         detections[snsr] = anomaly_utilities.detect_anomalies(
             observed[snsr+'_obs'], predictions[snsr], residuals[snsr], threshold[snsr], summary=True)
@@ -269,15 +269,15 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
             all_data[snsr] = sensor_array[snsr].iloc[ts:-ts]
         all_data[snsr]['detected_anomaly'] = detections[snsr]['anomaly']
         all_data[snsr]['all_anomalies'] = all_data[snsr].eval('detected_anomaly or anomaly')
-        all_data[snsr]['detected_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['all_anomalies'], params[snsr]['widen'])
+        all_data[snsr]['detected_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['all_anomalies'], params[snsr].widen)
 
     # COMPARE AND DETERMINE METRICS #
     if compare:
         metrics = dict()
         e_metrics = dict()
         for snsr in sensors:
-            all_data[snsr]['labeled_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['labeled_anomaly'], params[snsr]['widen'])
-            anomaly_utilities.compare_events(all_data[snsr], params[snsr]['widen'])
+            all_data[snsr]['labeled_event'] = anomaly_utilities.anomaly_events(all_data[snsr]['labeled_anomaly'], params[snsr].widen)
+            anomaly_utilities.compare_events(all_data[snsr], params[snsr].widen)
             metrics[snsr] = anomaly_utilities.metrics(all_data[snsr])
             e_metrics[snsr] = anomaly_utilities.event_metrics(all_data[snsr])
         # OUTPUT RESULTS #

@@ -45,8 +45,8 @@ def calib_edge_detect(observed, width, calib_params, threshold=float("nan"), num
     # specify that calibrations would only occur on work days and between specified hours of the day
     candidates = np.array(candidates)
     candidates = candidates[(pd.to_datetime(candidates).dayofweek <= 4) &
-                            (pd.to_datetime(candidates).hour >= calib_params['hour_low']) &
-                            (pd.to_datetime(candidates).hour <= calib_params['hour_high'])]
+                            (pd.to_datetime(candidates).hour >= calib_params.hour_low) &
+                            (pd.to_datetime(candidates).hour <= calib_params.hour_high)]
 
     return candidates, edge_diff
 
@@ -72,8 +72,8 @@ def calib_persist_detect(df, calib_params):
         temp = df[['observed', 'anomaly', 'persist_grp']].copy(deep=True)
         for i in range(1, max(temp['persist_grp']) + 1):
             temp['persist_grp'][temp.loc[temp['persist_grp'].shift(-1) == i].index[0]] = i
-            if ((len(temp['persist_grp'][temp['persist_grp'] == i]) >= calib_params['persist_low']) and
-                    (len(temp['persist_grp'][temp['persist_grp'] == i]) <= calib_params['persist_high'])):
+            if ((len(temp['persist_grp'][temp['persist_grp'] == i]) >= calib_params.persist_low) and
+                    (len(temp['persist_grp'][temp['persist_grp'] == i]) <= calib_params.persist_high)):
                 temp['anomaly'][temp['persist_grp'] == i] = True
     else:
         temp = df[['observed', 'anomaly']].copy(deep=True)
@@ -81,14 +81,14 @@ def calib_persist_detect(df, calib_params):
         temp['persist_grp'] = anomaly_utilities.anomaly_events(temp['persist_grp'], 0, 1)
         for i in range(1, max(temp['persist_grp']) + 1):
             temp['persist_grp'][temp.loc[temp['persist_grp'].shift(-1) == i].index[0]] = i
-            if ((len(temp['persist_grp'][temp['persist_grp'] == i]) >= calib_params['persist_low']) and
-                    (len(temp['persist_grp'][temp['persist_grp'] == i]) <= calib_params['persist_high'])):
+            if ((len(temp['persist_grp'][temp['persist_grp'] == i]) >= calib_params.persist_low) and
+                    (len(temp['persist_grp'][temp['persist_grp'] == i]) <= calib_params.persist_high)):
                 temp['anomaly'][temp['persist_grp'] == i] = True
 
     dayofweek = temp.index.dayofweek
     hour = temp.index.hour
     business = temp.iloc[((dayofweek == 0) | (dayofweek == 1) | (dayofweek == 2) | (dayofweek == 3) | (dayofweek == 4))
-                         & (hour >= calib_params['hour_low']) & (hour <= calib_params['hour_high'])]
+                         & (hour >= calib_params.hour_low) & (hour <= calib_params.hour_high)]
     calib = pd.DataFrame(index=temp.index)
     calib['anomaly'] = False
     calib['anomaly'].loc[business[business['anomaly']].index] = True

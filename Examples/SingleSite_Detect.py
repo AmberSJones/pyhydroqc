@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 #########################################
 site = 'MainStreet'
 sensors = ['temp', 'cond', 'ph', 'do']
-years = [2014, 2015, 2016, 2017, 2018, 2019]
+years = [2017]
 sensor_array = anomaly_utilities.get_data(sensors=sensors, site=site, years=years, path="./LRO_data/")
 
 #### Rules Based Anomaly Detection
@@ -29,24 +29,24 @@ persist_count = dict()
 rules_metrics = dict()
 for snsr in sensor_array:
     sensor_array[snsr], range_count[snsr] = rules_detect.range_check(df=sensor_array[snsr],
-                                                                     maximum=site_params[site][snsr]['max_range'],
-                                                                     minimum=site_params[site][snsr]['min_range'])
+                                                                     maximum=site_params[site][snsr].max_range,
+                                                                     minimum=site_params[site][snsr].min_range)
     sensor_array[snsr], persist_count[snsr] = rules_detect.persistence(df=sensor_array[snsr],
-                                                                       length=site_params[site][snsr]['persist'],
+                                                                       length=site_params[site][snsr].persist,
                                                                        output_grp=True)
     sensor_array[snsr] = rules_detect.interpolate(df=sensor_array[snsr])
 
-# metrics for rules based detection #
-for snsr in sensor_array:
-    df_rules_metrics = sensor_array[snsr]
-    df_rules_metrics['labeled_event'] = anomaly_utilities.anomaly_events(anomaly=df_rules_metrics['labeled_anomaly'], wf=0)
-    df_rules_metrics['detected_event'] = anomaly_utilities.anomaly_events(anomaly=df_rules_metrics['anomaly'], wf=0)
-    anomaly_utilities.compare_events(df=df_rules_metrics, wf=0)
-    rules_metrics[snsr] = anomaly_utilities.metrics(df=df_rules_metrics)
-    print('\nRules based metrics')
-    print('Sensor: ' + snsr)
-    anomaly_utilities.print_metrics(df=rules_metrics[snsr])
-    del(df_rules_metrics)
+# # metrics for rules based detection #
+# for snsr in sensor_array:
+#     df_rules_metrics = sensor_array[snsr]
+#     df_rules_metrics['labeled_event'] = anomaly_utilities.anomaly_events(anomaly=df_rules_metrics['labeled_anomaly'], wf=0)
+#     df_rules_metrics['detected_event'] = anomaly_utilities.anomaly_events(anomaly=df_rules_metrics['anomaly'], wf=0)
+#     anomaly_utilities.compare_events(df=df_rules_metrics, wf=0)
+#     rules_metrics[snsr] = anomaly_utilities.metrics(df=df_rules_metrics)
+#     print('\nRules based metrics')
+#     print('Sensor: ' + snsr)
+#     anomaly_utilities.print_metrics(metrics=rules_metrics[snsr])
+#     del(df_rules_metrics)
 
 print('Rules based detection complete.\n')
 
@@ -65,12 +65,8 @@ all_calib, all_calib_dates, df_all_calib, calib_dates_overlap = calibration.cali
 # Using edge detection
 calib_candidates = dict()
 edge_diff = dict()
-threshold = dict()
-# Set threshold for each variable - the level of change for a difference to be identified as a calibration event.
-# This can be an iterative process.
-threshold['cond'] = 60
-threshold['ph'] = 0.1
-threshold['do'] = 0.4
+# The threshold for each variable (the level of change for a difference to be identified as a calibration event)
+# is set in the parameters. Finding the threshold can be an iterative process.
 for snsr in calib_sensors:
     # Width is the window of time to consider in the edge detect difference.
     # 1 determines the difference between each point independently.
@@ -78,7 +74,7 @@ for snsr in calib_sensors:
     calib_candidates[snsr], edge_diff[snsr] = calibration.calib_edge_detect(observed=sensor_array[snsr]['observed'],
                                                                             width=1,
                                                                             calib_params=calib_params,
-                                                                            threshold=threshold[snsr])
+                                                                            threshold=site_params[site][snsr].calib_threshold)
 ### Find Gap Values
 #########################################
 # Subset of sensors that are calibrated
@@ -141,15 +137,15 @@ for cal_snsr in calib_sensors:
             axi.plot(shifts[cal_snsr][i], 'c')
             axi.plot(tech_shifts[cal_snsr][i], 'r')
 
-# Review gaps and make adjustments as needed before performing drift correction
-gaps['cond'].loc[3, 'gap'] = 4
-gaps['cond'].loc[4, 'gap'] = 10
-gaps['cond'].loc[21, 'gap'] = 0
-gaps['cond'].loc[39, 'gap'] = -5
-gaps['cond'].loc[41, 'gap'] = 4
-gaps['ph'].loc[33, 'gap'] = -0.04
-gaps['ph'].loc[43, 'gap'] = 0.12
-gaps['ph'].loc[43, 'end'] = '2019-08-15 15:00'
+# # Review gaps and make adjustments as needed before performing drift correction
+# gaps['cond'].loc[3, 'gap'] = 4
+# gaps['cond'].loc[4, 'gap'] = 10
+# gaps['cond'].loc[21, 'gap'] = 0
+# gaps['cond'].loc[39, 'gap'] = -5
+# gaps['cond'].loc[41, 'gap'] = 4
+# gaps['ph'].loc[33, 'gap'] = -0.04
+# gaps['ph'].loc[43, 'gap'] = 0.12
+# gaps['ph'].loc[43, 'end'] = '2019-08-15 15:00'
 
 #### Perform Linear Drift Correction
 #########################################
@@ -177,7 +173,7 @@ ARIMA = dict()
 for snsr in sensors:
     ARIMA[snsr] = model_workflow.ARIMA_detect(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
-            rules=False, plots=False, summary=False, compare=True)
+            rules=False, plots=False, summary=False, compare=False)
 print('ARIMA detection complete.\n')
 
 ##### LSTM Detection
@@ -188,7 +184,7 @@ for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.VANILLA, name=name,
-            rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
+            rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: univariate,  MODEL: bidirectional
 LSTM_univar_bidir = dict()
@@ -196,19 +192,19 @@ for snsr in sensors:
     name = site + '_' + snsr
     LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL, name=name,
-            rules=False, plots=False, summary=False,compare=True, model_output=False, model_save=False)
+            rules=False, plots=False, summary=False,compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: vanilla
 name = site
 LSTM_multivar = model_workflow.LSTM_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.VANILLA, name=name,
-        rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
+        rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
 name = site
 LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL, name=name,
-        rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=False)
+        rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ##### Aggregate Detections for All Models
 #########################################
@@ -221,13 +217,17 @@ for snsr in sensors:
     models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
     models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
     models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
-    results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
-                                                                               models=models,
-                                                                               verbose=True,
-                                                                               compare=True)
-    print('\nOverall metrics')
-    print('Sensor: ' + snsr)
-    anomaly_utilities.print_metrics(metrics_all[snsr])
+    results_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
+                                                            models=models,
+                                                            verbose=True,
+                                                            compare=False)
+    # results_all[snsr], metrics_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
+    #                                                                            models=models,
+    #                                                                            verbose=True,
+    #                                                                            compare=True)
+    # print('\nOverall metrics')
+    # print('Sensor: ' + snsr)
+    # anomaly_utilities.print_metrics(metrics_all[snsr])
 
 # #### Saving Output
 # #########################################
