@@ -97,7 +97,7 @@ class LSTMModelContainer:
         df_observed: data frame containing preprocessed observed data with one column for each variable.
         df_anomaly: data frame of booleans where True (1) = anomalous data point corresponding to the results of 
         preprocessing with one column for each variable.
-        LSTM_params: dictionary object of parameters including:
+        LSTM_params: data class object of parameters including:
             samples: number of points to use for model training.
             time_steps: number of past data points for LSTM to consider.
             cells: number of cells for the LSTM model.
@@ -129,7 +129,7 @@ def LSTM_univar(df, LSTM_params, summary, name, model_output=True, model_save=Tr
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
 
-    X_train, y_train = create_training_dataset(df[['obs_scaled']], df[['anomaly']], LSTM_params['samples'], LSTM_params['time_steps'])
+    X_train, y_train = create_training_dataset(df[['obs_scaled']], df[['anomaly']], LSTM_params.samples, LSTM_params.time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -137,16 +137,16 @@ def LSTM_univar(df, LSTM_params, summary, name, model_output=True, model_save=Tr
         print('y_train shape: ' + str(y_train.shape))
         print('Number of features: ' + str(num_features))
 
-    model = create_vanilla_model(LSTM_params['cells'], LSTM_params['time_steps'], num_features, LSTM_params['dropout'])
+    model = create_vanilla_model(LSTM_params.cells, LSTM_params.time_steps, num_features, LSTM_params.dropout)
     if summary:
         model.summary()
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, LSTM_params['patience'], verbose=verbose)
+    history = train_model(X_train, y_train, model, LSTM_params.patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
-    X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], LSTM_params['time_steps'])
+    X_test, y_test = create_sequenced_dataset(df[['raw_scaled']], LSTM_params.time_steps)
 
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
@@ -186,7 +186,7 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, m
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
 
-    X_train, y_train = create_training_dataset(df_scaled, df_anomaly, LSTM_params['samples'], LSTM_params['time_steps'])
+    X_train, y_train = create_training_dataset(df_scaled, df_anomaly, LSTM_params.samples, LSTM_params.time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -194,16 +194,16 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, m
         print('y_train shape: ' + str(y_train.shape))
         print('Number of features: ' + str(num_features))
 
-    model = create_vanilla_model(LSTM_params['cells'], LSTM_params['time_steps'], num_features, LSTM_params['dropout'])
+    model = create_vanilla_model(LSTM_params.cells, LSTM_params.time_steps, num_features, LSTM_params.dropout)
     if summary:
         model.summary()
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, LSTM_params['patience'], verbose=verbose)
+    history = train_model(X_train, y_train, model, LSTM_params.patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
-    X_test, y_test = create_sequenced_dataset(df_raw_scaled, LSTM_params['time_steps'])
+    X_test, y_test = create_sequenced_dataset(df_raw_scaled, LSTM_params.time_steps)
 
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
@@ -243,7 +243,7 @@ def LSTM_univar_bidir(df, LSTM_params, summary, name, model_output=True, model_s
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
 
-    X_train, y_train = create_bidir_training_dataset(df[['obs_scaled']], df[['anomaly']], LSTM_params['samples'], LSTM_params['time_steps'])
+    X_train, y_train = create_bidir_training_dataset(df[['obs_scaled']], df[['anomaly']], LSTM_params.samples, LSTM_params.time_steps)
 
     num_features = X_train.shape[2]
 
@@ -252,16 +252,16 @@ def LSTM_univar_bidir(df, LSTM_params, summary, name, model_output=True, model_s
         print('y_train shape: ' + str(y_train.shape))
         print('Number of features: ' + str(num_features))
 
-    model = create_bidir_model(LSTM_params['cells'], LSTM_params['time_steps'], num_features, LSTM_params['dropout'])
+    model = create_bidir_model(LSTM_params.cells, LSTM_params.time_steps, num_features, LSTM_params.dropout)
     if summary:
         model.summary()
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, LSTM_params['patience'], verbose=verbose)
+    history = train_model(X_train, y_train, model, LSTM_params.patience, verbose=verbose)
 
     df['raw_scaled'] = scaler.transform(df[['raw']])
-    X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], LSTM_params['time_steps'])
+    X_test, y_test = create_bidir_sequenced_dataset(df[['raw_scaled']], LSTM_params.time_steps)
 
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
@@ -301,7 +301,7 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, n
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
 
-    X_train, y_train = create_bidir_training_dataset(df_scaled, df_anomaly, LSTM_params['samples'], LSTM_params['time_steps'])
+    X_train, y_train = create_bidir_training_dataset(df_scaled, df_anomaly, LSTM_params.samples, LSTM_params.time_steps)
     num_features = X_train.shape[2]
 
     if summary:
@@ -309,16 +309,16 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, n
         print('y_train shape: ' + str(y_train.shape))
         print('Number of features: ' + str(num_features))
 
-    model = create_bidir_model(LSTM_params['cells'], LSTM_params['time_steps'], num_features, LSTM_params['dropout'])
+    model = create_bidir_model(LSTM_params.cells, LSTM_params.time_steps, num_features, LSTM_params.dropout)
     if summary:
         model.summary()
         verbose = 1
     else:
         verbose = 0
-    history = train_model(X_train, y_train, model, LSTM_params['patience'], verbose=verbose)
+    history = train_model(X_train, y_train, model, LSTM_params.patience, verbose=verbose)
 
     df_raw_scaled = pd.DataFrame(scaler.transform(df_raw), index=df_raw.index, columns=df_raw.columns)
-    X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, LSTM_params['time_steps'])
+    X_test, y_test = create_bidir_sequenced_dataset(df_raw_scaled, LSTM_params.time_steps)
 
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
