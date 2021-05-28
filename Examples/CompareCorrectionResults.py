@@ -4,6 +4,7 @@ from PyHydroQC import anomaly_utilities
 from PyHydroQC.parameters import site_params
 import os
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
 os.chdir('..')
@@ -37,6 +38,15 @@ for snsr in sensors:
     correct_compare[snsr]['det_cor'] = corrections[snsr]['det_cor']
 
     df = correct_compare[snsr]
+
+    sum_tech = (df['raw'] - df['tech_cor']) ** 2
+    SSE_tech = np.sum(sum_tech)
+    sum_algo = (df['raw'] - df['det_cor']) ** 2
+    SSE_algo = np.sum(sum_algo)
+    print(snsr + ' SSE technician ' + str(SSE_tech))
+    print(snsr + ' SSE algorithm ' + str(SSE_algo))
+
+
     # plt.plot(df['raw'], 'b', label='raw')
     # plt.plot(df['tech_cor'], 'r', label='technician')
     # plt.plot(df['det_cor'], 'g', label='algorithm')

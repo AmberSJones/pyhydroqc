@@ -13,8 +13,8 @@ import os
 
 colors = ['#0C7BDC', '#F3870D', '#24026A', '#AF3C31']
 
-# FIGURES 3 (gap values and drift correction), 4 (threshold), 6 (detection examples), 7 (long labeled event),
-# 8 (model detection for calibration events)
+# FIGURES 3 (gap values and drift correction), 4 (threshold), C1 (detection example), C2 (long labeled event),
+# C3 (model detection for calibration events)
 # These figures all use data from Main Street.
 
 #### Retrieve data
@@ -150,7 +150,7 @@ plt.xlabel('Date')
 plt.show()
 plt.savefig('Figures/Figure4.png', bbox_inches='tight')
 
-## FIGURE 6 ##
+## FIGURE C1 ##
 #########################################
 # Detection example
 
@@ -209,9 +209,9 @@ plt.annotate('        ', xy=(datetime.datetime(2017, 12, 25, 12, 0), 460), xycoo
              arrowprops=dict(facecolor='black', width=1.5, headwidth=7),
              horizontalalignment='center', verticalalignment='top')
 
-plt.savefig('Figures/Figure6.png', bbox_inches='tight')
+plt.savefig('Figures/FigureC1.png', bbox_inches='tight')
 
-## FIGURE 7 ##
+## FIGURE C2 ##
 #########################################
 # Compare technician and algorithm detections
 
@@ -243,14 +243,14 @@ plt.legend()
 plt.ylabel('pH')
 plt.xlabel('Date')
 plt.show()
-plt.savefig('Figures/Figure7.png', bbox_inches='tight')
+plt.savefig('Figures/FigureC2.png', bbox_inches='tight')
 
-## FIGURE 8 ##
+## FIGURE C3 ##
 #########################################
 # Examine calibration events
 
-fig8 = plt.figure(figsize=(10, 6))
-ax = fig8.add_subplot(2, 1, 1)
+figC3 = plt.figure(figsize=(10, 6))
+ax = figC3.add_subplot(2, 1, 1)
 ax.plot(raw, color=colors[0], label='Observed data')
 ax.plot(predictions, color=colors[2], label='Model prediction')
 ax.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
@@ -261,7 +261,8 @@ ax.set_xticks(pd.date_range(start='10/2/2017', end='10/5/2017', freq='1D'))  # S
 ax.set_yticks(np.arange(8.4, 8.75, 0.1))
 ax.legend()
 ax.set_ylabel('pH')
-ax = fig8.add_subplot(2, 1, 2)
+ax.annotate('a', xy=(0.015, 0.9), xycoords='axes fraction', fontsize=15)
+ax = figC3.add_subplot(2, 1, 2)
 ax.plot(raw, color=colors[0], label='Observed data')
 ax.plot(predictions, color=colors[2], label='Model prediction')
 ax.plot(raw[labels > 0], 'o', color=colors[1], mfc='none', markersize=5, markeredgewidth=1, label='Technician labeled anomalies')
@@ -270,11 +271,13 @@ ax.set_xlim(datetime.datetime(2019, 8, 27), datetime.datetime(2019, 8, 30))  # S
 ax.set_ylim(8.1, 9.0)
 ax.set_xticks(pd.date_range(start='8/27/2019', end='8/30/2019', freq='1D'))  # Specify xticks at 1-day intervals
 ax.set_ylabel('pH')
+ax.annotate('b', xy=(0.015, 0.9), xycoords='axes fraction', fontsize=15)
 plt.xlabel('Date')
-plt.savefig('Figures/Figure8.png', bbox_inches='tight')
+
+plt.savefig('Figures/FigureC3.png', bbox_inches='tight')
 
 
-# FIGURES 5 (detection example), 9 (model comparison examples)
+# FIGURES 5 (detection example), C4 (model comparison examples)
 # These figures all use data from Tony Grove.
 
 #### Retrieve data
@@ -379,7 +382,7 @@ plt.show()
 plt.savefig('Figures/Figure5.png', bbox_inches='tight')
 
 
-## FIGURE 9 ##
+## FIGURE C4 ##
 #########################################
 # Model comparison
 
@@ -441,6 +444,6 @@ for i, mdl in enumerate(model_type):
                       ha='left', va='center', fontname='Arial Narrow',
                       horizontalalignment='right', verticalalignment='top')
     ax[4][0].legend(ncol=1, labelspacing=0.2, fontsize=9, handletextpad=0.2, columnspacing=0.25, loc='lower right')
-plt.savefig('Figures/Figure9.png', bbox_inches='tight')
+plt.savefig('Figures/FigureC4.png', bbox_inches='tight')
 
 ###################################################
