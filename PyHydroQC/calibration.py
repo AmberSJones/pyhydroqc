@@ -5,7 +5,7 @@
 # Functions include detection based on edges or persistence restricted by day of week and hour of day, identification
 # of gap values as input to correction, and linear drift correction.
 
-from PyHydroQC import anomaly_utilities
+from pyhydroqc import anomaly_utilities
 import pandas as pd
 import numpy as np
 

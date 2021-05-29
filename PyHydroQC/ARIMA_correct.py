@@ -4,7 +4,7 @@
 # This script includes functionality for making corrections using ARIMA regression.
 
 import numpy as np
-from PyHydroQC import anomaly_utilities
+from pyhydroqc import anomaly_utilities
 import pmdarima as pm
 import warnings
 import pandas as pd

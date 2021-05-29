@@ -1,5 +1,5 @@
 #########################################
-# PyHydroQC Time Series Figures
+# Time Series Figures
 #########################################
 
 #### Import Libraries and Functions
@@ -55,7 +55,7 @@ WaterLab_temp = pd.read_csv('WaterLab_temp_corrections.csv',
                              infer_datetime_format=True)
 
 
-from PyHydroQC import anomaly_utilities
+from pyhydroqc import anomaly_utilities
 os.chdir('..')
 os.chdir('..')
 site = 'WaterLab'

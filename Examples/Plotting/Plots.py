@@ -1,10 +1,10 @@
 #########################################
-# PyHydroQC Time Series Figures
+# Time Series Figures
 #########################################
 
 #### Import Libraries and Functions
-from PyHydroQC import anomaly_utilities, rules_detect, calibration, model_workflow
-from PyHydroQC.parameters import site_params, LSTM_params
+from pyhydroqc import anomaly_utilities, rules_detect, calibration
+from pyhydroqc.parameters import site_params
 import matplotlib.pyplot as plt
 import datetime
 import pandas as pd

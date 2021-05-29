@@ -3,13 +3,13 @@
 #####################################################
 
 #### Import Libraries and Functions
-from PyHydroQC import anomaly_utilities
-from PyHydroQC import model_workflow
-from PyHydroQC import rules_detect
-from PyHydroQC import ARIMA_correct
-from PyHydroQC import calibration
-from PyHydroQC.parameters import site_params, LSTM_params, calib_params
-from PyHydroQC.model_workflow import ModelType
+from pyhydroqc import anomaly_utilities
+from pyhydroqc import model_workflow
+from pyhydroqc import rules_detect
+from pyhydroqc import ARIMA_correct
+from pyhydroqc import calibration
+from pyhydroqc.parameters import site_params, LSTM_params, calib_params
+from pyhydroqc.model_workflow import ModelType
 import math
 import pickle
 import pandas as pd

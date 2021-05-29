@@ -4,15 +4,15 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="pyhydroqc-AmberSJones", # Replace with your own username
-    version="0.0.1",
+    name="pyhydroqc",
+    version="0.0.2",
     author="Amber Jones",
     author_email="amber.jones@usu.edu",
     description="A package containing functions for anomaly detection and correction of aquatic sensor data.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/AmberSJones/PyHydroQC",
-    packages=setuptools.find_packages(include=['PyHydroQC']),
+    url="https://github.com/AmberSJones/pyhydroqc",
+    packages=setuptools.find_packages(include=['pyhydroqc']),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Development Status :: 4 - Beta",
@@ -22,6 +22,16 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Hydrology"
     ],
     python_requires='>=3.6',
+    install_requires=[
+        'numpy',
+        'pandas',
+        'matplotlib',
+        'scipy',
+        'pmdarima',
+        'tensorflow',
+        'statsmodels',
+        'sklearn'
+    ],
 )
 
 

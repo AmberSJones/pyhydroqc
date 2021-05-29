@@ -4,7 +4,7 @@
 # This file includes functionality for rules based anomaly detection and preprocessing.
 # Functions include range check, persistence check, and linear interpolation for correction.
 
-from PyHydroQC import anomaly_utilities
+from pyhydroqc import anomaly_utilities
 import numpy as np
 
 

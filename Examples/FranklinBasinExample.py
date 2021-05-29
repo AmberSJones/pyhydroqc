@@ -4,12 +4,12 @@
 
 #### Import Libraries and Functions
 
-from PyHydroQC import anomaly_utilities
-from PyHydroQC import model_workflow
-from PyHydroQC import rules_detect
-from PyHydroQC import ARIMA_correct
-from PyHydroQC import modeling_utilities
-from PyHydroQC.model_workflow import ModelType
+from pyhydroqc import anomaly_utilities
+from pyhydroqc import model_workflow
+from pyhydroqc import rules_detect
+from pyhydroqc import ARIMA_correct
+from pyhydroqc import modeling_utilities
+from pyhydroqc.model_workflow import ModelType
 
 # Parameters may be specified in a parameters file or in the same script
 from Examples.FB_parameters import site_params, LSTM_params, calib_params

@@ -2,9 +2,9 @@
 # MODELING WORKFLOW  #
 ################################
 
-from PyHydroQC import anomaly_utilities
-from PyHydroQC import modeling_utilities
-from PyHydroQC import rules_detect
+from pyhydroqc import anomaly_utilities
+from pyhydroqc import modeling_utilities
+from pyhydroqc import rules_detect
 import matplotlib.pyplot as plt
 import pandas as pd
 from enum import Enum

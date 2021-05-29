@@ -1,7 +1,7 @@
 #### Import Libraries and Functions
 
-from PyHydroQC import anomaly_utilities, rules_detect, calibration
-from PyHydroQC.parameters import site_params
+from pyhydroqc import anomaly_utilities, rules_detect, calibration
+from pyhydroqc.parameters import site_params
 import matplotlib.pyplot as plt
 import pandas as pd
 import math

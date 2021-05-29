@@ -1,7 +1,7 @@
 
 #### Import Libraries and Functions
-from PyHydroQC import anomaly_utilities
-from PyHydroQC.parameters import site_params
+from pyhydroqc import anomaly_utilities
+from pyhydroqc.parameters import site_params
 import os
 import pandas as pd
 import numpy as np

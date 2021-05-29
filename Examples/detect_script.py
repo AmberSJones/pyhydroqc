@@ -11,10 +11,10 @@
 
 import copy
 import pickle
-from PyHydroQC import anomaly_utilities
-from PyHydroQC import model_workflow
-from PyHydroQC import rules_detect
-from PyHydroQC.parameters import site_params
+from pyhydroqc import anomaly_utilities
+from pyhydroqc import model_workflow
+from pyhydroqc import rules_detect
+from pyhydroqc.parameters import site_params
 
 
 class MethodsOutput:

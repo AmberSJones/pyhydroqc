@@ -1,5 +1,5 @@
 # Anomaly Detection and Correction for Aquatic Sensor Data
-This repository contains software to identify and correct anomalous values in time series data collected by in situ aquatic sensors. The code was developed for application to data collected in the Logan River Observatory, sourced at <http://lrodata.usu.edu/tsa/> or on [HydroShare](https://www.hydroshare.org/search/?q=logan%20river%20observatory). All functions contained in the package are [documented here](https://ambersjones.github.io/PyHydroQC/). The package may be installed from the [Test Python Package Index](https://test.pypi.org/project/pyhydroqc-AmberSJones/).
+This repository contains software to identify and correct anomalous values in time series data collected by in situ aquatic sensors. The code was developed for application to data collected in the Logan River Observatory, sourced at <http://lrodata.usu.edu/tsa/> or on [HydroShare](https://www.hydroshare.org/search/?q=logan%20river%20observatory). All functions contained in the package are [documented here](https://ambersjones.github.io/pyhydroqc/). The package may be installed from the [Test Python Package Index](https://test.pypi.org/project/pyhydroqc-AmberSJones/).
 
 Methods currently implemented include ARIMA (AutoRegressive Integrated Moving Average) and LSTM (Long Short Term Memory). These are time series regression methods that detect anomalies by comparing model estimates to sensor observations and labeling points as anomalous when they exceed a threshold.
 
@@ -43,11 +43,13 @@ Contains functions for performing anomaly detection and correction:
 - set_dynamic_threshold: Creates a threshold that varies dynamically based on the model residuals.
 - set_cons_threshold: Creates a threshold of constant value.
 - detect_anomalies: Uses model residuals and threshold values to classify anomalous data.
+- aggregate_results: Combines the detections from multiple models to give a single output of anomaly detections.
 - plt_threshold: Plots thresholds and model residuals.
 - plt_results: Plots raw data, model predictions, detected and labeled anomalies.
 
 ### modeling_utilities.py
 Contains functions for building and training models:
+- pdq: Automatically determines the (p, d, q) hyperparameters of a time series for ARIMA modeling.
 - build_arima_model, LSTM_univar, LSTM_multivar, LSTM_univar_bidir, LSTM_multivar_bidir: wrappers that call other functions in the file to scale and reshape data (for LSTM models only), create and train a model, and output model predictions and residuals.
 - create_scaler: Creates a scaler object for scaling and unscaling data.
 - create_training_dataset and create_bidir_training_dataset: Creates a training dataset based on a random selection of points from the dataset. Reshapes data to include the desired time_steps for input to the LSTM model - the number of past data points to examine or past and future points (bidirectional). Ensures that data already identified as anomalous (i.e., by rules based detection) are not used.
@@ -63,6 +65,14 @@ Contains functions for rules based anomaly detection and preprocessing. Depends 
 - interpolate: Corrects data with linear interpolation, a typical approach for short anomalous events.
 - add_labels: Enables the addition of anomaly labels (referring to anomalies previously identified by an expert) in the case that labels may have been missed for corrected data that are NaN or a no data value (e.g, -9999).
 
+### calibration.py
+Contains functions for identifying and correcting calibration events. Functions include:
+- calib_edge_detect: identifies possible calibration event candidates by using edge filtering.
+- calib_persist_detect: identifies possible calibration event candidates based on persistence of a user defined length.
+- calib_overlap: identifies possible calibration event candidates by finding concurrent events of multiple sensors from the calib_persist_detect function.
+- find_gap: determines a gap value for a calibration event based on the largest data difference within a time window around a datetime.
+- lin_drift_cor: performs linear drift correction to address sensor drift given calibration dates and a gap value.
+
 ### model_workflow.py
 Contains functionality to build and train ARIMA and LSTM models, apply the models to make predictions, set thresholds, detect anomalies, widen anomalous events, and determine metrics. Depends on anomaly_utilities.py, modeling_utilities.py, and rules_detect.py. 
 Wrapper function names are: ARIMA_detect, LSTM_detect_univar, and LSTM_detect_multivar. LSTM model workflows include options for vanilla or bidirectional. Within each wrapper function, the full detection workflow is followed. Options allow for output of plots, summaries, and metrics.
@@ -72,11 +82,6 @@ Contains functionality to perform corrections and plot results using ARIMA model
 - ARIMA_group: Ensures that the valid data surrounding anomalous points and groups of points are sufficient forecasting/backcasting.
 - ARIMA_forecast: Creates predictions of data where anomalies occur.
 - generate_corrections: The primary function for determining corrections. Passes through data with anomalies and determines corrections using piecewise ARIMA models. Corrections are determined by averaging together (cross fade) both a forecast and a backcast.
-
-### LSTM_correct.py
-Separate functions correct univariate and multivariate data and plot results. The functions step through each data point and determine a correction based on the previous time_steps with a developed model.
-- LSTM_correct: performs corrections for univariate data and model.
-- LSTM_multi_correct: performs corrections for multivariate data and model.
 
 ## Dependencies
 This software depends on the following Python packages:

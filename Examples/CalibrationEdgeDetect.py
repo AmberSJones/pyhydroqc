@@ -1,9 +1,9 @@
 #### Import Libraries and Functions
 
-from PyHydroQC import anomaly_utilities
+from pyhydroqc import anomaly_utilities
 import matplotlib.pyplot as plt
-from PyHydroQC import rules_detect, calibration
-from PyHydroQC.parameters import site_params, calib_params
+from pyhydroqc import rules_detect, calibration
+from pyhydroqc.parameters import site_params, calib_params
 
 #### Retrieve data
 #########################################
