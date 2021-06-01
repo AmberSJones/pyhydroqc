@@ -8,20 +8,20 @@ i = 1
 sensor = sensor[i]
 
 # ARIMA
-residuals = ARIMA_detect[i].detections['residual']
-predictions = ARIMA_detect[i].detections['prediction']
-threshold = ARIMA_detect[i].threshold
-raw = ARIMA_detect[i].df['raw']
-labels = ARIMA_detect[i].df['labeled_event']
-detections = ARIMA_detect[i].df['detected_event']
+residuals = arima_detect[i].detections['residual']
+predictions = arima_detect[i].detections['prediction']
+threshold = arima_detect[i].threshold
+raw = arima_detect[i].df['raw']
+labels = arima_detect[i].df['labeled_event']
+detections = arima_detect[i].df['detected_event']
 
 # LSTM Univariate
-residuals = LSTM_detect_univar[i].detections['residual']
-predictions = LSTM_detect_univar[i].detections['prediction']
-threshold = LSTM_detect_univar[i].threshold
-raw = LSTM_detect_univar[i].df_anomalies['raw']
-labels = LSTM_detect_univar[i].df_anomalies['labeled_event']
-detections = LSTM_detect_univar[i].df_anomalies['detected_event']
+residuals = lstm_detect_univar[i].detections['residual']
+predictions = lstm_detect_univar[i].detections['prediction']
+threshold = lstm_detect_univar[i].threshold
+raw = lstm_detect_univar[i].df_anomalies['raw']
+labels = lstm_detect_univar[i].df_anomalies['labeled_event']
+detections = lstm_detect_univar[i].df_anomalies['detected_event']
 
 # LSTM Multivariate
 residuals = LSTM_detect_multivar_bidirectional.detections_array[i]['residual']

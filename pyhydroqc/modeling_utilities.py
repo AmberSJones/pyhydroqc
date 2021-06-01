@@ -122,9 +122,9 @@ class LSTMModelContainer:
     """
 
 
-def LSTM_univar(df, LSTM_params, summary, name, model_output=True, model_save=True):
+def lstm_univar(df, LSTM_params, summary, name, model_output=True, model_save=True):
     """
-    LSTM_univar builds, trains, and evaluates a vanilla LSTM model for univariate data.
+    lstm_univar builds, trains, and evaluates a vanilla LSTM model for univariate data.
     """
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
@@ -163,25 +163,25 @@ def LSTM_univar(df, LSTM_params, summary, name, model_output=True, model_save=Tr
     if model_save:
         model.save('originalsavedoutput/models/LSTM_univar_' + str(name))
 
-    LSTM_univar = LSTMModelContainer()
+    lstm_univar = LSTMModelContainer()
     if model_output:
-        LSTM_univar.model = model
-        LSTM_univar.history = history
-    LSTM_univar.X_train = X_train
-    LSTM_univar.y_train = y_train
-    LSTM_univar.X_test = X_test
-    LSTM_univar.y_test = y_test
-    LSTM_univar.model_eval = model_eval
-    LSTM_univar.predictions = predictions
-    LSTM_univar.train_residuals = train_residuals
-    LSTM_univar.test_residuals = test_residuals
+        lstm_univar.model = model
+        lstm_univar.history = history
+    lstm_univar.X_train = X_train
+    lstm_univar.y_train = y_train
+    lstm_univar.X_test = X_test
+    lstm_univar.y_test = y_test
+    lstm_univar.model_eval = model_eval
+    lstm_univar.predictions = predictions
+    lstm_univar.train_residuals = train_residuals
+    lstm_univar.test_residuals = test_residuals
 
-    return LSTM_univar
+    return lstm_univar
 
 
-def LSTM_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output=True, model_save=True):
+def lstm_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output=True, model_save=True):
     """
-    LSTM_multivar builds, trains, and evaluates a vanilla LSTM model for multivariate data.
+    lstm_multivar builds, trains, and evaluates a vanilla LSTM model for multivariate data.
     """
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
@@ -220,25 +220,25 @@ def LSTM_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, m
     if model_save:
         model.save('originalsavedoutput/models/LSTM_multivar_' + str(name))
 
-    LSTM_multivar = LSTMModelContainer()
+    lstm_multivar = LSTMModelContainer()
     if model_output:
-        LSTM_multivar.model = model
-        LSTM_multivar.history = history
-    LSTM_multivar.X_train = X_train
-    LSTM_multivar.y_train = y_train
-    LSTM_multivar.X_test = X_test
-    LSTM_multivar.y_test = y_test
-    LSTM_multivar.model_eval = model_eval
-    LSTM_multivar.predictions = predictions
-    LSTM_multivar.train_residuals = train_residuals
-    LSTM_multivar.test_residuals = test_residuals
+        lstm_multivar.model = model
+        lstm_multivar.history = history
+    lstm_multivar.X_train = X_train
+    lstm_multivar.y_train = y_train
+    lstm_multivar.X_test = X_test
+    lstm_multivar.y_test = y_test
+    lstm_multivar.model_eval = model_eval
+    lstm_multivar.predictions = predictions
+    lstm_multivar.train_residuals = train_residuals
+    lstm_multivar.test_residuals = test_residuals
 
-    return LSTM_multivar
+    return lstm_multivar
 
 
-def LSTM_univar_bidir(df, LSTM_params, summary, name, model_output=True, model_save=True):
+def lstm_univar_bidir(df, LSTM_params, summary, name, model_output=True, model_save=True):
     """
-    LSTM_univar_bidir builds, trains, and evaluates a bidirectional LSTM model for univariate data.
+    lstm_univar_bidir builds, trains, and evaluates a bidirectional LSTM model for univariate data.
     """
     scaler = create_scaler(df[['observed']])
     df['obs_scaled'] = scaler.transform(df[['observed']])
@@ -278,25 +278,25 @@ def LSTM_univar_bidir(df, LSTM_params, summary, name, model_output=True, model_s
     if model_save:
         model.save('originalsavedoutput/models/LSTM_univar_bidir_' + str(name))
 
-    LSTM_univar_bidir = LSTMModelContainer()
+    lstm_univar_bidir = LSTMModelContainer()
     if model_output:
-        LSTM_univar_bidir.model = model
-        LSTM_univar_bidir.history = history
-    LSTM_univar_bidir.X_train = X_train
-    LSTM_univar_bidir.y_train = y_train
-    LSTM_univar_bidir.X_test = X_test
-    LSTM_univar_bidir.y_test = y_test
-    LSTM_univar_bidir.model_eval = model_eval
-    LSTM_univar_bidir.predictions = predictions
-    LSTM_univar_bidir.train_residuals = train_residuals
-    LSTM_univar_bidir.test_residuals = test_residuals
+        lstm_univar_bidir.model = model
+        lstm_univar_bidir.history = history
+    lstm_univar_bidir.X_train = X_train
+    lstm_univar_bidir.y_train = y_train
+    lstm_univar_bidir.X_test = X_test
+    lstm_univar_bidir.y_test = y_test
+    lstm_univar_bidir.model_eval = model_eval
+    lstm_univar_bidir.predictions = predictions
+    lstm_univar_bidir.train_residuals = train_residuals
+    lstm_univar_bidir.test_residuals = test_residuals
 
-    return LSTM_univar_bidir
+    return lstm_univar_bidir
 
 
-def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output=True, model_save=True):
+def lstm_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output=True, model_save=True):
     """
-    LSTM_multivar_bidir builds, trains, and evaluates a bidirectional LSTM model for multivariate data.
+    lstm_multivar_bidir builds, trains, and evaluates a bidirectional LSTM model for multivariate data.
     """
     scaler = create_scaler(df_observed)
     df_scaled = pd.DataFrame(scaler.transform(df_observed), index=df_observed.index, columns=df_observed.columns)
@@ -335,20 +335,20 @@ def LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, n
     if model_save:
         model.save('originalsavedoutput/models/LSTM_multiivar_bidir_' + str(name))
 
-    LSTM_multivar_bidir = LSTMModelContainer()
+    lstm_multivar_bidir = LSTMModelContainer()
     if model_output:
-        LSTM_univar_bidir.model = model
-        LSTM_univar_bidir.history = history
-    LSTM_multivar_bidir.X_train = X_train
-    LSTM_multivar_bidir.y_train = y_train
-    LSTM_multivar_bidir.X_test = X_test
-    LSTM_multivar_bidir.y_test = y_test
-    LSTM_multivar_bidir.model_eval = model_eval
-    LSTM_multivar_bidir.predictions = predictions
-    LSTM_multivar_bidir.train_residuals = train_residuals
-    LSTM_multivar_bidir.test_residuals = test_residuals
+        lstm_univar_bidir.model = model
+        lstm_univar_bidir.history = history
+    lstm_multivar_bidir.X_train = X_train
+    lstm_multivar_bidir.y_train = y_train
+    lstm_multivar_bidir.X_test = X_test
+    lstm_multivar_bidir.y_test = y_test
+    lstm_multivar_bidir.model_eval = model_eval
+    lstm_multivar_bidir.predictions = predictions
+    lstm_multivar_bidir.train_residuals = train_residuals
+    lstm_multivar_bidir.test_residuals = test_residuals
 
-    return LSTM_multivar_bidir
+    return lstm_multivar_bidir
 
 
 def create_scaler(data):

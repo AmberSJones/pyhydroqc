@@ -10,18 +10,18 @@ import warnings
 import pandas as pd
 
 
-def ARIMA_group(df, anomalies, group, min_group_len=20):
+def arima_group(df, anomalies, group, min_group_len=20):
     """
-    ARIMA_group examines detected events and performs conditional widening (marks some valid points as anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
+    arima_group examines detected events and performs conditional widening (marks some valid points as anomalous) to ensure that widened event is sufficient for forecasting/backcasting.
     Arguments:
         df: data frame with a column for detected events.
         anomalies: string of the column name for detected events.
         group: string of column name containing an ascending index for each group of valid or anomolous data points (output of the group_bools function).
         min_group_len: the minimum group length.
     Returns:
-        df: data frame with new columns: 'ARIMA_event' and 'ARIMA_group'
+        df: data frame with new columns: 'ARIMA_event' and 'arima_group'
     """
-    ARIMA_group = []
+    arima_group = []
     df['ARIMA_event'] = df[anomalies]
     new_gi = 0
     # for each group
@@ -34,22 +34,22 @@ def ARIMA_group(df, anomalies, group, min_group_len=20):
             df.loc[df[group] == i, 'ARIMA_event'] = True
             if (new_gi > 0):
                 new_gi -= 1
-            ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
+            arima_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
 
         else:  # this group does not need to be altered
-            ARIMA_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
+            arima_group.extend(np.full([1, group_len], new_gi, dtype=int)[0])
             new_gi += 1
 
     if (new_gi < (max(df[group])/2)):
         print("WARNING: more than half of the anomaly events have been merged!")
-    df['ARIMA_group'] = ARIMA_group
+    df['arima_group'] = arima_group
 
     return df
 
 
-def ARIMA_forecast(x, l, suppress_warnings=True):
+def arima_forecast(x, l, suppress_warnings=True):
     """
-    ARIMA_forecast creates predictions of data where anomalies occur. Creates ARIMA model and outputs forecasts of specified length.
+    arima_forecast creates predictions of data where anomalies occur. Creates ARIMA model and outputs forecasts of specified length.
     Arguments:
         x: array of values from which to predict corrections. corresponds to non-anomalous data.
         l: number of predicted data points to be forecasted/corrected.
@@ -90,7 +90,7 @@ def generate_corrections(df, observed, anomalies, model_limit=6, savecasts=False
 
     # assign group index numbers to each set of consecutiveTrue/False data points
     df = anomaly_utilities.group_bools(df, column_in=anomalies, column_out='group')
-    df = ARIMA_group(df, anomalies, 'group')
+    df = arima_group(df, anomalies, 'group')
 
     # create new output columns
     df['det_cor'] = df[observed]
@@ -101,8 +101,8 @@ def generate_corrections(df, observed, anomalies, model_limit=6, savecasts=False
 
     # while there are anomalous groups of points left to correct
     while len(df[df['ARIMA_event'] != 0]) > 0:
-        # find an index for an anomalous ARIMA_group having the smallest number of points
-        i = df[df['ARIMA_event'] != 0]['ARIMA_group'].value_counts().index.values[-1]
+        # find an index for an anomalous arima_group having the smallest number of points
+        i = df[df['ARIMA_event'] != 0]['arima_group'].value_counts().index.values[-1]
 
         # reset the conditionals
         forecasted = False
@@ -112,77 +112,77 @@ def generate_corrections(df, observed, anomalies, model_limit=6, savecasts=False
             # forecast in forward direction
             # create an array of corrected data for current anomalous group
             # i-1 is the index of the previous group being used to forecast
-            pre_data = df.loc[df['ARIMA_group'] == (i - 1)][observed]  # save off data for modeling
+            pre_data = df.loc[df['arima_group'] == (i - 1)][observed]  # save off data for modeling
             pre_data = pre_data[pre_data.index[-1] - pd.Timedelta(days=model_limit):pre_data.index[-1]]  # limit data
             # generate the forecast data
-            yfor = ARIMA_forecast(np.array(pre_data),
-                                  len(df.loc[df['ARIMA_group'] == i]),
+            yfor = arima_forecast(np.array(pre_data),
+                                  len(df.loc[df['arima_group'] == i]),
                                   suppress_warnings)
 
             forecasted = True
             if (savecasts):
-                df.loc[df['ARIMA_group'] == i, 'forecasts'] = yfor
-                df.loc[df[df['ARIMA_group'] == i - 1].index[-1], 'forecasts'] = \
-                    df.loc[df[df['ARIMA_group'] == i - 1].index[-1], 'observed']
+                df.loc[df['arima_group'] == i, 'forecasts'] = yfor
+                df.loc[df[df['arima_group'] == i - 1].index[-1], 'forecasts'] = \
+                    df.loc[df[df['arima_group'] == i - 1].index[-1], 'observed']
 
         # perform backcasting to generate corrected data points
-        if (i != max(df['ARIMA_group'])): # if not at the end
+        if (i != max(df['arima_group'])): # if not at the end
             # forecast in reverse direction
             # data associated with group i+1 gets flipped for making a forecast
-            post_data = df.loc[df['ARIMA_group'] == (i + 1)][observed]  # save off data for modeling
+            post_data = df.loc[df['arima_group'] == (i + 1)][observed]  # save off data for modeling
             post_data = post_data[post_data.index[0]:post_data.index[0] + pd.Timedelta(days=model_limit)]  # limit data
             # create backcast
-            yrev = ARIMA_forecast(np.flip(np.array(post_data)),
-                                  len(df.loc[df['ARIMA_group'] == i]),
+            yrev = arima_forecast(np.flip(np.array(post_data)),
+                                  len(df.loc[df['arima_group'] == i]),
                                   suppress_warnings)
             # output is reversed, making what was forecast into a backcast
             ybac = np.flip(yrev)
             backcasted = True
             if (savecasts):
-                df.loc[df['ARIMA_group'] == i, 'backcasts'] = ybac
-                df.loc[df[df['ARIMA_group'] == i + 1].index[0], 'backcasts'] = \
-                    df.loc[df[df['ARIMA_group'] == i + 1].index[0], 'observed']
+                df.loc[df['arima_group'] == i, 'backcasts'] = ybac
+                df.loc[df[df['arima_group'] == i + 1].index[0], 'backcasts'] = \
+                    df.loc[df[df['arima_group'] == i + 1].index[0], 'observed']
 
         # fill the det_cor column using forecasted and backcasted conditionals
         if ((not forecasted) and (not backcasted)):
             print("ERROR: all data points are anomalous!")
         elif (not forecasted):  # if there is no forecast
             # add the correction to the detected event
-            df.loc[df['ARIMA_group'] == i, 'det_cor'] = ybac
+            df.loc[df['arima_group'] == i, 'det_cor'] = ybac
 
             # remove the ARIMA_event
-            df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
+            df.loc[df['arima_group'] == i, 'ARIMA_event'] = 0
 
             # decrement the following ARIMA_groups (to merge 0 and 1)
-            df.loc[df['ARIMA_group'] > i, 'ARIMA_group'] -= 1
+            df.loc[df['arima_group'] > i, 'arima_group'] -= 1
 
         elif (not backcasted):  # if there is no backcast
             # add the correction to the detected event
-            df.loc[df['ARIMA_group'] == i, 'det_cor'] = yfor
+            df.loc[df['arima_group'] == i, 'det_cor'] = yfor
 
             # remove the ARIMA_event
-            df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
+            df.loc[df['arima_group'] == i, 'ARIMA_event'] = 0
 
-            # merge the last ARIMA_group after correction
-            df.loc[df['ARIMA_group'] == i, 'ARIMA_group'] = i - 1
+            # merge the last arima_group after correction
+            df.loc[df['arima_group'] == i, 'arima_group'] = i - 1
 
         else:  # both a forecast and a backcast exist
             # add the correction to the detected event
-            df.loc[df['ARIMA_group'] == i, 'det_cor'] = anomaly_utilities.xfade(yfor, ybac)
+            df.loc[df['arima_group'] == i, 'det_cor'] = anomaly_utilities.xfade(yfor, ybac)
 
             # remove the ARIMA_event
-            df.loc[df['ARIMA_group'] == i, 'ARIMA_event'] = 0
+            df.loc[df['arima_group'] == i, 'ARIMA_event'] = 0
 
             # merge the ARIMA_groups after correction
-            df.loc[df['ARIMA_group'] == i, 'ARIMA_group'] = i - 1
-            df.loc[df['ARIMA_group'] == i + 1, 'ARIMA_group'] = i - 1
+            df.loc[df['arima_group'] == i, 'arima_group'] = i - 1
+            df.loc[df['arima_group'] == i + 1, 'arima_group'] = i - 1
 
             # decrement the following ARIMA_groups
-            df.loc[df['ARIMA_group'] > i, 'ARIMA_group'] -= 2
+            df.loc[df['arima_group'] > i, 'arima_group'] -= 2
 
     # delete unused columns
     df = df.drop('group', 1)
     df = df.drop('ARIMA_event', 1)
-    df = df.drop('ARIMA_group', 1)
+    df = df.drop('arima_group', 1)
 
     return df

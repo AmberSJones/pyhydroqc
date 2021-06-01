@@ -6,7 +6,7 @@
 from pyhydroqc import anomaly_utilities
 from pyhydroqc import model_workflow
 from pyhydroqc import rules_detect
-from pyhydroqc import ARIMA_correct
+from pyhydroqc import arima_correct
 from pyhydroqc import calibration
 from pyhydroqc.parameters import site_params, LSTM_params, calib_params
 from pyhydroqc.model_workflow import ModelType
@@ -171,7 +171,7 @@ for snsr in calib_sensors:
 #########################################
 ARIMA = dict()
 for snsr in sensors:
-    ARIMA[snsr] = model_workflow.ARIMA_detect(
+    ARIMA[snsr] = model_workflow.arima_detect(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
             rules=False, plots=False, summary=False, compare=False)
 print('ARIMA detection complete.\n')
@@ -179,30 +179,30 @@ print('ARIMA detection complete.\n')
 ##### LSTM Detection
 #########################################
 ###### DATA: univariate, MODEL: vanilla
-LSTM_univar = dict()
+lstm_univar = dict()
 for snsr in sensors:
     name = site + '_' + snsr
-    LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(
+    lstm_univar[snsr] = model_workflow.lstm_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.VANILLA, name=name,
             rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: univariate,  MODEL: bidirectional
-LSTM_univar_bidir = dict()
+lstm_univar_bidir = dict()
 for snsr in sensors:
     name = site + '_' + snsr
-    LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
+    lstm_univar_bidir[snsr] = model_workflow.lstm_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL, name=name,
             rules=False, plots=False, summary=False,compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: vanilla
 name = site
-LSTM_multivar = model_workflow.LSTM_detect_multivar(
+lstm_multivar = model_workflow.lstm_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.VANILLA, name=name,
         rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
 name = site
-LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
+lstm_multivar_bidir = model_workflow.lstm_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL, name=name,
         rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
@@ -213,10 +213,10 @@ metrics_all = dict()
 for snsr in sensors:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
-    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
-    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
-    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
-    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+    models['lstm_univar'] = lstm_univar[snsr].df_anomalies
+    models['lstm_univar_bidir'] = lstm_univar_bidir[snsr].df_anomalies
+    models['lstm_multivar'] = lstm_multivar.all_data[snsr]
+    models['lstm_multivar_bidir'] = lstm_multivar_bidir.all_data[snsr]
     results_all[snsr] = anomaly_utilities.aggregate_results(df=sensor_array[snsr],
                                                             models=models,
                                                             verbose=True,
@@ -235,34 +235,34 @@ for snsr in sensors:
 #     ARIMA[snsr].df.to_csv(r'saved/ARIMA_df_' + site + '_' + snsr + '.csv')
 #     ARIMA[snsr].threshold.to_csv(r'saved/ARIMA_threshold_' + site + '_' + snsr + '.csv')
 #     ARIMA[snsr].detections.to_csv(r'saved/ARIMA_detections_' + site + '_' + snsr + '.csv')
-#     LSTM_univar[snsr].threshold.to_csv(r'saved/LSTM_univar_threshold_' + site + '_' + snsr + '.csv')
-#     LSTM_univar[snsr].detections.to_csv(r'saved/LSTM_univar_detections_' + site + '_' + snsr + '.csv')
-#     LSTM_univar[snsr].df_anomalies.to_csv(r'saved/LSTM_univar_df_anomalies_' + site + '_' + snsr + '.csv')
-#     LSTM_univar_bidir[snsr].threshold.to_csv(r'saved/LSTM_univar_bidir_threshold_' + site + '_' + snsr + '.csv')
-#     LSTM_univar_bidir[snsr].detections.to_csv(r'saved/LSTM_univar_bidir_detections_' + site + '_' + snsr + '.csv')
-#     LSTM_univar_bidir[snsr].df_anomalies.to_csv(r'saved/LSTM_univar_bidir_df_anomalies_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar.threshold[snsr].to_csv(r'saved/LSTM_multivar_threshold_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar.detections[snsr].to_csv(r'saved/LSTM_multivar_detections_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar.all_data[snsr].to_csv(r'saved/LSTM_multivar_df_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar_bidir.threshold[snsr].to_csv(r'saved/LSTM_multivar_bidir_threshold_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar_bidir.detections[snsr].to_csv(r'saved/LSTM_multivar_bidir_detections_' + site + '_' + snsr + '.csv')
-#     LSTM_multivar_bidir.all_data[snsr].to_csv(r'saved/LSTM_multivar_bidir_df_' + site + '_' + snsr + '.csv')
+#     lstm_univar[snsr].threshold.to_csv(r'saved/LSTM_univar_threshold_' + site + '_' + snsr + '.csv')
+#     lstm_univar[snsr].detections.to_csv(r'saved/LSTM_univar_detections_' + site + '_' + snsr + '.csv')
+#     lstm_univar[snsr].df_anomalies.to_csv(r'saved/LSTM_univar_df_anomalies_' + site + '_' + snsr + '.csv')
+#     lstm_univar_bidir[snsr].threshold.to_csv(r'saved/LSTM_univar_bidir_threshold_' + site + '_' + snsr + '.csv')
+#     lstm_univar_bidir[snsr].detections.to_csv(r'saved/LSTM_univar_bidir_detections_' + site + '_' + snsr + '.csv')
+#     lstm_univar_bidir[snsr].df_anomalies.to_csv(r'saved/LSTM_univar_bidir_df_anomalies_' + site + '_' + snsr + '.csv')
+#     lstm_multivar.threshold[snsr].to_csv(r'saved/LSTM_multivar_threshold_' + site + '_' + snsr + '.csv')
+#     lstm_multivar.detections[snsr].to_csv(r'saved/LSTM_multivar_detections_' + site + '_' + snsr + '.csv')
+#     lstm_multivar.all_data[snsr].to_csv(r'saved/LSTM_multivar_df_' + site + '_' + snsr + '.csv')
+#     lstm_multivar_bidir.threshold[snsr].to_csv(r'saved/LSTM_multivar_bidir_threshold_' + site + '_' + snsr + '.csv')
+#     lstm_multivar_bidir.detections[snsr].to_csv(r'saved/LSTM_multivar_bidir_detections_' + site + '_' + snsr + '.csv')
+#     lstm_multivar_bidir.all_data[snsr].to_csv(r'saved/LSTM_multivar_bidir_df_' + site + '_' + snsr + '.csv')
 #     results_all[snsr].to_csv(r'saved/aggregate_results_' + site + '_' + snsr + '.csv')
 # for snsr in sensors:
 #     pickle_out = open('saved/metrics_ARIMA_' + site + '_' + snsr, "wb")
 #     pickle.dump(ARIMA[snsr].metrics, pickle_out)
 #     pickle_out.close()
 #     pickle_out = open('saved/metrics_LSTM_univar_' + site + '_' + snsr, "wb")
-#     pickle.dump(LSTM_univar[snsr].metrics, pickle_out)
+#     pickle.dump(lstm_univar[snsr].metrics, pickle_out)
 #     pickle_out.close()
 #     pickle_out = open('saved/metrics_LSTM_univar_bidir' + site + '_' + snsr, "wb")
-#     pickle.dump(LSTM_univar_bidir[snsr].metrics, pickle_out)
+#     pickle.dump(lstm_univar_bidir[snsr].metrics, pickle_out)
 #     pickle_out.close()
 #     pickle_out = open('saved/metrics_LSTM_multivar' + site + '_' + snsr, "wb")
-#     pickle.dump(LSTM_multivar.metrics[snsr], pickle_out)
+#     pickle.dump(lstm_multivar.metrics[snsr], pickle_out)
 #     pickle_out.close()
 #     pickle_out = open('saved/metrics_LSTM_multivar_bidir' + site + '_' + snsr, "wb")
-#     pickle.dump(LSTM_multivar_bidir.metrics[snsr], pickle_out)
+#     pickle.dump(lstm_multivar_bidir.metrics[snsr], pickle_out)
 #     pickle_out.close()
 #     pickle_out = open('saved/metrics_aggregate' + site + '_' + snsr, "wb")
 #     pickle.dump(results_all[snsr], pickle_out)
@@ -276,7 +276,7 @@ for snsr in sensors:
 #########################################
 corrections = dict()
 for snsr in sensors:
-    corrections[snsr] = ARIMA_correct.generate_corrections(df=results_all[snsr],
+    corrections[snsr] = arima_correct.generate_corrections(df=results_all[snsr],
                                                            observed='observed',
                                                            anomalies='detected_event',
                                                            savecasts=True)

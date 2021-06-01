@@ -50,7 +50,7 @@ Contains functions for performing anomaly detection and correction:
 ### modeling_utilities.py
 Contains functions for building and training models:
 - pdq: Automatically determines the (p, d, q) hyperparameters of a time series for ARIMA modeling.
-- build_arima_model, LSTM_univar, LSTM_multivar, LSTM_univar_bidir, LSTM_multivar_bidir: wrappers that call other functions in the file to scale and reshape data (for LSTM models only), create and train a model, and output model predictions and residuals.
+- build_arima_model, lstm_univar, lstm_multivar, lstm_univar_bidir, lstm_multivar_bidir: wrappers that call other functions in the file to scale and reshape data (for LSTM models only), create and train a model, and output model predictions and residuals.
 - create_scaler: Creates a scaler object for scaling and unscaling data.
 - create_training_dataset and create_bidir_training_dataset: Creates a training dataset based on a random selection of points from the dataset. Reshapes data to include the desired time_steps for input to the LSTM model - the number of past data points to examine or past and future points (bidirectional). Ensures that data already identified as anomalous (i.e., by rules based detection) are not used.
 - create_sequenced_dataset and create_bidir_sequenced_dataset: Reshapes all inputs into sequences that include time_steps for input to the LSTM model - using either only past data points or past and future data points (bidirectional). Used for testing or for applying the model to a full dataset.
@@ -75,12 +75,12 @@ Contains functions for identifying and correcting calibration events. Functions 
 
 ### model_workflow.py
 Contains functionality to build and train ARIMA and LSTM models, apply the models to make predictions, set thresholds, detect anomalies, widen anomalous events, and determine metrics. Depends on anomaly_utilities.py, modeling_utilities.py, and rules_detect.py. 
-Wrapper function names are: ARIMA_detect, LSTM_detect_univar, and LSTM_detect_multivar. LSTM model workflows include options for vanilla or bidirectional. Within each wrapper function, the full detection workflow is followed. Options allow for output of plots, summaries, and metrics.
+Wrapper function names are: arima_detect, lstm_detect_univar, and lstm_detect_multivar. LSTM model workflows include options for vanilla or bidirectional. Within each wrapper function, the full detection workflow is followed. Options allow for output of plots, summaries, and metrics.
 
 ### ARIMA_correct.py
 Contains functionality to perform corrections and plot results using ARIMA models. Depends on anomaly_utilities.py.
-- ARIMA_group: Ensures that the valid data surrounding anomalous points and groups of points are sufficient forecasting/backcasting.
-- ARIMA_forecast: Creates predictions of data where anomalies occur.
+- arima_group: Ensures that the valid data surrounding anomalous points and groups of points are sufficient forecasting/backcasting.
+- arima_forecast: Creates predictions of data where anomalies occur.
 - generate_corrections: The primary function for determining corrections. Passes through data with anomalies and determines corrections using piecewise ARIMA models. Corrections are determined by averaging together (cross fade) both a forecast and a backcast.
 
 ## Dependencies

@@ -21,26 +21,26 @@ FN_aggregate = []
 FP_aggregate = []
 
 for j in range(0, len(site_detect)):
-    for i in range(0, len(site_detect[j].LSTM_univar)):
+    for i in range(0, len(site_detect[j].lstm_univar)):
         TP_series = (site_detect[j].ARIMA[i].metrics.true_positives,
-                 site_detect[j].LSTM_univar[i].metrics.true_positives,
-                 site_detect[j].LSTM_univar_bidir[i].metrics.true_positives,
-                 site_detect[j].LSTM_multivar.metrics_array[i].true_positives,
-                 site_detect[j].LSTM_multivar_bidir.metrics_array[i].true_positives)
+                 site_detect[j].lstm_univar[i].metrics.true_positives,
+                 site_detect[j].lstm_univar_bidir[i].metrics.true_positives,
+                 site_detect[j].lstm_multivar.metrics_array[i].true_positives,
+                 site_detect[j].lstm_multivar_bidir.metrics_array[i].true_positives)
         TP_all.append((TP_series))
 
         FN_series = (site_detect[j].ARIMA[i].metrics.false_negatives,
-                 site_detect[j].LSTM_univar[i].metrics.false_negatives,
-                 site_detect[j].LSTM_univar_bidir[i].metrics.false_negatives,
-                 site_detect[j].LSTM_multivar.metrics_array[i].false_negatives,
-                 site_detect[j].LSTM_multivar_bidir.metrics_array[i].false_negatives)
+                 site_detect[j].lstm_univar[i].metrics.false_negatives,
+                 site_detect[j].lstm_univar_bidir[i].metrics.false_negatives,
+                 site_detect[j].lstm_multivar.metrics_array[i].false_negatives,
+                 site_detect[j].lstm_multivar_bidir.metrics_array[i].false_negatives)
         FN_all.append(FN_series)
 
         FP_series = (site_detect[j].ARIMA[i].metrics.false_positives,
-                 site_detect[j].LSTM_univar[i].metrics.false_positives,
-                 site_detect[j].LSTM_univar_bidir[i].metrics.false_positives,
-                 site_detect[j].LSTM_multivar.metrics_array[i].false_positives,
-                 site_detect[j].LSTM_multivar_bidir.metrics_array[i].false_positives)
+                 site_detect[j].lstm_univar[i].metrics.false_positives,
+                 site_detect[j].lstm_univar_bidir[i].metrics.false_positives,
+                 site_detect[j].lstm_multivar.metrics_array[i].false_positives,
+                 site_detect[j].lstm_multivar_bidir.metrics_array[i].false_positives)
         FP_all.append(FP_series)
 
         TP_rules_series = site_detect[j].rules_metrics[i].true_positives

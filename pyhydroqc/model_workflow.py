@@ -16,7 +16,7 @@ class ModelWorkflow:
     """
 
 
-def ARIMA_detect(df, sensor, params,
+def arima_detect(df, sensor, params,
                  rules=False, plots=False, summary=True, compare=False, suppress_warnings=True):
     """
     """
@@ -75,16 +75,16 @@ def ARIMA_detect(df, sensor, params,
         )
         plt.show()
 
-    ARIMA_detect = ModelWorkflow()
-    ARIMA_detect.df = df
-    ARIMA_detect.model_fit = model_fit
-    ARIMA_detect.threshold = threshold
-    ARIMA_detect.detections = detections
+    arima_detect = ModelWorkflow()
+    arima_detect.df = df
+    arima_detect.model_fit = model_fit
+    arima_detect.threshold = threshold
+    arima_detect.detections = detections
     if compare:
-        ARIMA_detect.metrics = metrics
-        ARIMA_detect.e_metrics = e_metrics
+        arima_detect.metrics = metrics
+        arima_detect.e_metrics = e_metrics
 
-    return ARIMA_detect
+    return arima_detect
 
 
 class ModelType(Enum):
@@ -94,7 +94,7 @@ class ModelType(Enum):
     BIDIRECTIONAL = 'bidirectional'
 
 
-def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
+def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
                 rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
@@ -109,9 +109,9 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
 
     # MODEL CREATION #
     if model_type == ModelType.VANILLA:
-        model = modeling_utilities.LSTM_univar(df, LSTM_params, summary, name, model_output, model_save)
+        model = modeling_utilities.lstm_univar(df, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
-        model = modeling_utilities.LSTM_univar_bidir(df, LSTM_params, summary, name, model_output, model_save)
+        model = modeling_utilities.lstm_univar_bidir(df, LSTM_params, summary, name, model_output, model_save)
     print(sensor + ' ' + str(model_type) + ' LSTM model complete.')
     if plots:
         plt.figure()
@@ -176,20 +176,20 @@ def LSTM_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
             )
         plt.show()
 
-    LSTM_detect_univar = ModelWorkflow()
-    LSTM_detect_univar.df = df
-    LSTM_detect_univar.model = model
-    LSTM_detect_univar.threshold = threshold
-    LSTM_detect_univar.detections = detections
-    LSTM_detect_univar.df_anomalies = df_anomalies
+    lstm_detect_univar = ModelWorkflow()
+    lstm_detect_univar.df = df
+    lstm_detect_univar.model = model
+    lstm_detect_univar.threshold = threshold
+    lstm_detect_univar.detections = detections
+    lstm_detect_univar.df_anomalies = df_anomalies
     if compare:
-        LSTM_detect_univar.metrics = metrics
-        LSTM_detect_univar.e_metrics = e_metrics
+        lstm_detect_univar.metrics = metrics
+        lstm_detect_univar.e_metrics = e_metrics
 
-    return LSTM_detect_univar
+    return lstm_detect_univar
 
 
-def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name='',
+def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type, name='',
                 rules=False, plots=False, summary=True, compare=False, model_output=True, model_save=True):
     """
     """
@@ -218,9 +218,9 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
 
     # MODEL CREATION #
     if model_type == ModelType.VANILLA:
-        model = modeling_utilities.LSTM_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
+        model = modeling_utilities.lstm_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
-        model = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
+        model = modeling_utilities.lstm_multivar_bidir(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
 
     print('multivariate ' + str(model_type) + ' LSTM model complete.\n')
     # Plot Metrics and Evaluate the Model
@@ -301,17 +301,17 @@ def LSTM_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
                 )
             plt.show()
 
-    LSTM_detect_multivar = ModelWorkflow()
-    LSTM_detect_multivar.sensor_array = sensor_array
-    LSTM_detect_multivar.df_observed = df_observed
-    LSTM_detect_multivar.df_raw = df_raw
-    LSTM_detect_multivar.df_anomaly = df_anomaly
-    LSTM_detect_multivar.model = model
-    LSTM_detect_multivar.threshold = threshold
-    LSTM_detect_multivar.detections = detections
-    LSTM_detect_multivar.all_data = all_data
+    lstm_detect_multivar = ModelWorkflow()
+    lstm_detect_multivar.sensor_array = sensor_array
+    lstm_detect_multivar.df_observed = df_observed
+    lstm_detect_multivar.df_raw = df_raw
+    lstm_detect_multivar.df_anomaly = df_anomaly
+    lstm_detect_multivar.model = model
+    lstm_detect_multivar.threshold = threshold
+    lstm_detect_multivar.detections = detections
+    lstm_detect_multivar.all_data = all_data
     if compare:
-        LSTM_detect_multivar.metrics = metrics
-        LSTM_detect_multivar.e_metrics = e_metrics
+        lstm_detect_multivar.metrics = metrics
+        lstm_detect_multivar.e_metrics = e_metrics
 
-    return LSTM_detect_multivar
+    return lstm_detect_multivar

@@ -91,13 +91,13 @@ patience = 6
 
 # ARIMA BASED DETECTION #
 #########################################
-ARIMA_detect = []
+arima_detect = []
 for i in range(0, len(sensor)):
     p, d, q = pdqParam[sensor[i]][site]
     print('sensor: ' + str(sensor[i]) + ', p, d, q = (' + str(p) + ', ' + str(d) + ', ' + str(q) + ')')
     df = sensor_array[sensor[i]]
-    ARIMA_detect.append(
-        model_workflow.ARIMA_detect(
+    arima_detect.append(
+        model_workflow.arima_detect(
             df, sensor[i], p, d, q,
             minimum[i], maximum[i], length[i],
             window_sz[i], alpha[i], min_range[i], wf[i],
@@ -109,11 +109,11 @@ for i in range(0, len(sensor)):
 
 # DATA: univariate,  MODEL: vanilla #
 model_type = 'vanilla'
-LSTM_detect_univar = []
+lstm_detect_univar = []
 for i in range(0, len(sensor)):
     df = sensor_array[sensor[i]]
-    LSTM_detect_univar.append(
-        model_workflow.LSTM_detect_univar(
+    lstm_detect_univar.append(
+        model_workflow.lstm_detect_univar(
             df, sensor[i],
             minimum[i], maximum[i], length[i],
             model_type, time_steps, samples, cells, dropout, patience,
@@ -127,7 +127,7 @@ LSTM_detect_univar_bidir = []
 for i in range(0, len(sensor)):
     df = sensor_array[sensor[i]]
     LSTM_detect_univar_bidir.append(
-        model_workflow.LSTM_detect_univar(
+        model_workflow.lstm_detect_univar(
             df, sensor[i],
             minimum[i], maximum[i], length[i],
             model_type, time_steps, samples, cells, dropout, patience,
@@ -137,8 +137,8 @@ for i in range(0, len(sensor)):
 
 # DATA: multivariate,  MODEL: vanilla #
 model_type = 'vanilla'
-LSTM_detect_multivar = \
-    model_workflow.LSTM_detect_multivar(
+lstm_detect_multivar = \
+    model_workflow.lstm_detect_multivar(
         sensor_array, sensor,
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,
@@ -149,7 +149,7 @@ LSTM_detect_multivar = \
 # DATA: multivariate,  MODEL: bidirectional #
 model_type = 'bidirectional'
 LSTM_detect_multivar_bidirectional = \
-    model_workflow.LSTM_detect_multivar(
+    model_workflow.lstm_detect_multivar(
         sensor_array, sensor,
         minimum, maximum, length,
         model_type, time_steps, samples, cells, dropout, patience,

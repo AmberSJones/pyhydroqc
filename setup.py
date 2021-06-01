@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyhydroqc",
-    version="0.0.2",
+    version="0.0.3",
     author="Amber Jones",
     author_email="amber.jones@usu.edu",
     description="A package containing functions for anomaly detection and correction of aquatic sensor data.",
@@ -23,12 +23,12 @@ setuptools.setup(
     ],
     python_requires='>=3.6',
     install_requires=[
+        'tensorflow',
         'numpy',
         'pandas',
         'matplotlib',
         'scipy',
         'pmdarima',
-        'tensorflow',
         'statsmodels',
         'sklearn'
     ],

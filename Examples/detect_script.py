@@ -85,7 +85,7 @@ for j in range(0, len(sites)):
     for i in range(0, len(sensor)):
         df = sensor_array[sensor[i]]
         methods_output.ARIMA.append(copy.deepcopy(
-            model_workflow.ARIMA_detect(
+            model_workflow.arima_detect(
                 df, sensor[i], site_params[j][i],
                 rules=False, plots=False, summary=False, compare=True
             )))
@@ -97,37 +97,37 @@ for j in range(0, len(sites)):
 
     # DATA: univariate,  MODEL: vanilla #
     model_type = 'vanilla'
-    methods_output.LSTM_univar = []
+    methods_output.lstm_univar = []
     for i in range(0, len(sensor)):
         df = sensor_array[sensor[i]]
         name = str(site) + '-' + str(sensor[i])
-        method_object = model_workflow.LSTM_detect_univar(
+        method_object = model_workflow.lstm_detect_univar(
             df, sensor[i], site_params[j][i], model_type, name,
             rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
-        methods_output.LSTM_univar.append(copy.deepcopy(method_object))
+        methods_output.lstm_univar.append(copy.deepcopy(method_object))
     del df
     del method_object
 
     # DATA: univariate,  MODEL: bidirectional #
     model_type = 'bidirectional'
-    methods_output.LSTM_univar_bidir = []
+    methods_output.lstm_univar_bidir = []
     for i in range(0, len(sensor)):
         df = sensor_array[sensor[i]]
         name = str(site) + '-' + str(sensor[i])
-        method_object = model_workflow.LSTM_detect_univar(
+        method_object = model_workflow.lstm_detect_univar(
                 df, sensor[i], site_params[j][i], model_type, name,
                 rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
-        methods_output.LSTM_univar_bidir.append(copy.deepcopy(method_object))
+        methods_output.lstm_univar_bidir.append(copy.deepcopy(method_object))
     del df
     del method_object
 
     # DATA: multivariate,  MODEL: vanilla #
     model_type = 'vanilla'
     name = str(site)
-    methods_output.LSTM_multivar = \
-        model_workflow.LSTM_detect_multivar(
+    methods_output.lstm_multivar = \
+        model_workflow.lstm_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
             rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
@@ -135,8 +135,8 @@ for j in range(0, len(sites)):
     # DATA: multivariate,  MODEL: bidirectional #
     model_type = 'bidirectional'
     name = str(site)
-    methods_output.LSTM_multivar_bidir = \
-        model_workflow.LSTM_detect_multivar(
+    methods_output.lstm_multivar_bidir = \
+        model_workflow.lstm_detect_multivar(
             sensor_array, sensor, site_params[j], model_type, name,
             rules=False, plots=False, summary=False, compare=True, model_output=False, model_save=True
             )
@@ -150,10 +150,10 @@ for j in range(0, len(sites)):
             anomaly_utilities.aggregate_results(
                 sensor_array[sensor[i]],
                 methods_output.ARIMA[i].df,
-                methods_output.LSTM_univar[i].df_anomalies,
-                methods_output.LSTM_univar_bidir[i].df_anomalies,
-                methods_output.LSTM_multivar.df_array[i],
-                methods_output.LSTM_multivar_bidir.df_array[i]
+                methods_output.lstm_univar[i].df_anomalies,
+                methods_output.lstm_univar_bidir[i].df_anomalies,
+                methods_output.lstm_multivar.df_array[i],
+                methods_output.lstm_multivar_bidir.df_array[i]
                 )
 
         print('\nOverall metrics')
@@ -181,18 +181,18 @@ for j in range(0, len(sites)):
         site_detect[j].ARIMA[i].df.to_csv(r'saved/ARIMA_df_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
         site_detect[j].ARIMA[i].threshold.to_csv(r'saved/ARIMA_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
         site_detect[j].ARIMA[i].detections.to_csv(r'saved/ARIMA_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar[i].threshold.to_csv(r'saved/LSTM_univar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar[i].detections.to_csv(r'saved/LSTM_univar_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar[i].df_anomalies.to_csv(r'saved/LSTM_univar_df_anomalies_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar_bidir[i].threshold.to_csv(r'saved/LSTM_univar_bidir_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar_bidir[i].detections.to_csv(r'saved/LSTM_univar_bidir_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_univar_bidir[i].df_anomalies.to_csv(r'saved/LSTM_univar_bidir_df_anomalies_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar.threshold[i].to_csv(r'saved/LSTM_multivar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar.detections_array[i].to_csv(r'saved/LSTM_multivar_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar.df_array[i].to_csv(r'saved/LSTM_multivar_df_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar.threshold[i].to_csv(r'saved/LSTM_multivar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar_bidir.detections_array[i].to_csv(r'saved/LSTM_multivar_bidir_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
-        site_detect[j].LSTM_multivar_bidir.df_array[i].to_csv(r'saved/LSTM_multivar_bidir_df_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar[i].threshold.to_csv(r'saved/LSTM_univar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar[i].detections.to_csv(r'saved/LSTM_univar_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar[i].df_anomalies.to_csv(r'saved/LSTM_univar_df_anomalies_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar_bidir[i].threshold.to_csv(r'saved/LSTM_univar_bidir_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar_bidir[i].detections.to_csv(r'saved/LSTM_univar_bidir_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_univar_bidir[i].df_anomalies.to_csv(r'saved/LSTM_univar_bidir_df_anomalies_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar.threshold[i].to_csv(r'saved/LSTM_multivar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar.detections_array[i].to_csv(r'saved/LSTM_multivar_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar.df_array[i].to_csv(r'saved/LSTM_multivar_df_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar.threshold[i].to_csv(r'saved/LSTM_multivar_threshold_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar_bidir.detections_array[i].to_csv(r'saved/LSTM_multivar_bidir_detections_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
+        site_detect[j].lstm_multivar_bidir.df_array[i].to_csv(r'saved/LSTM_multivar_bidir_df_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
         site_detect[j].aggregate_results[i].to_csv(r'saved/aggregate_results_' + str(sites[j]) + '_' + str(sensor[i]) + '.csv')
 
 # Save metrics objects as pickles
@@ -203,16 +203,16 @@ for j in range(0, len(sites)):
         pickle.dump(site_detect[j].ARIMA[i].metrics, pickle_out)
         pickle_out.close()
         pickle_out = open('saved/metrics_LSTM_univar_' + str(sites[j]) + '_' + str(sensor[i]), "wb")
-        pickle.dump(site_detect[j].LSTM_univar[i].metrics, pickle_out)
+        pickle.dump(site_detect[j].lstm_univar[i].metrics, pickle_out)
         pickle_out.close()
         pickle_out = open('saved/metrics_LSTM_univar_bidir' + str(sites[j]) + '_' + str(sensor[i]), "wb")
-        pickle.dump(site_detect[j].LSTM_univar_bidir[i].metrics, pickle_out)
+        pickle.dump(site_detect[j].lstm_univar_bidir[i].metrics, pickle_out)
         pickle_out.close()
         pickle_out = open('saved/metrics_LSTM_multivar' + str(sites[j]) + '_' + str(sensor[i]), "wb")
-        pickle.dump(site_detect[j].LSTM_multivar.metrics_array[i], pickle_out)
+        pickle.dump(site_detect[j].lstm_multivar.metrics_array[i], pickle_out)
         pickle_out.close()
         pickle_out = open('saved/metrics_LSTM_multivar_bidir' + str(sites[j]) + '_' + str(sensor[i]), "wb")
-        pickle.dump(site_detect[j].LSTM_multivar_bidir.metrics_array[i], pickle_out)
+        pickle.dump(site_detect[j].lstm_multivar_bidir.metrics_array[i], pickle_out)
         pickle_out.close()
         pickle_out = open('saved/metrics_aggregate' + str(sites[j]) + '_' + str(sensor[i]), "wb")
         pickle.dump(site_detect[j].aggregate_metrics[i], pickle_out)

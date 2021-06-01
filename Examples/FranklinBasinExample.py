@@ -7,7 +7,7 @@
 from pyhydroqc import anomaly_utilities
 from pyhydroqc import model_workflow
 from pyhydroqc import rules_detect
-from pyhydroqc import ARIMA_correct
+from pyhydroqc import arima_correct
 from pyhydroqc import modeling_utilities
 from pyhydroqc.model_workflow import ModelType
 
@@ -55,7 +55,7 @@ for snsr in sensors:
 
 ARIMA = dict()
 for snsr in sensors:
-    ARIMA[snsr] = model_workflow.ARIMA_detect(
+    ARIMA[snsr] = model_workflow.arima_detect(
         df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr],
         rules=False, plots=False, summary=False, compare=False)
 print('ARIMA detection complete.\n')
@@ -64,29 +64,29 @@ print('ARIMA detection complete.\n')
 #########################################
 ###### DATA: univariate, MODEL: vanilla
 
-LSTM_univar = dict()
+lstm_univar = dict()
 for snsr in sensors:
-    LSTM_univar[snsr] = model_workflow.LSTM_detect_univar(
+    lstm_univar[snsr] = model_workflow.lstm_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.VANILLA,
             rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: univariate,  MODEL: bidirectional
 
-LSTM_univar_bidir = dict()
+lstm_univar_bidir = dict()
 for snsr in sensors:
-    LSTM_univar_bidir[snsr] = model_workflow.LSTM_detect_univar(
+    lstm_univar_bidir[snsr] = model_workflow.lstm_detect_univar(
             df=sensor_array[snsr], sensor=snsr, params=site_params[site][snsr], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL,
             rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: vanilla
 
-LSTM_multivar = model_workflow.LSTM_detect_multivar(
+lstm_multivar = model_workflow.lstm_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.VANILLA,
         rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
 ###### DATA: multivariate,  MODEL: bidirectional
 
-LSTM_multivar_bidir = model_workflow.LSTM_detect_multivar(
+lstm_multivar_bidir = model_workflow.lstm_detect_multivar(
         sensor_array=sensor_array, sensors=sensors, params=site_params[site], LSTM_params=LSTM_params, model_type=ModelType.BIDIRECTIONAL,
         rules=False, plots=False, summary=False, compare=False, model_output=False, model_save=False)
 
@@ -97,10 +97,10 @@ results_all = dict()
 for snsr in sensors:
     models = dict()
     models['ARIMA'] = ARIMA[snsr].df
-    models['LSTM_univar'] = LSTM_univar[snsr].df_anomalies
-    models['LSTM_univar_bidir'] = LSTM_univar_bidir[snsr].df_anomalies
-    models['LSTM_multivar'] = LSTM_multivar.all_data[snsr]
-    models['LSTM_multivar_bidir'] = LSTM_multivar_bidir.all_data[snsr]
+    models['lstm_univar'] = lstm_univar[snsr].df_anomalies
+    models['lstm_univar_bidir'] = lstm_univar_bidir[snsr].df_anomalies
+    models['lstm_multivar'] = lstm_multivar.all_data[snsr]
+    models['lstm_multivar_bidir'] = lstm_multivar_bidir.all_data[snsr]
     results_all[snsr] = anomaly_utilities.aggregate_results(
         df=sensor_array[snsr], models=models, verbose=True, compare=False)
 
@@ -109,7 +109,7 @@ for snsr in sensors:
 
 corrections = dict()
 for snsr in sensors:
-    corrections[snsr] = ARIMA_correct.generate_corrections(
+    corrections[snsr] = arima_correct.generate_corrections(
         df=results_all[snsr], observed='observed', anomalies='detected_event', savecasts=True)
 
 ############ PLOTTING ##############

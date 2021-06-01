@@ -84,19 +84,19 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_univar = modeling_utilities.LSTM_univar(df, time_steps, samples, cells, dropout, patience)
+lstm_univar = modeling_utilities.lstm_univar(df, time_steps, samples, cells, dropout, patience)
 
-plt.plot(LSTM_univar.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_univar.history.history['val_loss'], label='Validation Loss')
+plt.plot(lstm_univar.history.history['loss'], label='Training Loss')
+plt.plot(lstm_univar.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 ############################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar.test_residuals[0], 75, 0.01, 4)
+threshold = anomaly_utilities.set_dynamic_threshold(lstm_univar.test_residuals[0], 75, 0.01, 4)
 threshold.index = df[time_steps:].index
 
-residuals = pd.DataFrame(LSTM_univar.test_residuals)
+residuals = pd.DataFrame(lstm_univar.test_residuals)
 residuals.index = threshold.index
 
 plt.figure()
@@ -109,7 +109,7 @@ plt.ylabel(sensor)
 plt.show()
 
 observed = df[['observed']][time_steps:]
-detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar.predictions, LSTM_univar.test_residuals, threshold, summary=True)
+detections = anomaly_utilities.detect_anomalies(observed, lstm_univar.predictions, lstm_univar.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
@@ -156,21 +156,21 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_univar_bidir = modeling_utilities.LSTM_univar_bidir(df, time_steps, samples, cells, dropout, patience)
+lstm_univar_bidir = modeling_utilities.lstm_univar_bidir(df, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
-plt.plot(LSTM_univar_bidir.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_univar_bidir.history.history['val_loss'], label='Validation Loss')
+plt.plot(lstm_univar_bidir.history.history['loss'], label='Training Loss')
+plt.plot(lstm_univar_bidir.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-threshold = anomaly_utilities.set_dynamic_threshold(LSTM_univar_bidir.test_residuals[0], 75, 0.01, 4)
+threshold = anomaly_utilities.set_dynamic_threshold(lstm_univar_bidir.test_residuals[0], 75, 0.01, 4)
 threshold.index = df[time_steps:-time_steps].index
 
-residuals = pd.DataFrame(LSTM_univar_bidir.test_residuals)
+residuals = pd.DataFrame(lstm_univar_bidir.test_residuals)
 residuals.index = threshold.index
 
 plt.figure()
@@ -183,7 +183,7 @@ plt.ylabel(sensor)
 plt.show()
 
 observed = df[['observed']][time_steps:-time_steps]
-detections = anomaly_utilities.detect_anomalies(observed, LSTM_univar_bidir.predictions, LSTM_univar_bidir.test_residuals, threshold, summary=True)
+detections = anomaly_utilities.detect_anomalies(observed, lstm_univar_bidir.predictions, lstm_univar_bidir.test_residuals, threshold, summary=True)
 
 # Use events function to widen and number anomalous events
 df_anomalies = df.iloc[time_steps:]
@@ -292,19 +292,19 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar = modeling_utilities.LSTM_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+lstm_multivar = modeling_utilities.lstm_multivar(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
-plt.plot(LSTM_multivar.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_multivar.history.history['val_loss'], label='Validation Loss')
+plt.plot(lstm_multivar.history.history['loss'], label='Training Loss')
+plt.plot(lstm_multivar.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-residuals = pd.DataFrame(LSTM_multivar.test_residuals)
-predictions = pd.DataFrame(LSTM_multivar.predictions)
+residuals = pd.DataFrame(lstm_multivar.test_residuals)
+predictions = pd.DataFrame(lstm_multivar.predictions)
 residuals.index = df_observed[time_steps:].index
 predictions.index = df_observed[time_steps:].index
 
@@ -313,7 +313,7 @@ alpha = [0.01, 0.01, 0.01, 0.01]
 min_range = [0.2, 4, 0.02, 0.04]
 
 threshold = []
-for i in range(0, LSTM_multivar.test_residuals.shape[1]):
+for i in range(0, lstm_multivar.test_residuals.shape[1]):
      threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], window_sz[i], alpha[i], min_range[i])
      threshold_df.index = residuals.index
      threshold.append(threshold_df)
@@ -330,7 +330,7 @@ for i in range(0, LSTM_multivar.test_residuals.shape[1]):
 observed = df_observed[time_steps:]
 detections_array = []
 for i in range(0, observed.shape[1]):
-    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar.predictions.iloc[:, i], LSTM_multivar.test_residuals.iloc[:, i], threshold[i], summary=True)
+    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], lstm_multivar.predictions.iloc[:, i], lstm_multivar.test_residuals.iloc[:, i], threshold[i], summary=True)
     detections_array.append(detections_df)
 
 # Use events function to widen and number anomalous events
@@ -412,18 +412,18 @@ cells = 128
 dropout = 0.2
 patience = 6
 
-LSTM_multivar_bidir = modeling_utilities.LSTM_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
+lstm_multivar_bidir = modeling_utilities.lstm_multivar_bidir(df_observed, df_anomaly, df_raw, time_steps, samples, cells, dropout, patience)
 
 # Plot Metrics and Evaluate the Model
 # plot training loss and validation loss with matplotlib and pyplot
-plt.plot(LSTM_multivar_bidir.history.history['loss'], label='Training Loss')
-plt.plot(LSTM_multivar_bidir.history.history['val_loss'], label='Validation Loss')
+plt.plot(lstm_multivar_bidir.history.history['loss'], label='Training Loss')
+plt.plot(lstm_multivar_bidir.history.history['val_loss'], label='Validation Loss')
 plt.legend()
 plt.show()
 
 # DETERMINE THRESHOLD AND DETECT ANOMALIES #
 #########################################
-residuals = pd.DataFrame(LSTM_multivar_bidir.test_residuals)
+residuals = pd.DataFrame(lstm_multivar_bidir.test_residuals)
 residuals.index = df_observed[time_steps:-time_steps].index
 
 window_sz = [40, 40, 40, 40]
@@ -431,7 +431,7 @@ alpha = [0.01, 0.01, 0.01, 0.01]
 min_range = [0.2, 4, 0.02, 0.04]
 
 threshold = []
-for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
+for i in range(0, lstm_multivar_bidir.test_residuals.shape[1]):
      threshold_df = anomaly_utilities.set_dynamic_threshold(residuals.iloc[:, i], window_sz[i], alpha[i], min_range[i])
      threshold_df.index = residuals.index
      threshold.append(threshold_df)
@@ -448,7 +448,7 @@ for i in range(0, LSTM_multivar_bidir.test_residuals.shape[1]):
 observed = df_observed[time_steps:-time_steps]
 detections_array = []
 for i in range(0, observed.shape[1]):
-    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], LSTM_multivar_bidir.predictions.iloc[:, i], LSTM_multivar_bidir.test_residuals.iloc[:, i], threshold[i], summary=True)
+    detections_df = anomaly_utilities.detect_anomalies(observed.iloc[:, i], lstm_multivar_bidir.predictions.iloc[:, i], lstm_multivar_bidir.test_residuals.iloc[:, i], threshold[i], summary=True)
     detections_array.append(detections_df)
 
 # Use events function to widen and number anomalous events
