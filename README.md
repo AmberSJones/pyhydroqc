@@ -1,6 +1,8 @@
 # Anomaly Detection and Correction for Aquatic Sensor Data
 This repository contains software to identify and correct anomalous values in time series data collected by in situ aquatic sensors. The code was developed for application to data collected in the Logan River Observatory, sourced at <http://lrodata.usu.edu/tsa/> or on [HydroShare](https://www.hydroshare.org/search/?q=logan%20river%20observatory). All functions contained in the package are [documented here](https://ambersjones.github.io/pyhydroqc/). The package may be installed from the [Python Package Index](https://pypi.org/project/pyhydroqc/).
 
+The package development, testing, and performance are reported in Jones, A.S., Jones, T.L., Horsburgh, J.S. (2022). Toward automated post processing of aquatic sensor data, Environmental Modelling and Software, <https://doi.org/10.1016/j.envsoft.2022.105364>
+
 Methods currently implemented include ARIMA (AutoRegressive Integrated Moving Average) and LSTM (Long Short Term Memory). These are time series regression methods that detect anomalies by comparing model estimates to sensor observations and labeling points as anomalous when they exceed a threshold.
 
 There are multiple possible approaches for applying LSTM for anomaly detection/correction. 
