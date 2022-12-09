@@ -287,7 +287,7 @@ def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
             print('Event based calculations:')
             anomaly_utilities.print_metrics(e_metrics[snsr])
             mlflow.log_metric("f2", e_metrics[snsr].f2)
-        print('Model report complete\n')
+            print('Model report complete\n')
        
 
     # GENERATE PLOTS #
