@@ -45,12 +45,12 @@ def arima_detect(df, sensor, params,
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
     with mlflow.start_run():
-    with mlflow.start_run(nested=True):
-        mlflow.log_param("p", p)
-    with mlflow.start_run(nested=True):
-        mlflow.log_param("p", p)
-    with mlflow.start_run(nested=True):
-        mlflow.log_param("p", p)
+        with mlflow.start_run(nested=True):
+            mlflow.log_param("p", p)
+        with mlflow.start_run(nested=True):
+            mlflow.log_param("p", p)
+        with mlflow.start_run(nested=True):
+            mlflow.log_param("p", p)
 
 
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
