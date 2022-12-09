@@ -8,6 +8,7 @@ from pyhydroqc import rules_detect
 import matplotlib.pyplot as plt
 import pandas as pd
 from enum import Enum
+import mlflow
 
 
 class ModelWorkflow:
