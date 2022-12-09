@@ -63,7 +63,7 @@ def build_arima_model(data, p, d, q, summary=True, suppress_warnings=True):
         warnings.filterwarnings('ignore', message='ConvergenceWarning: Maximum Likelihood optimization failed to converge.')
 
     model_fit = model.fit(disp=0, warn_convergence=False)
-    mlflow.log_param("p",p)
+    
 
     if suppress_warnings:
         warnings.filterwarnings('default')
