@@ -34,7 +34,9 @@ def arima_detect(df, sensor, params,
     [p, d, q] = params.pdq
     model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary, suppress_warnings)
     print(sensor + ' ARIMA model complete.')
-
+    mlflow.log_param("p",p)
+    mlflow.log_param("sensor", sensor)
+    
     # DETERMINE THRESHOLD AND DETECT ANOMALIES #
     threshold = anomaly_utilities.set_dynamic_threshold(residuals[0], params.window_sz, params.alpha, params.threshold_min)
     threshold.index = residuals.index
