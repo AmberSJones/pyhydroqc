@@ -44,6 +44,14 @@ def arima_detect(df, sensor, params,
         plt.show()
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
+    with mlflow.start_run():
+    with mlflow.start_run(nested=True):
+        mlflow.log_param("p", p)
+    with mlflow.start_run(nested=True):
+        mlflow.log_param("p", p)
+    with mlflow.start_run(nested=True):
+        mlflow.log_param("p", p)
+
 
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
     df['detected_anomaly'] = detections['anomaly']
@@ -163,7 +171,7 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         anomaly_utilities.print_metrics(metrics)
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
-        mlflow.log_metric("f2", e_metrics.f2)
+        mlflow.log_metric("true positives", e_metrics.true_positives)
         print('Model report complete\n')
 
     # GENERATE PLOTS #
