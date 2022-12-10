@@ -47,7 +47,7 @@ def arima_detect(df, sensor, params,
    # with mlflow.start_run():
     with mlflow.start_run():
         mlflow.log_param("p", p)
-        mlflow.log_param("sensor": sensor)
+        mlflow.log_param("sensor", sensor)
         #with mlflow.start_run(nested=True):
          #   mlflow.log_param("p", p)
         #with mlflow.start_run(nested=True):
