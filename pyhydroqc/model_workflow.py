@@ -151,11 +151,11 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
                                                     threshold, summary=True)
    
 
-    #params = {"learning_rate": 0.01, "n_estimators": 10}
+    params = {"time_steps": LSTM.params.time_steps}
 
 # Log a batch of parameters
     #with mlflow.start_run():
-    mlflow.log_params(LSTM_params)
+    mlflow.log_params(params)
 
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
     if model_type == ModelType.VANILLA:
