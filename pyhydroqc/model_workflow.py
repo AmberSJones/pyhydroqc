@@ -75,6 +75,8 @@ def arima_detect(df, sensor, params,
         mlflow.log_metric("true positives (events)", e_metrics.true_positives)
         mlflow.log_metric("f2", metrics.f2)
         mlflow.log_metric("f2 (events)", e_metrics.f2)
+        mlflow.end_run()
+
 
     # GENERATE PLOTS #
     if plots:
