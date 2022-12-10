@@ -45,7 +45,7 @@ def arima_detect(df, sensor, params,
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
    # with mlflow.start_run():
-    mlflow.start_run():
+    mlflow.start_run()
     mlflow.log_param("p", p)
     mlflow.log_param("sensor", sensor)
         #with mlflow.start_run(nested=True):
