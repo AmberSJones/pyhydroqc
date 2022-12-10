@@ -71,6 +71,9 @@ def arima_detect(df, sensor, params,
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
+        mlflow.log_metric("true positives (events)", e_metrics.true_positives)
+        mlflow.log_metric("f2", metrics.f2)
+        mlflow.log_metric("f2 (events)", e_metrics.f2)
 
     # GENERATE PLOTS #
     if plots:
