@@ -45,9 +45,9 @@ def arima_detect(df, sensor, params,
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(df['observed'], predictions, residuals, threshold, summary=True)
    # with mlflow.start_run():
-    with mlflow.start_run():
-        mlflow.log_param("p", p)
-        mlflow.log_param("sensor", sensor)
+    mlflow.start_run():
+    mlflow.log_param("p", p)
+    mlflow.log_param("sensor", sensor)
         #with mlflow.start_run(nested=True):
          #   mlflow.log_param("p", p)
         #with mlflow.start_run(nested=True):
@@ -72,10 +72,11 @@ def arima_detect(df, sensor, params,
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
         print('Model report complete\n')
-        mlflow.log_metric("true positives (events)", e_metrics.true_positives)
-        mlflow.log_metric("f2", metrics.f2)
-        mlflow.log_metric("f2 (events)", e_metrics.f2)
-        mlflow.end_run()
+        
+    mlflow.log_metric("true positives (events)", e_metrics.true_positives)
+    mlflow.log_metric("f2", metrics.f2)
+    mlflow.log_metric("f2 (events)", e_metrics.f2)
+    mlflow.end_run()
 
 
     # GENERATE PLOTS #
