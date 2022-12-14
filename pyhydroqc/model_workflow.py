@@ -249,6 +249,8 @@ def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
 
     # MODEL CREATION #
     mlflow.tensorflow.autolog()
+    params_2 = {"time_steps": LSTM_params.time_steps, "samples": LSTM_params.samples, "cells": LSTM_params.cells, "dropout": LSTM_params.dropout, "patience": LSTM_params.patience}
+    mlflow.log_params(params_2)
     if model_type == ModelType.VANILLA:
         model = modeling_utilities.lstm_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
@@ -321,7 +323,11 @@ def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
             #mlflow.log_metric("f2", e_metrics[snsr].f2)
             print('Model report complete\n')
        
-    mlflow.log_metric("f2", e_metrics[snsr].f2)
+    mlflow.log_metric("true positives (events)", e_metrics.true_positives)
+    mlflow.log_metric("false negatives (events)", e_metrics.false_negatives)
+    mlflow.log_metric("f2 (events)", e_metrics.f2)
+    mlflow.end_run()
+    
     
     # GENERATE PLOTS #
     if plots:
