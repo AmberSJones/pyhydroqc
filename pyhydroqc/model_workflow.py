@@ -161,13 +161,6 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
     print('Threshold determination complete.')
     detections = anomaly_utilities.detect_anomalies(observed, model.predictions, model.test_residuals,
                                                     threshold, summary=True)
-   
-
-    params_2 = {"time_steps": LSTM_params.time_steps}
-
-# Log a batch of parameters
-    #with mlflow.start_run():
-    mlflow.log_params(params_2)
 
     # WIDEN AND NUMBER ANOMALOUS EVENTS #
     if model_type == ModelType.VANILLA:
@@ -192,6 +185,8 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         anomaly_utilities.print_metrics(e_metrics)
     #mlflow.log_metric("true positives", e_metrics.true_positives)
         print('Model report complete\n')
+    params_2 = {"time_steps": LSTM_params.time_steps}
+    mlflow.log_params(params_2)
     mlflow.log_metric("true positives", e_metrics.true_positives)
     mlflow.end_run()
 
