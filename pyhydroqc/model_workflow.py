@@ -32,7 +32,8 @@ def arima_detect(df, sensor, params,
 
     # MODEL CREATION #
     [p, d, q] = params.pdq
-    mlflow.start_run()
+    #mlflow.start_run()
+    mlflow.statsmodels.autolog()
     mlflow.log_param("p", p)
     mlflow.log_param("sensor", sensor)
     model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary, suppress_warnings)
