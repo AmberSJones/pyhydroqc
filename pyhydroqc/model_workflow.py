@@ -244,6 +244,7 @@ def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
     print('Initial anomalies data shape: ' + str(df_anomaly.shape))
 
     # MODEL CREATION #
+    mlflow.tensorflow.autolog()
     if model_type == ModelType.VANILLA:
         model = modeling_utilities.lstm_multivar(df_observed, df_anomaly, df_raw, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
@@ -316,7 +317,8 @@ def lstm_detect_multivar(sensor_array, sensors, params, LSTM_params, model_type,
             mlflow.log_metric("f2", e_metrics[snsr].f2)
             print('Model report complete\n')
        
-
+    mlflow.log_metric("f2", e_metrics[snsr].f2)
+    
     # GENERATE PLOTS #
     if plots:
         for snsr in sensors:
