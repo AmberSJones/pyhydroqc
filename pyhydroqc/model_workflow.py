@@ -129,6 +129,8 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
 
     # MODEL CREATION #
     mlflow.tensorflow.autolog()
+    params_2 = {"time_steps": LSTM_params.time_steps}
+    mlflow.log_params(params_2)
     if model_type == ModelType.VANILLA:
         model = modeling_utilities.lstm_univar(df, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
@@ -185,8 +187,7 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         anomaly_utilities.print_metrics(e_metrics)
     #mlflow.log_metric("true positives", e_metrics.true_positives)
         print('Model report complete\n')
-    params_2 = {"time_steps": LSTM_params.time_steps}
-    mlflow.log_params(params_2)
+  
     mlflow.log_metric("true positives", e_metrics.true_positives)
     mlflow.end_run()
 
