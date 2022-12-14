@@ -128,7 +128,7 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         print(sensor + ' rules based detection complete. Maximum detected group length = '+str(size))
 
     # MODEL CREATION #
-    mlflow.autolog()
+    mlflow.tensorflow.autolog()
     if model_type == ModelType.VANILLA:
         model = modeling_utilities.lstm_univar(df, LSTM_params, summary, name, model_output, model_save)
     elif model_type == ModelType.BIDIRECTIONAL:
