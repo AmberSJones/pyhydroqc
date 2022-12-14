@@ -35,6 +35,8 @@ def arima_detect(df, sensor, params,
     #mlflow.start_run()
     mlflow.statsmodels.autolog()
     mlflow.log_param("p", p)
+    mlflow.log_param("q", q)
+    mlflow.log_param("d", d)
     mlflow.log_param("sensor", sensor)
     model_fit, residuals, predictions = modeling_utilities.build_arima_model(df['observed'], p, d, q, summary, suppress_warnings)
     print(sensor + ' ARIMA model complete.')
@@ -78,7 +80,7 @@ def arima_detect(df, sensor, params,
         print('Model report complete\n')
         
     mlflow.log_metric("true positives (events)", e_metrics.true_positives)
-    mlflow.log_metric("f2", metrics.f2)
+    mlflow.log_metric("false negatives (events)", e_metrics.false_negatives)
     mlflow.log_metric("f2 (events)", e_metrics.f2)
     mlflow.end_run()
 
@@ -129,7 +131,7 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
 
     # MODEL CREATION #
     mlflow.tensorflow.autolog()
-    params_2 = {"time_steps": LSTM_params.time_steps}
+    params_2 = {"time_steps": LSTM_params.time_steps, "samples": LSTM_params.samples, "cells": LSTM_params.cells, "dropout": LSTM_params.dropout, "patience": LSTM_params.patience}
     mlflow.log_params(params_2)
     if model_type == ModelType.VANILLA:
         model = modeling_utilities.lstm_univar(df, LSTM_params, summary, name, model_output, model_save)
@@ -188,7 +190,9 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
     #mlflow.log_metric("true positives", e_metrics.true_positives)
         print('Model report complete\n')
   
-    mlflow.log_metric("true positives", e_metrics.true_positives)
+    mlflow.log_metric("true positives (events)", e_metrics.true_positives)
+    mlflow.log_metric("false negatives (events)", e_metrics.false_negatives)
+    mlflow.log_metric("f2 (events)", e_metrics.f2)
     mlflow.end_run()
 
     # GENERATE PLOTS #
