@@ -190,8 +190,9 @@ def lstm_detect_univar(df, sensor, params, LSTM_params, model_type, name='',
         anomaly_utilities.print_metrics(metrics)
         print('Event based calculations:')
         anomaly_utilities.print_metrics(e_metrics)
-    mlflow.log_metric("true positives", e_metrics.true_positives)
+    #mlflow.log_metric("true positives", e_metrics.true_positives)
         print('Model report complete\n')
+    mlflow.log_metric("true positives", e_metrics.true_positives)
     mlflow.end_run()
 
     # GENERATE PLOTS #
