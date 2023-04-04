@@ -33,7 +33,7 @@ def arima_detect(df, sensor, params,
     # MODEL CREATION #
     [p, d, q] = params.pdq
     mlflow.start_run()
-    mlflow.statsmodels.autolog()
+    #mlflow.statsmodels.autolog()
     mlflow.log_param("p", p)
     mlflow.log_param("q", q)
     mlflow.log_param("d", d)
